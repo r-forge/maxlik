@@ -1,13 +1,11 @@
-\name{vcov-methods}
-\alias{vcov.probit}
+\name{vcov.maxLik}
 \alias{vcov.maxLik}
 
-\title{'vcov' methods in Package 'micEcon'}
+\title{Variance Covariance Matrix of maxLik objects}
 \description{
-   Extract variance-covariance matrices.
+   Extract variance-covariance matrices of objects of class \code{\link{maxLik}}.
 }
 \usage{
-   \method{vcov}{probit}( object, ... )
    \method{vcov}{maxLik}( object, ... )
 }
 \arguments{

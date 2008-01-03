@@ -27,10 +27,11 @@ nObs(x, \dots)
 \author{Ott Toomet, \email{otoomet@econ.au.dk}}
 \seealso{\code{\link{nParam}}}
 \examples{
-## Do a trivial probit example and find number of observations
-x <- runif(100)
-y <- x + rnorm(100) > 0
-p <- probit(y ~ x)
-nObs(p)
+# Construct a simple OLS regression:
+x1 <- runif(100)
+x2 <- runif(100)
+y <- 3 + 4*x1 + 5*x2 + rnorm(100)
+m <- lm(y~x1+x2)  # estimate it
+nObs(m)
 }
 \keyword{methods}

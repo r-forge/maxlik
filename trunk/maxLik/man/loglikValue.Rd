@@ -26,17 +26,14 @@ loglikValue(x, ...)
 \author{Ott Toomet \email{otoomet@ut.ee}}
 \seealso{\code{\link{maxLik}}}
 \examples{
-## We estimate a tobit-2 model and print the loglik value
-library(mvtnorm)
-N <- 500
-   vc <- diag(2)
-   vc[2,1] <- vc[1,2] <- -0.7
-   eps <- rmvnorm(N, rep(0, 2), vc)
-   xs <- runif(N)
-   ys <- xs + eps[,1] > 0
-   xo <- runif(N)
-   yo <- (xo + eps[,2])*(ys > 0)
-   a <- selection(ys~xs, yo ~xo)
-loglikValue(a) # this values is also printed by 'summary'
+## ML estimation of exponential duration model:
+t <- rexp(100, 2)
+loglik <- function(theta) log(theta) - theta*t
+gradlik <- function(theta) 1/theta - t
+hesslik <- function(theta) -100/theta^2
+## Estimate with analytic gradient and hessian
+a <- maxLik(loglik, gradlik, hesslik, start=1)
+## print log likelihood value
+loglikValue( a )
 }
 \keyword{methods}
