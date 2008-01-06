@@ -2,7 +2,7 @@ activePar               free parameters under maximisation
 compareDerivatives      function to compare analytic and numeric
                         derivatives
 hessian                 Hessian matrix
-loglikValue             Return the log likelihood value
+logLik.maxLik           Return the log likelihood value
 maxBFGS                 BFGS, SANN and Nelder-Mead Maximization
 maxBHHH                 BHHH Maximization
 maximType               Type of Minimization/Maximization
