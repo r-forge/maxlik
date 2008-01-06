@@ -5,7 +5,7 @@ returnMessage <- function(x, ...)
 returnMessage.default <- function(x, ...)
     x$returnMessage
 
-returnMessage.maximisation <- function(x, ...)
+returnMessage.maxim <- function(x, ...)
     x$message
 
 returnMessage.maxLik <- function(x, ...)

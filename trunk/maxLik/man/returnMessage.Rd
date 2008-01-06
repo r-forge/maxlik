@@ -1,7 +1,7 @@
 \name{returnMessage}
 \alias{returnMessage}
 \alias{returnMessage.default}
-\alias{returnMessage.maximisation}
+\alias{returnMessage.maxim}
 \alias{returnMessage.maxLik}
 \title{Information about the optimisation process}
 \description{
@@ -13,7 +13,7 @@
 }
 \usage{
 returnMessage(x, ...)
-\method{returnMessage}{maximisation}(x, ...)
+\method{returnMessage}{maxim}(x, ...)
 \method{returnMessage}{maxLik}(x, ...)
 }
 %- maybe also 'usage' for other objects documented here.

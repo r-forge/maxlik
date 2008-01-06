@@ -44,7 +44,7 @@ maxBHHH(fn, grad = NULL, hess=NULL, start, print.level = 0, iterlim = 100,
     \%*\% gradient}.
 }
 \value{
-  Object of class "maximisation":
+  Object of class "maxim":
   \item{type}{Character string: "BHHH maximisation"}
   Plus the other components inherited from \code{\link{maxNR}}.
 }

@@ -1,7 +1,7 @@
 \name{maxLik-internal}
-\alias{print.summary.maximisation}
+\alias{print.summary.maxim}
 \alias{print.summary.maxLik}
-\alias{returnCode.maximisation}
+\alias{returnCode.maxim}
 \alias{returnCode.maxLik}
 % Document the following:
 

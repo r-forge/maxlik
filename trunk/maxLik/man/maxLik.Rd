@@ -32,8 +32,8 @@ maxLik(logLik, grad = NULL, hess = NULL, start, method = "Newton-Raphson", ...)
   \item{\dots}{further arguments for the maximisation routine.}
 }
 \value{
-  object of class 'maxLik' which inherits from class 'maximisation'.
-  Components are identical to those of class 'maximisation',
+  object of class 'maxLik' which inherits from class 'maxim'.
+  Components are identical to those of class 'maxim',
   see \code{\link{maxNR}}.
 }
 \author{Ott Toomet \email{otoomet@ut.ee}}

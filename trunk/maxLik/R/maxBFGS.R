@@ -50,7 +50,7 @@ maxBFGS <- function(fn, grad=NULL, hess=NULL,
                    last.step=NULL,
                    iterations=a$counts,
                    type=type)
-   class(result) <- "maximisation"
+   class(result) <- "maxim"
    invisible(result)
 }
 

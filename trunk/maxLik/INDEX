@@ -5,7 +5,7 @@ hessian                 Hessian matrix
 loglikValue             Return the log likelihood value
 maxBFGS                 BFGS, SANN and Nelder-Mead Maximization
 maxBHHH                 BHHH Maximization
-maximisationType        Type of Minimization/Maximization
+maximType               Type of Minimization/Maximization
 maxLik                  Maximum likelihood estimation
 maxNR                   Newton-Raphson Maximization
 nObs                    Return number of observations for statistical
@@ -14,6 +14,6 @@ nParam                  Number of model parameters
 numericGradient         Functions to Calculate Numeric Derivatives
 returnCode              Return code for optimisation and other objects
 returnMessage           Information about the optimisation process
-summary.maximisation    Summary method for maximisation/minimisation
+summary.maxim           Summary method for maximisation/minimisation
 summary.maxLik          summary the Maximum-Likelihood estimation
 vcov.maxLik             Variance Covariance Matrix of maxLik objects

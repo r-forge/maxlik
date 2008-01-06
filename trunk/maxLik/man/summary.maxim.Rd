@@ -1,22 +1,22 @@
-\name{summary.maximisation}
-\alias{summary.maximisation}
+\name{summary.maxim}
+\alias{summary.maxim}
 \title{Summary method for maximisation/minimisation}
 \description{
   Summarises the maximisation results
 }
 \usage{
-\method{summary}{maximisation}( object, hessian=FALSE, unsucc.step=FALSE, ... )
+\method{summary}{maxim}( object, hessian=FALSE, unsucc.step=FALSE, ... )
 }
 \arguments{
   \item{object}{optimisation result, object of class
-    \code{maximisation}.  See \code{\link{maxNR}}.}
+    \code{maxim}.  See \code{\link{maxNR}}.}
   \item{hessian}{logical, whether to display Hessian matrix.}
   \item{unsucc.step}{logical, whether to describe last unsuccesful step
     if \code{code} == 3}
   \item{\ldots}{currently not used.}
 }
 \value{
-  Object of class \code{summary.maximisation}, intended to print with
+  Object of class \code{summary.maxim}, intended to print with
   corresponding print method.  There are following components:
   \item{type}{type of maximisation.}
   \item{iterations}{number of iterations.}

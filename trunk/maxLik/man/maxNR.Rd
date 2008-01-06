@@ -84,7 +84,7 @@ latter parameters are not set to constants.  If the attribute
 the previous one.
 }
 \value{
-  list of class "maximisation" with following components:
+  list of class "maxim" with following components:
   \item{maximum}{\code{fn} value at maximum (the last calculated value
     if not converged).}
   \item{estimate}{estimated parameter value.}

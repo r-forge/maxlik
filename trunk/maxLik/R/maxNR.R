@@ -33,7 +33,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
    ##               constants
    ##
    ## RESULTS:
-   ## a list of class "maximisation":
+   ## a list of class "maxim":
    ## maximum     function value at maximum
    ## estimate    the parameter value at maximum
    ## gradient        gradient
@@ -54,7 +54,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
    ## activePar   logical vector, which parameters were treated as free (resp fixed)
    ## iterations  number of iterations
    ## type        "Newton-Raphson maximisation"
-   maximisation.message <- function(code) {
+   maxim.message <- function(code) {
       message <- switch(code,
          "1" = "gradient close to zero. May be a solution",
          "2" = paste("successive function values within tolerance",
@@ -105,7 +105,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
       return(numericHessian(fn, gradient, theta, ...))
    }
    ## -------------------------------------------------
-   maximisation.type <- "Newton-Raphson maximisation"
+   maxim.type <- "Newton-Raphson maximisation"
    nimed <- names(start)
    nParam <- length(start)
    samm <- NULL
@@ -119,10 +119,10 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
       cat("Initial function value:", f1, "\n")
    }
    if(is.na( f1) | is.infinite(f1)) {
-      result <- list(code=100, message=maximisation.message("100"),
+      result <- list(code=100, message=maxim.message("100"),
                      iterations=0,
-                     type=maximisation.type)
-      class(result) <- "maximisation"
+                     type=maxim.type)
+      class(result) <- "maxim"
       return(result)
    }
    G1 <- gradient(start, ...)
@@ -270,7 +270,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
    }
    if( print.level > 0) {
       cat( "--------------\n")
-      cat( maximisation.message( code), "\n")
+      cat( maxim.message( code), "\n")
       cat( iter, " iterations\n")
       cat( "estimate:", start1, "\n")
       cat( "Function value:", f1, "\n")
@@ -282,16 +282,16 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
                   gradient=G1,
                  hessian=H1,
                   code=code,
-                  message=maximisation.message( code),
+                  message=maxim.message( code),
                   last.step=samm,
                                         # only when could not find a
                                         # lower point
                   activePar=activePar,
                   iterations=iter,
-                  type=maximisation.type)
-   class(result) <- c("maximisation", class(result))
+                  type=maxim.type)
+   class(result) <- c("maxim", class(result))
    invisible(result)
 }
 
-returnCode.maximisation <- function(x, ...)
+returnCode.maxim <- function(x, ...)
     x$code

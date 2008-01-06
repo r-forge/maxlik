@@ -17,7 +17,7 @@ maxLik <- function(logLik, grad=NULL, hess=NULL, start,
    ## ...        additional arguments for the maximisation routine
    ##
    ## RESULTS:
-   ## list of class c("maxLik", "maximisation").  This is in fact equal to class "maximisation", just the
+   ## list of class c("maxLik", "maxim").  This is in fact equal to class "maxim", just the
    ## methods are different.
    ## maximum     function value at maximum
    ## estimate    the parameter value at maximum

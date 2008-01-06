@@ -54,7 +54,7 @@ maxNM(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
   \item{\dots}{further arguments for \code{fn} and \code{grad}.}
 }
 \value{
-  Object of class "maximisation":
+  Object of class "maxim":
   \item{maximum}{value of \code{fn} at maximum.}
   \item{estimate}{best set of parameters found.}
   \item{gradient}{gradient at parameter value \code{estimate}.}

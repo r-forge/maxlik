@@ -1,4 +1,4 @@
-print.summary.maximisation <- function( x, ... ) {
+print.summary.maxim <- function( x, ... ) {
    summary <- x
    cat("--------------------------------------------\n")
    cat(summary$type, "\n")
@@ -22,9 +22,9 @@ print.summary.maximisation <- function( x, ... ) {
    cat("--------------------------------------------\n")
 }
 
-summary.maximisation <- function(object, hessian=FALSE, unsucc.step=FALSE,
+summary.maxim <- function(object, hessian=FALSE, unsucc.step=FALSE,
    ... ) {
-   ## The object of class "maximisation" should include following components:
+   ## The object of class "maxim" should include following components:
    ## maximum    : function value at optimum
    ## estimate   : matrix, estimated parameter values and gradient at optimum
    ## hessian    :           hessian
@@ -64,6 +64,6 @@ summary.maximisation <- function(object, hessian=FALSE, unsucc.step=FALSE,
                    maximum=object$value,
                   estimate=estimate,
                    hessian=H)
-   class(summary) <- "summary.maximisation"
+   class(summary) <- "summary.maxim"
    summary
 }
