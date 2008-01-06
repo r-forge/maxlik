@@ -7,3 +7,7 @@ nParam.default <- function(x, ...)
 
 nParam.lm <- function(x, ...)
     length(coefficients(x))
+
+nParam.maxim <- function(x, ...)
+    length( x$estimate )
+

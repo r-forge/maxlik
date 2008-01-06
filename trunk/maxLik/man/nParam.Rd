@@ -2,6 +2,7 @@
 \alias{nParam}
 \alias{nParam.default}
 \alias{nParam.lm}
+\alias{nParam.maxim}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Number of model parameters}
 \description{
@@ -12,6 +13,7 @@
 nParam(x, ...)
 \method{nParam}{default}(x, \dots)
 \method{nParam}{lm}(x, \dots)
+\method{nParam}{maxim}(x, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
 \details{
