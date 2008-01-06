@@ -34,11 +34,11 @@ returnMessage(x, ...)
 ## maximise the exponential bell
 f1 <- function(x) exp(-x^2)
 a <- maxNR(f1, start=2)
-returnCode(a) # should be success (1 or 2)
+returnMessage(a) # should be success (1 or 2)
 ## Now try to maximise log() function
 f2 <- function(x) log(x)
 a <- maxNR(f2, start=2)
-returnCode(a) # should give a failure (4)
+returnMessage(a) # should give a failure (4)
 }
 \keyword{methods}
 \keyword{utilities}
