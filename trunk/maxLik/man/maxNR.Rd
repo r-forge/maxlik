@@ -133,5 +133,20 @@ summary(a)
 ## Estimate with analytic gradient and Hessian
 a <- maxNR(loglik, gradlik, hesslik, start=1)
 summary(a)
+##
+## Next, we give an example with vector argument:  Estimate the mean and
+## variance of a random normal sample by maximum likelihood
+## Note: you might want to use maxLik instead
+##
+loglik <- function(param) {
+  mu <- param[1]
+  sigma <- param[2]
+  ll <- -0.5*N*log(2*pi) - N*log(sigma) - sum(0.5*(x - mu)^2/sigma^2)
+  ll
+}
+x <- rnorm(1000, 1, 2) # use mean=1, stdd=2
+N <- length(x)
+res <- maxNR(loglik, start=c(0,1)) # use 'wrong' start values
+summary(res)
 }
 \keyword{optimize}
