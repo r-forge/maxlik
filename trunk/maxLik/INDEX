@@ -8,6 +8,8 @@ maxBHHH                 BHHH Maximization
 maximType               Type of Minimization/Maximization
 maxLik                  Maximum likelihood estimation
 maxNR                   Newton-Raphson Maximization
+nIter                   Return number of iterations for iterative
+                        models
 nObs                    Return number of observations for statistical
                         models
 nParam                  Number of model parameters
