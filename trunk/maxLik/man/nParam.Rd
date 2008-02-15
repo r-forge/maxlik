@@ -10,20 +10,24 @@
   method returns the component \code{x$param$nParam}.
 }
 \usage{
-nParam(x, ...)
+nParam(x, free=FALSE, \dots)
 \method{nParam}{default}(x, \dots)
 \method{nParam}{lm}(x, \dots)
-\method{nParam}{maxim}(x, \dots)
+\method{nParam}{maxim}(x, free=FALSE, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
-\details{
-  Not all parameters need to be free nor independent.  The number may
-  depend on the
-  normalisation. 
-}
 \arguments{
   \item{x}{a statistical model}
+  \item{free}{logical, whether to report only the free parameters or the
+    total number of parameters (default)}
   \item{\dots}{other arguments for methods}
+}
+\details{
+  Free parameters are the parameters with no equality
+  restrictions.  Some parameters may be restricted (e.g. sum of two
+  probabilities may be restricted to equal unity).   In this case the
+  total number of parameters may depend on the
+  normalisation. 
 }
 \value{
   Number of parameters in the model

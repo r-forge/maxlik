@@ -1,5 +1,5 @@
 ## Return the #of parameters of model
-nParam <- function(x, ...)
+nParam <- function(x, free=FALSE, ...)
     UseMethod("nParam")
 
 nParam.default <- function(x, ...)
@@ -8,6 +8,9 @@ nParam.default <- function(x, ...)
 nParam.lm <- function(x, ...)
     length(coefficients(x))
 
-nParam.maxim <- function(x, ...)
-    length( x$estimate )
-
+nParam.maxim <- function(x, free=FALSE, ...) {
+   if(free)
+       sum(x$activePar)
+   else
+       length( x$estimate )
+}
