@@ -3,7 +3,6 @@
 \alias{nParam.default}
 \alias{nParam.lm}
 \alias{nParam.maxim}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Number of model parameters}
 \description{
   This function returns the number of model parameters.  The default
@@ -15,7 +14,7 @@ nParam(x, free=FALSE, \dots)
 \method{nParam}{lm}(x, \dots)
 \method{nParam}{maxim}(x, free=FALSE, \dots)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{x}{a statistical model}
   \item{free}{logical, whether to report only the free parameters or the

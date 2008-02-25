@@ -1,6 +1,5 @@
 \name{maxNR}
 \alias{maxNR}
-%- Also NEED an `\alias' for EACH other topic documented here.
 \title{Newton-Raphson Maximization}
 \description{
   Unconstrained maximization based on Newton-Raphson method.

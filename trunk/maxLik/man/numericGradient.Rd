@@ -14,7 +14,7 @@ numericHessian(f, grad=NULL, t0, eps=1e-06, \dots)
 numericNHessian(f, t0, eps=1e-6, \dots)
 
 }
-%- maybe also `usage' for other objects documented here.
+
 \arguments{
   \item{f}{function to be differentiated.  The first argument must be
     the parameter vector with respect to which it is differentiated.}

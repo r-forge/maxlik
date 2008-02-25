@@ -16,7 +16,7 @@ returnMessage(x, ...)
 \method{returnMessage}{maxim}(x, ...)
 \method{returnMessage}{maxLik}(x, ...)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{x}{object, should orginate from an optimisation problem}
   \item{...}{further arguments to other methods}.

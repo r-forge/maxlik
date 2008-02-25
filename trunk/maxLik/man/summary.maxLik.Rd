@@ -8,7 +8,7 @@
 \usage{
 \method{summary}{maxLik}(object, ... )
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{object}{object of class 'maxLik', most probably a result from
     Maximum-Likelihood estimation.}

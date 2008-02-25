@@ -1,7 +1,6 @@
 \name{hessian}
 \alias{hessian}
 \alias{hessian.default}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Hessian matrix}
 \description{
   This function extracts the Hessian of the M-estimator of 

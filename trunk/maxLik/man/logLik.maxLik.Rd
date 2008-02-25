@@ -10,7 +10,7 @@
 \method{logLik}{maxLik}( object, \dots )
 \method{logLik}{summary.maxLik}( object, \dots )
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{object}{object of class \code{maxLik} or \code{summary.maxLik},
       usually a model estimated with Maximum Likelihood}
