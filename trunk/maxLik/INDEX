@@ -1,4 +1,5 @@
 activePar               free parameters under maximisation
+AIC.maxLik              Methods for the various standard functions
 compareDerivatives      function to compare analytic and numeric
                         derivatives
 hessian                 Hessian matrix
