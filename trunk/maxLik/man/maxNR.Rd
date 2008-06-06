@@ -8,7 +8,7 @@
 maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
       tol = 1e-08, reltol=sqrt(.Machine$double.eps), gradtol = 1e-06,
       steptol = 1e-10, lambdatol = 1e-06, qrtol = 1e-10,
-      iterlim = 15,
+      iterlim = 150,
       constPar = NULL, activePar=rep(TRUE, nParam), ...)
 }
 \arguments{

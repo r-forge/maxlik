@@ -1,10 +1,9 @@
-
-maxNR <- function(fn, grad=NULL, hess=NULL, start,
-                  print.level=0,
-                  tol=1e-8, reltol=sqrt(.Machine$double.eps), gradtol=1e-6, steptol=1e-10,
+maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
+                  tol=1e-8, reltol=sqrt(.Machine$double.eps),
+                  gradtol=1e-6, steptol=1e-10,
                   lambdatol=1e-6,
                   qrtol=1e-10,
-                  iterlim=15,
+                  iterlim=150,
                   constPar=NULL,
                   activePar=rep(TRUE, nParam),
                   ...) {
@@ -137,7 +136,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start,
       stop( "length of gradient (", length(G1),
          ") not equal to the no. of parameters (", nParam, ")" )
    }
-   H1 <- hessian(start)
+   H1 <- hessian(start, ...)
    if(any(is.na(H1))) {
       stop("NA in the initial Hessian")
    }
