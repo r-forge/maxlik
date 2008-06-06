@@ -45,10 +45,9 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ##             100 - initial value out of range
    ## message     character message describing the code
    ## last.step   only present if code == 3 (step error).  A list with following components:
-   ##             teeta0 - parameetrid, millel viga tuli
-   ##             f0 - funktsiooni väärtus nende parameetritega (koos
-   ##                  gradiendi ja hessi maatriksiga)
-   ##             teeta1 - ruutpolünoomi järgi õige uus parameetri väärtus
+   ##             theta0    - parameter value which led to the error
+   ##             f0        - function value at these parameter values
+   ##             climb     - the difference between theta0 and the new approximated parameter value (theta1)
    ##             activePar - logical vector, which parameters are active (not constant)
    ## activePar   logical vector, which parameters were treated as free (resp fixed)
    ## iterations  number of iterations
