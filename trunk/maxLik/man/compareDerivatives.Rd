@@ -47,12 +47,11 @@ compareDerivatives(f, grad, hess=NULL, t0, eps=1e-6, print=TRUE, ...)
   For every component of \code{f}, the parameter value, analytic and
   numeric derivative and their relative difference
 
-  rel.diff = (analytic - numeric)/(max(eps)+0.5*(analytic+numeric))
+  rel.diff = (analytic - numeric)/(0.5*(analytic+numeric))
   
-  are printed.  If analytic derivatives are correct and the function is
-  sufficiently smooth, expect the relative differences to be less than
-  1e-7.  (This demoninator ensures that the denominator will not be 0,
-  even if \code{analytic} and \code{numeric} are.)  
+  are printed;  if analytic = 0 = numeric, we define rel.diff = 0.  If
+  analytic derivatives are correct and the function is sufficiently
+  smooth, expect the relative differences to be less than 1e-7.   
 }
 \value{
   A list with the following components:

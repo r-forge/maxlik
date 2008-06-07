@@ -29,7 +29,8 @@ compareDerivatives <- function(f, grad, hess=NULL, t0, eps=1e-6,
   if(print)cat("       numeric          :", dim(numeric), "\n")
 #  rDiff <- (analytic - numeric)/analytic
   rDiff <- ((analytic - numeric) /
-            (max(eps)+0.5*(abs(analytic) + abs(numeric))) )
+            (0.5*(abs(analytic) + abs(numeric))) )
+  rDiff[(analytic==0) & (numeric==0)] <- 0 
   rDiff. <- max(abs(rDiff), na.rm=TRUE)
   out$compareGrad$rel.diff <- rDiff 
   out$maxRelDiffGrad <- rDiff.
@@ -48,7 +49,7 @@ compareDerivatives <- function(f, grad, hess=NULL, t0, eps=1e-6,
       print(analytic)
       cat("numeric gradient\n")
       print(numeric)      
-      cat(paste("(anal-num)/(", max(eps), "+0.5*(abs(anal)+abs(num)))\n"))
+      cat(paste("(anal-num)/(0.5*(abs(anal)+abs(num)))\n"))
       print(rDiff)
       a=list(t0=t0, analytic=analytic,
         numeric=numeric, rel.diff=rDiff) 
@@ -64,7 +65,8 @@ compareDerivatives <- function(f, grad, hess=NULL, t0, eps=1e-6,
     anHess <- hess(t0, ...)
     numHess <- numericGradient(grad, t0, eps, ...)
     rDifHess <- ((anHess-numHess) /
-                 (max(eps)+0.5*(abs(anHess)+abs(numHess))) )
+                 (0.5*(abs(anHess)+abs(numHess))) )
+    rDifHess[(anHess==0) & (numHess==0)] <- 0 
     rDifHess. <- max(abs(rDifHess), na.rm=TRUE)       
     if(print)print(rDifHess.)
     out$compareHessian <- list(analytic = anHess,
