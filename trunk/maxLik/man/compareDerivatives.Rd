@@ -78,7 +78,7 @@ compareDerivatives(f, grad, hess=NULL, t0, eps=1e-6, print=TRUE, ...)
 \author{Ott Toomet \email{otoomet@ut.ee} and Spencer Graves}
 \seealso{
   \code{\link{numericGradient}}
-
+  \code{\link{deriv}} 
 }
 
 \examples{
