@@ -54,14 +54,17 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ## type        "Newton-Raphson maximisation"
    maxim.message <- function(code) {
       message <- switch(code,
-         "1" = "gradient close to zero. May be a solution",
-         "2" = paste("successive function values within tolerance",
-                     "limit.\nMay be a solution"),
-         "3" = paste("Last step could not find a value above the",
-                     "current.\nConsider switching to a more robust optimisation method temporarily."),
-         "4" = "Iteration limit exceeded.",
-         "100" = "Initial value out of range.",
-         paste("Code", code))
+                        "1" = "gradient close to zero. May be a solution",
+                        "2" = paste("successive function values within tolerance",
+                        "limit.\nMay be a solution"),
+                        "3" = paste("Last step could not find a value above the",
+                        "current.\nConsider switching to a more robust optimisation method temporarily."),
+                        "4" = "Iteration limit exceeded.",
+                        "5" = "Infinite value",                        
+                        "6" = "Infinite gradient",                        
+                        "7" = "Infinite Hessian",                        
+                        "100" = "Initial value out of range.",
+                        paste("Code", code))
       return(message)
    }
    max.eigen <- function( M) {
@@ -131,6 +134,9 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    if(any(is.na(G1))) {
       stop("Na in the initial gradient")
    }
+   if(any(is.infinite(G1))) {
+      stop("Infinite initial gradient")
+   }
    if(length(G1) != nParam) {
       stop( "length of gradient (", length(G1),
          ") not equal to the no. of parameters (", nParam, ")" )
@@ -138,6 +144,9 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    H1 <- hessian(start, ...)
    if(any(is.na(H1))) {
       stop("NA in the initial Hessian")
+   }
+   if(any(is.infinite(H1))) {
+      stop("Infinite initial Hessian")
    }
    if( print.level > 1) {
       cat( "----- Initial parameters: -----\n")
@@ -195,6 +204,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
          }
       }
       if(is.null(newVal <- attr(f1, "newVal"))) {
+                                        # 'newVal' == NULL: none of the parameters are overwritten by the function
          while( is.na( f1) || ( ( f1 < f0) && ( step >= steptol))) {
                                         # We end up in a NA or a higher value.
                                         # try smaller step
@@ -224,6 +234,8 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
             samm <- list(theta0=start0, f0=f0, climb=amount)
          }
       } else {
+                                        # The function suggests the new parameter values.  These are overwritten.
+                                        # This may result in lower function value, hence we do not check f1 > f0
          start1[newVal$index] <- newVal$val
       }
       G1 <- gradient(start1, ...)
@@ -233,9 +245,15 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
          print(start1)
          stop("NA in gradient")
       }
+      if(any(is.infinite(G1))) {
+         code <- 6; break;
+      }
       H1 <- hessian(start1, ...)
       if( print.level > 1) {
         cat( "-----Iteration", iter, "-----\n")
+      }
+      if(any(is.infinite(H1))) {
+         code <- 7; break
       }
       if(print.level > 2) {
          cat( "lambda ", lambda, " step", step, " fcn value:",
@@ -265,6 +283,9 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
       if(is.null(newVal) & f1 - f0 < reltol*(f1 + reltol)) {
          code <- 2; break
       }
+      if(is.infinite(f1) & f1 > 0) {
+         code <- 5; break
+      }
    }
    if( print.level > 0) {
       cat( "--------------\n")
@@ -275,7 +296,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    }
    names(start1) <- nimed
    result <-list(
-                  maximum=as.vector( f1),
+                  maximum = drop( f1),
                   estimate=start1,
                   gradient=G1,
                  hessian=H1,

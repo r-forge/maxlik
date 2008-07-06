@@ -98,6 +98,9 @@ the previous one.
     \item{3}{last step could not find higher value (probably not
       converged).}
     \item{4}{iteration limit exceeded.}
+    \item{5}{Infinite value.}
+    \item{6}{Infinite gradient.}
+    \item{7}{Infinite Hessian.}
     \item{100}{Initial value out of range.}
   }
   \item{message}{a short message, describing \code{code}.}

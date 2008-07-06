@@ -16,7 +16,7 @@ print.summary.maxLik <- function( x, ... ) {
    cat("--------------------------------------------\n")
 }
 
-summary.maxLik <- function( object, ... ) {
+summary.maxLik <- function( object, eigentol=1e-9,... ) {
    ## object      object of class "maxLik"
    ## 
    ## RESULTS:
@@ -38,7 +38,7 @@ summary.maxLik <- function( object, ... ) {
    }
    if(object$code < 100) {
       if(min(abs(eigen(hessian(object)[activePar,activePar],
-                       symmetric=TRUE, only.values=TRUE)$values)) > 1e-6) {
+                       symmetric=TRUE, only.values=TRUE)$values)) > eigentol) {
          varcovar <- matrix(0, nParam, nParam)
          varcovar[activePar,activePar] <-
              solve(-hessian(object)[activePar,activePar])
