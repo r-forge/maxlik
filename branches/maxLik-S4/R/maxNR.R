@@ -109,19 +109,19 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    maxim.type <- "Newton-Raphson maximisation"
    nimed <- names(start)
    nParam <- length(start)
-   samm <- NULL
+   samm <- new("lastStep")
                                         # information about unsuccesful step (if any)
    I <- diag(rep(1, nParam))     # I is unit matrix
    activePar[constPar] <- FALSE
    start1 <- start
-   iter <- 0
+   iter <- as.integer(0)
    f1 <- func(start1, ...)
    if(print.level > 2) {
       cat("Initial function value:", f1, "\n")
    }
    if(is.na( f1) | is.infinite(f1)) {
-      result <- list(code=100, message=maxim.message("100"),
-                     iterations=0,
+      result <- list(code=as.integer(100), message=maxim.message("100"),
+                     iterations= as.integer(0),
                      type=maxim.type)
       class(result) <- "maxim"
       return(result)
@@ -162,7 +162,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
       }
    }
    repeat {
-      iter <- iter + 1
+      iter <- iter + as.integer(1)
       lambda <- 0
       start0 <- start1
       f0 <- f1
@@ -231,7 +231,7 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
             # we did not find a better place to go...
             start1 <- start0
             f1 <- f0
-            samm <- list(theta0=start0, f0=f0, climb=amount)
+            samm <- lastStep(theta0=start0, f0=f0, climb=amount)
          }
       } else {
                                         # The function suggests the new parameter values.  These are overwritten.
@@ -246,14 +246,14 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
          stop("NA in gradient")
       }
       if(any(is.infinite(G1))) {
-         code <- 6; break;
+         code <- as.integer(6); break;
       }
       H1 <- hessian(start1, ...)
       if( print.level > 1) {
         cat( "-----Iteration", iter, "-----\n")
       }
       if(any(is.infinite(H1))) {
-         code <- 7; break
+         code <- as.iteger(7); break
       }
       if(print.level > 2) {
          cat( "lambda ", lambda, " step", step, " fcn value:",
@@ -269,22 +269,22 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
          }
       }
       if( step < steptol) {
-         code <- 3; break
+         code <- as.integer(3); break
       }
       if( iter > iterlim) {
-         code <- 4; break
+         code <- as.integer(4); break
       }
       if( sqrt( t(G1[activePar])%*%G1[activePar]) < gradtol) {
-         code <-1; break
+         code <- as.integer(1); break
       }
       if(is.null(newVal) & f1 - f0 < tol) {
-         code <- 2; break
+         code <- as.integer(2); break
       }
       if(is.null(newVal) & f1 - f0 < reltol*(f1 + reltol)) {
-         code <- 2; break
+         code <- as.integer(2); break
       }
       if(is.infinite(f1) & f1 > 0) {
-         code <- 5; break
+         code <- as.integer(5); break
       }
    }
    if( print.level > 0) {
@@ -295,20 +295,19 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
       cat( "Function value:", f1, "\n")
    }
    names(start1) <- nimed
-   result <-list(
+   result <-maxim(
                   maximum = drop( f1),
                   estimate=start1,
                   gradient=G1,
-                 hessian=H1,
+                  hessian=H1,
                   code=code,
                   message=maxim.message( code),
-                  last.step=samm,
+                  lastStep=samm,
                                         # only when could not find a
                                         # lower point
                   activePar=activePar,
                   iterations=iter,
                   type=maxim.type)
-   class(result) <- c("maxim", class(result))
    invisible(result)
 }
 
