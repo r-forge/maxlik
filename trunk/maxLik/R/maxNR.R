@@ -181,7 +181,8 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
          (qRank <- qr(H[activePar,activePar], tol=qrtol)$rank) < sum(activePar)) {
                                         # maximum eigenvalue -> negative definite
                                         # qr()$rank -> singularity
-         H <- H - (abs(me) + lambdatol)*I
+         lambda <- abs(me) + lambdatol
+         H <- H - lambda*I
                                         # how to make it better?
       }
       amount <- vector("numeric", nParam)
