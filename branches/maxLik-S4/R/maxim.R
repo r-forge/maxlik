@@ -1,8 +1,4 @@
 library(methods)
-setClass("lastStep",
-         representation(theta0 = "numeric",
-                        f0 = "numeric",
-                        climb = "numeric"))
 
 setClass("maxim",
          representation(maximum = "numeric",
@@ -14,7 +10,9 @@ setClass("maxim",
                         iterations = "integer",
                         lastStep = "lastStep",
                         activePar = "logical",
-                        type = "character"))
+                        type = "character"
+                                        # a brief description of the maximization routine
+                        ))
 
 maxim <- function(maximum, estimate, gradient, hessian=NULL,
                   code, message, iterations,
@@ -29,9 +27,33 @@ maxim <- function(maximum, estimate, gradient, hessian=NULL,
        type=type) 
 }
 
-lastStep <- function(theta0, f0, climb) {
-   new("lastStep", theta0, f0, climb)
+print.maxim <- function(x, hessian=FALSE) {
+   cat("--------------------------------------------\n")
+   cat(maximType(x), "\n")
+   cat("Number of iterations:", nIter(x), "\n")
+   cat("Return code:", returnCode(x), "\n")
+   cat(returnMessage(x), "\n")
+   if(length(x@lastStep@f0) != 0) {
+      show(x@lastStep)
+   }
+   if(!is.null(x@estimate)) {
+      cat("Function value:", x@maximum, "\n")
+      out <- cbind(Estimate=x@estimate, Gradient=x@gradient, Active=activePar(x))
+      print(out)
+      if(hessian) {
+         cat("Hessian:\n")
+         print(x@hessian)
+      }
+   }
+   cat("--------------------------------------------\n")
 }
+setMethod("print", "maxim", print.maxim)
+setMethod("show", "maxim", function(x) print.maxim(x))
+
+### (redundant) summary method for maxim.  Nothing to summarize, just print it
+summary.maxim <- function(object) object
+setMethod("summary", "maxim", summary.maxim)
+rm(summary.maxim)
 
 validMaxim <- function(object) {
    parLength <- length(object@estimate)
@@ -47,14 +69,3 @@ validMaxim <- function(object) {
 }
 setValidity("maxim", validMaxim)
 rm(validMaxim)
-
-validLastStep <- function(object) {
-   if(length(object@climb) != length(object@theta0))
-       return(paste("'climb' and 'theta0' must be of equal length (currently ",
-                    length(object@climb), " and ", length(object@theta0), ")"))
-   if(length(object@f0) != 1)
-       return(paste("'f0' must be scalar function value (currently ", lengh(object@f0), ")"))
-   return(TRUE)
-}
-setValidity("lastStep", validLastStep)
-rm(validLastStep)

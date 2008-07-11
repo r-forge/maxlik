@@ -30,6 +30,6 @@ maxBHHH <- function(fn, grad=NULL, hess=NULL,
    }
    a <- maxNR(fn, grad=gradient, hess=hess, start=start, iterlim=iterlim,
               print.level=print.level, ...)
-   a$type = "BHHH maximisation"
-   invisible(a)
+   a@type = "BHHH maximisation"
+   a
 }

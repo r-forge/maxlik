@@ -1,7 +1,28 @@
+## maxLik class.  Simply a wrapper class for 'maxim'.
+setClass("maxLik",
+         representation("maxim"))
+
+maxLik.maxim <- function(x) {
+   new("maxLik",
+       maximum= x@maximum,
+       estimate= x@estimate,
+       gradient= x@gradient,
+       hessian= x@hessian,
+       code= x@code,
+       message= x@message,
+       iterations= x@iterations,
+       lastStep= x@lastStep,
+       activePar= x@activePar,
+       type= x@type)
+}
+setMethod("maxLik", "maxim", maxLik.maxim)
+rm(maxLik.maxim)
+
 maxLik <- function(logLik, grad=NULL, hess=NULL, start,
                    method="Newton-Raphson",
                    ...) {
-   ## Maximum Likelihood estimation.
+   ## Maximum Likelihood estimation.  A wrapper for different maximization rountines,
+   ##   adds class 'maxLik' to the estimates
    ##
    ## Newton-Raphson maximisation
    ## Parameters:
@@ -56,6 +77,6 @@ maxLik <- function(logLik, grad=NULL, hess=NULL, start,
                         stop( "Maxlik: unknown maximisation method ", method )
                         )
    result <- maxRoutine(fn=logLik, grad=grad, hess=hess, start=start, ...)
-   class(result) <- c("maxLik", class(result))
+   result <- maxLik(result)
    result
 }

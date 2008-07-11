@@ -1,12 +1,5 @@
 
-returnMessage <- function(x, ...)
-    UseMethod("returnMessage")
-
-returnMessage.default <- function(x, ...)
-    x$returnMessage
-
 returnMessage.maxim <- function(x, ...)
-    x$message
-
-returnMessage.maxLik <- function(x, ...)
-    returnMessage(x$maxLik, ...)
+    x@message
+setMethod("returnMessage", "maxim", returnMessage.maxim)
+rm(returnMessage.maxim)

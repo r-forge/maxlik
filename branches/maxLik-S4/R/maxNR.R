@@ -164,6 +164,8 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    repeat {
       iter <- iter + as.integer(1)
       lambda <- 0
+                                        # If the function is not concave, we add lambda*I to the hessian
+                                        # while calculating the approximate maximum
       start0 <- start1
       f0 <- f1
       G0 <- G1
@@ -181,7 +183,8 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
          (qRank <- qr(H[activePar,activePar], tol=qrtol)$rank) < sum(activePar)) {
                                         # maximum eigenvalue -> negative definite
                                         # qr()$rank -> singularity
-         H <- H - (abs(me) + lambdatol)*I
+         lambda <- abs(me) + lambdatol
+         H <- H - lambda*I
                                         # how to make it better?
       }
       amount <- vector("numeric", nParam)
@@ -310,6 +313,3 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
                   type=maxim.type)
    invisible(result)
 }
-
-returnCode.maxim <- function(x, ...)
-    x$code

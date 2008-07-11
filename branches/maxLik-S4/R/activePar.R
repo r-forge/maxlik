@@ -1,7 +1,6 @@
 ## activePar: returns parameters which are free under maximisation (not fixed as constants)
 
-activePar <- function(x, ...)
-    UseMethod("activePar")
-
-activePar.default <- function(x, ...)
-    x$activePar
+activePar.maxim <- function(x)
+    x@activePar
+setMethod("activePar", "maxim", activePar.maxim)
+rm(activePar.maxim)

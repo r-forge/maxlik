@@ -40,17 +40,17 @@ maxBFGS <- function(fn, grad=NULL, hess=NULL,
                     maxit=iterlim)
    a <- optim(start, func, gr=gradient, control=control, method="BFGS",
       hessian=TRUE, ...)
-   result <- list(
+
+
+   result <- maxim(
                    maximum=a$value,
                    estimate=a$par,
                    gradient=gradient(a$par),
                    hessian=a$hessian,
                    code=a$convergence,
                    message=paste(message(a$convergence), a$message),
-                   last.step=NULL,
+                   lastStep=new("lastStep"),
                    iterations=a$counts,
                    type=type)
-   class(result) <- "maxim"
    invisible(result)
 }
-

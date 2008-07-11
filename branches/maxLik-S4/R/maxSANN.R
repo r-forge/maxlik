@@ -56,17 +56,16 @@ maxSANN <- function(fn, grad=NULL, hess=NULL,
                    temp=temp,
                    tmax=tmax)
    a <- optim(start, func, control=control, method="SANN", hessian=FALSE, ...)
-   result <- list(
+   result <- maxim(
                    maximum=a$value,
                    estimate=a$par,
                    gradient=gradient(a$par),
                    hessian=hessian(a$par),
                    code=a$convergence,
                    message=paste(message(a$convergence), a$message),
-                   last.step=NULL,
+                   lastStep= new("lastStep"),
                    iterations=a$counts[1],
                    type=type)
-   class(result) <- "maxim"
-   invisible(result)
+   result
 }
 

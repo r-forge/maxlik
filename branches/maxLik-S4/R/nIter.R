@@ -1,8 +1,6 @@
 ## Return #of iterations for maxim objects
 
-nIter <- function(x, ...)
-    ## Number of iterations for iterative models
-    UseMethod("nIter")
-
-nIter.default <- function(x, ...)
-    x$iterations
+nIter.maxim <- function(x)
+    x@iterations
+setMethod("nIter", "maxim", nIter.maxim)
+rm(nIter.maxim)
