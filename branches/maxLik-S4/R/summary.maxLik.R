@@ -47,11 +47,7 @@ summaryMaxLik <- function( object, eigentol=1e-9,... ) {
    nParam <- length(coef <- coef(object))
    activePar <- activePar(object)
    if(returnCode(object) < 100) {
-      if(min(abs(eigen(hessian(object)[activePar,activePar],
-                       symmetric=TRUE, only.values=TRUE)$values)) > eigentol) {
-         varcovar <- matrix(0, nParam, nParam)
-         varcovar[activePar,activePar] <-
-             solve(-hessian(object)[activePar,activePar])
+      if(!is.null(varcovar <- vcov(object))) {
          hdiag <- diag(varcovar)
          if(any(hdiag < 0)) {
             warning("Diagonal of variance-covariance matrix not positive!\n")
