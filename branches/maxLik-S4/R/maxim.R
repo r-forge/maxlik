@@ -1,18 +1,3 @@
-library(methods)
-
-setClass("maxim",
-         representation(maximum = "numeric",
-                        estimate = "numeric",
-                        gradient = "vector",
-                        hessian = "matrix",
-                        code = "integer",
-                        message = "character",
-                        iterations = "integer",
-                        lastStep = "lastStep",
-                        activePar = "logical",
-                        type = "character"
-                                        # a brief description of the maximization routine
-                        ))
 
 maxim <- function(maximum, estimate, gradient, hessian=NULL,
                   code, message, iterations,
@@ -48,7 +33,7 @@ print.maxim <- function(x, hessian=FALSE) {
    cat("--------------------------------------------\n")
 }
 setMethod("print", "maxim", print.maxim)
-setMethod("show", "maxim", function(x) print.maxim(x))
+setMethod("show", "maxim", function(object) print.maxim(object))
 
 ### (redundant) summary method for maxim.  Nothing to summarize, just print it
 summary.maxim <- function(object) object

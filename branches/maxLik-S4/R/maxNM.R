@@ -1,3 +1,5 @@
+### Nelder--Mead maximization
+
 maxNM <- function(fn, grad=NULL, hess=NULL,
                   start,
                   print.level=0,

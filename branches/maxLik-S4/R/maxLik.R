@@ -1,22 +1,19 @@
 ## maxLik class.  Simply a wrapper class for 'maxim'.
-setClass("maxLik",
-         representation("maxim"))
 
-maxLik.maxim <- function(x) {
-   new("maxLik",
-       maximum= x@maximum,
-       estimate= x@estimate,
-       gradient= x@gradient,
-       hessian= x@hessian,
-       code= x@code,
-       message= x@message,
-       iterations= x@iterations,
-       lastStep= x@lastStep,
-       activePar= x@activePar,
-       type= x@type)
-}
-setMethod("maxLik", "maxim", maxLik.maxim)
-rm(maxLik.maxim)
+setAs("maxim", "maxLik",
+      function(from)
+         new("maxLik",
+             maximum= from@maximum,
+             estimate= from@estimate,
+             gradient= from@gradient,
+             hessian= from@hessian,
+             code= from@code,
+             message= from@message,
+             iterations= from@iterations,
+             lastStep= from@lastStep,
+             activePar= from@activePar,
+             type= from@type)
+      )
 
 maxLik <- function(logLik, grad=NULL, hess=NULL, start,
                    method="Newton-Raphson",
@@ -77,6 +74,8 @@ maxLik <- function(logLik, grad=NULL, hess=NULL, start,
                         stop( "Maxlik: unknown maximisation method ", method )
                         )
    result <- maxRoutine(fn=logLik, grad=grad, hess=hess, start=start, ...)
-   result <- maxLik(result)
-   result
+   as(result, "maxLik")
 }
+
+setMethod("print", "maxLik", function(x, ...) print(summary(object), ...))
+setMethod("show", "maxLik", function(object) show(summary(object)))

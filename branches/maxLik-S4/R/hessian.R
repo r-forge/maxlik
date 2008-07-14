@@ -1,7 +1,6 @@
 ## Return Hessian of an object
 
-hessian <- function(x, ...)
-    UseMethod("hessian")
-
-hessian.default <- function(x, ...)
-    x$hessian
+hessian.maxim <- function(x)
+    x@hessian
+setMethod("hessian", "maxim", hessian.maxim)
+rm(hessian.maxim)

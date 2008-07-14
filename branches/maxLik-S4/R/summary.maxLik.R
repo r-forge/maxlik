@@ -1,22 +1,37 @@
 
-coef.maxLik <- function(object, ...)
-    object$estimate
-
-print.summary.maxLik <- function( x, ... ) {
+print.summary.maxLik <- function(x) {
    cat("--------------------------------------------\n")
    cat("Maximum Likelihood estimation\n")
-   cat(x$type, ", ", x$iterations, " iterations\n", sep="")
-   cat("Return code ", x$code, ": ", x$message, "\n", sep="")
-   if(!is.null(x$estimate)) {
-      cat("Log-Likelihood:", x$loglik, "\n")
-      cat(x$NActivePar, " free parameters\n")
+   cat(maximType(x), ", ", nIter(x), " iterations\n", sep="")
+   cat("Return code ", returnCode(x), ": ", returnMessage(x), "\n", sep="")
+   if(!is.null(coef(x))) {
+      cat("Log-Likelihood:", maxValue(x), "\n")
+      cat(x@NActivePar, " free parameters\n")
       cat("Estimates:\n")
-      printCoefmat(x$estimate)
+      printCoefmat(x@results)
    }
    cat("--------------------------------------------\n")
 }
+setMethod("show", "summary.maxLik", function(object) print.summary.maxLik(object))
+setMethod("print", "summary.maxLik", print.summary.maxLik)
 
-summary.maxLik <- function( object, eigentol=1e-9,... ) {
+summary.maxLik <- function(object, results, NActivePar) {
+         new("summary.maxLik",
+             maximum= object@maximum,
+             estimate= object@estimate,
+             gradient= object@gradient,
+             hessian= object@hessian,
+             code= object@code,
+             message= object@message,
+             iterations= object@iterations,
+             lastStep= object@lastStep,
+             activePar= object@activePar,
+             type= object@type,
+             results=results,
+             NActivePar=NActivePar)
+}       
+
+summaryMaxLik <- function( object, eigentol=1e-9,... ) {
    ## object      object of class "maxLik"
    ## 
    ## RESULTS:
@@ -29,14 +44,9 @@ summary.maxLik <- function( object, eigentol=1e-9,... ) {
    ## iterations : number of iterations
    ## type       : type of optimisation
    ##
-   result <- object$maxim
-   nParam <- length(coef <- coef.maxLik(object))
-   if(!is.null(object$activePar)) {
-      activePar <- object$activePar
-   } else {
-      activePar <- rep(TRUE, nParam)
-   }
-   if(object$code < 100) {
+   nParam <- length(coef <- coef(object))
+   activePar <- activePar(object)
+   if(returnCode(object) < 100) {
       if(min(abs(eigen(hessian(object)[activePar,activePar],
                        symmetric=TRUE, only.values=TRUE)$values)) > eigentol) {
          varcovar <- matrix(0, nParam, nParam)
@@ -60,15 +70,8 @@ summary.maxLik <- function( object, eigentol=1e-9,... ) {
       results <- NULL
       Hess <- NULL
    }
-   summary <- list(type=object$type,
-                   iterations=object$iterations,
-                   code=object$code,
-                   message=object$message,
-                   loglik=object$maximum,
-                   estimate=results,
-                   hessian=Hess,
-                   activePar=object$activePar,
-                   NActivePar=sum(object$activePar))
-   class(summary) <- "summary.maxLik"
+   summary <- summary.maxLik(object, results, sum(activePar))
    summary
 }
+setMethod("summary", "maxLik", summaryMaxLik)
+rm(summaryMaxLik)

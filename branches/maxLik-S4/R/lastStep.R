@@ -1,17 +1,12 @@
 library(methods)
 
-setClass("lastStep",
-         representation(theta0 = "numeric",
-                        f0 = "numeric",
-                        climb = "numeric"))
-
 lastStep <- function(theta0, f0, climb) {
    new("lastStep", theta0, f0, climb)
 }
 
-showLastStep <- function(x) {
+showLastStep <- function(object) {
    cat("Function value:", x@f0)
-   print(rbind(theta=x@theta0, climb=x@climb))
+   print(rbind(theta=object@theta0, climb=object@climb))
 }
 setMethod("show", "lastStep", showLastStep)
 rm(showLastStep)
