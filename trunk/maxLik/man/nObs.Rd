@@ -5,7 +5,7 @@
 \title{Return number of observations for statistical models} 
 \description{
   Returns number of observations for statistical models.  The default
-  method assumes presence of a component \code{$param$nObs} in {x}.
+  method assumes presence of a component param[['nObs']] in {x}.
 }
 \usage{
 nObs(x, \dots)
@@ -18,7 +18,7 @@ nObs(x, \dots)
 }
 \details{
   This is a generic function.  The default method returns the component
-  \code{x$param$nObs}.  The \code{lm}-method is based on
+  x[['param']][['nObs']].  The \code{lm}-method is based on
   qr-decomposition, in the same way as the does \code{\link{summary.lm}}.
 }
 \value{

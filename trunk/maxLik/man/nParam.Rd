@@ -6,7 +6,7 @@
 \title{Number of model parameters}
 \description{
   This function returns the number of model parameters.  The default
-  method returns the component \code{x$param$nParam}.
+  method returns the component x[['param']][['nParam']].
 }
 \usage{
 nParam(x, free=FALSE, \dots)

@@ -1,5 +1,5 @@
 maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
-                  tol=1e-8, reltol=sqrt(.Machine$double.eps),
+                  tol=1e-8, reltol=sqrt(.Machine[['double.eps']]),
                   gradtol=1e-6, steptol=1e-10,
                   lambdatol=1e-6,
                   qrtol=1e-10,

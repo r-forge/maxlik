@@ -6,7 +6,7 @@
 }
 \usage{
 maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
-      tol = 1e-08, reltol=sqrt(.Machine$double.eps), gradtol = 1e-06,
+      tol = 1e-08, reltol=sqrt(.Machine[['double.eps']]), gradtol = 1e-06,
       steptol = 1e-10, lambdatol = 1e-06, qrtol = 1e-10,
       iterlim = 150,
       constPar = NULL, activePar=rep(TRUE, nParam), ...)
@@ -37,7 +37,7 @@ maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
   \item{reltol}{Relative convergence tolerance.  The algorithm stops if
           it is unable to increase the value by a factor of 'reltol *
           (abs(val) + reltol)' at a step.  Defaults to
-          'sqrt(.Machine\$double.eps)', typically about '1e-8'.}
+          'sqrt(.Machine[["double.eps"]])', typically about '1e-8'.}
   \item{gradtol}{stopping condition.  Stop if the norm of the gradient
     less than \code{gradtol}, return \code{code=1}.}
   \item{steptol}{stopping/error condition.  If the quadratic

@@ -4,7 +4,7 @@
 \title{Return number of iterations for iterative models} 
 \description{
   Returns the number of iterations for iterative models.  The default
-  method assumes presence of a component \code{$iterations} in {x}.
+  method assumes presence of a component \code{iterations} in {x}.
 }
 \usage{
 nIter(x, \dots)
@@ -17,7 +17,7 @@ nIter(x, \dots)
 }
 \details{
   This is a generic function.  The default method returns the component
-  \code{x$iterations}.
+  x[['iterations']].
 }
 \value{
   numeric, number of iterations
