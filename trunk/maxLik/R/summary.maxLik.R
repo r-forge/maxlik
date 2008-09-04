@@ -16,7 +16,7 @@ print.summary.maxLik <- function( x, ... ) {
    cat("--------------------------------------------\n")
 }
 
-summary.maxLik <- function(object, eigentol=1e-9,... ) {
+summary.maxLik <- function(object, eigentol=1e-12,... ) {
    ## object      object of class "maxLik"
    ## 
    ## RESULTS:
