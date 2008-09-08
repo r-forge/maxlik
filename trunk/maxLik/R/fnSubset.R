@@ -7,7 +7,7 @@ fnSubset <- function(x, fnFull, xFixed, xFull=c(x, xFixed), ...){
   nFull <- length(xFull)
   if((nx+nFixed) != nFull)
     stop("length(x)+length(xFixed) != length(xFull):  ",
-         nx, " = ", nFixed, " != ", nFull)
+         nx, " + ", nFixed, " != ", nFull)
 ##
 ## 2.  names(xFull)?
 ##
