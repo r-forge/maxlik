@@ -6,7 +6,7 @@
   and t-values.
 }
 \usage{
-\method{summary}{maxLik}(object, eigentol=1e-9, ... )
+\method{summary}{maxLik}(object, eigentol=1e-12, ... )
 }
 
 \arguments{
