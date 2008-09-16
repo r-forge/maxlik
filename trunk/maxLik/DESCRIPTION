@@ -3,7 +3,8 @@ Version: 0.5-3
 Date: 2008/02/25
 Title: Maximum Likelihood Estimation
 Author: Ott Toomet <otoomet@ut.ee>,
-   Arne Henningsen <ahenningsen@agric-econ.uni-kiel.de>
+   Arne Henningsen <ahenningsen@agric-econ.uni-kiel.de>,
+   with contributions from Spencer Graves
 Maintainer: Arne Henningsen <ahenningsen@agric-econ.uni-kiel.de>
 Depends: R (>= 2.4.0)
 Suggests:
