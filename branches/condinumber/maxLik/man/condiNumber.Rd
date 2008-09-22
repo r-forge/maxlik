@@ -11,7 +11,8 @@
 }
 \usage{
 condiNumber(x, ...)
-\method{condiNumber}{default}(x, exact = FALSE, norm = FALSE, ...)
+\method{condiNumber}{default}(x, exact = FALSE, norm = FALSE,
+print.level=1, ...)
 \method{condiNumber}{maxLik}(x, ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -21,6 +22,8 @@ condiNumber(x, ...)
     approximations (see \code{link{kappa}})}
   \item{norm}{logical, whether the columns should be normalised to have
     unit norm}
+  \item{print.level}{numeric, positive value will output the numbers
+    during the calculations.  Useful for interactive work.}
   \item{\dots}{other arguments to different methods} 
 }
 \details{
