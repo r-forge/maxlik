@@ -10,40 +10,107 @@
 \setlength{\textwidth}{16.5cm} \setlength{\topmargin}{-1cm}
 \setlength{\textheight}{24.5cm}
 
+\newcommand{\code}[1]{\texttt{#1}}
+\setlength{\emergencystretch}{3em}
+
 \begin{document}
 \pagestyle{empty}
 
-\title{Title of your submission}
+\title{maxLik: A Package for Maximum\\[3mm]Likelihood Estimation in \textsf{R}}
 
 \begin{center}
-  {\bf FistNameA LastNameA$^{1,2,*}$ , FirstNameB LastNameB$^{1,3}$}
+  {\bf Ott Toomet$^{1,2}$ and Arne Henningsen$^{3,4,*}$}
 \end{center}
 
 \begin{affiliations}
-1. Affiliation of author A and author B \par
-2. Second affiliation of author A \par
-3. Second affiliation of author B \par
-* Contact author: email@adresse.fr
+1. Department of Economics, University of Tartu (Estonia)\par
+2. Department of Economics, Aarhus School of Business, University of Aarhus (Denmark)\par
+3. Department of Agricultural Economics, University of Kiel (Germany)\par
+4. Institute of Food and Resource Economics, University of Copenhagen (Denmark)\par
+* Contact author: arne.henningsen@gmail.com
 \end{affiliations}
 
-\keywords First, Second, ... up to 5 keywords
+\keywords Maximum Likelihood, Optimisation
 
 \vskip 0.8cm
 
-Here come the abstract of your presentation. Since it is an abstract, we propose to avoid the use of \verb£\section£ and \verb£\paragraph£. 
-You can add all the packages you want (graphics, amsmath, amssymb, ...) since you will only send us the pdf file.
-The document is up to one page. Do not number the page.
+The \textbf{maxLik} package %~\cite{r-maxlik-0.5}
+provides convenient tools
+for maximum likelihood (ML) estimations
+in the statistical software environment \textsf{R}.
+This package is available from
+CRAN (\url{http://cran.r-project.org/package=maxLik}),
+R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
+homepage (\url{http://www.maxLik.org/}).
 
-%%% Up to three references
-\paragraph{References}
-\begin{description}
-\item AuthorA (2007). Title of a web ressource,\\ \url{http://url.has.to.be/on.a.separate/line/}.
-\item AuthorB (2007). Title of an article. \textit{Name of the review}, 6, 13--17.
-\item AuthorC (2008). Article example in proceedings, User!2008 (Dortmund, Germany), July 2008, 31--37.
-\end{description}
+The most important tool for a user of the \textbf{maxLik} package
+is probably the \code{maxLik} function.
+It is a wrapper function
+that delegates the maximum likelihood estimation
+to the selected optimisation routine.
+Five optimisation methods are currently available
+(names of the corresponding functions in parenthesis):
+Newton-Raphson (\code{maxNR}),
+Berndt-Hall-Hall-Hausman (\code{maxBHHH}), %\cite{berndt74},
+Broyden-Fletcher-Goldfarb-Shanno~(\code{maxBFGS}),
+Nelder-Mead~(\code{maxNM}), and
+simulated-annealing~(\code{maxSANN}).
+While the actual optimisation in
+\code{maxBFGS}, \code{maxNM}, and \code{maxSANN}
+is done by \code{optim},
+the Newton-Raphson algorithm is implemented
+in the function \code{maxNR} itself.
+The actual optimisation in \code{maxBHHH}
+is done by \code{maxNR}.
+
+The first argument of \code{maxLik} (\code{loglik})
+is mandatory and specifies the log-likelihood function.
+Its first argument must be the vector of the parameters to be estimated
+and it must return either a single log-likelihood value or
+a numeric vector where each component is the log-likelihood value
+corresponding to an individual observations.
+The second and third argument (\code{grad} and \code{hess})
+are optional and can be used to specify functions
+that return the gradients and the Hessian of the objective function,
+respectively.
+If these functions are not provided by the user,
+numerical gradients and Hessians are calculated if necessary.
+\code{maxBHHH} does not need a Hessian and
+\code{maxSANN} neither needs the gradients nor the Hessian.
+If these arguments are specified anyway, they are ignored.
+The fourth argument (\code{start}) is mandatory and
+must be used to specify a vector of starting values.
+Finally, the fifth argument (\code{method}) is optional and
+can be used to select the maximisation routine.
+It defaults to \code{"NR"}, but it can also be \code{"BHHH"},
+\code{"BFGS"}, \code{"NM"}, or \code{"SANN"}.
+
+\code{maxLik} returns a list of class \code{"maxLik"}.
+Corresponding methods can handle the likelihood-specific properties
+of the estimate including the fact
+that inverse of the negative Hessian is the variance-covariance matrix
+of the estimated parameters.
+The most important methods for objects of class \code{"maxLik"} are:
+\code{summary} for returning (and printing) summary results,
+\code{coef} for extracting the estimated parameters,
+\code{vcov} for calculating the variance covariance matrix
+of the estimated parameters,
+\code{logLik} for extracting the log likelihood value, and
+\code{AIC} for calculating the Akaike information criterion.
+
+Currently, the \textbf{maxLik} package is used for maximum likelihood
+estimations in three packages that are available on CRAN:
+\textbf{mlogit}, \textbf{sampleSelection},
+and \textbf{truncreg}.
+On the useR! conference,
+we would like to demonstrate how to use the \textbf{maxLik} package
+for maximum likelihood estimations in \textsf{R}.
+Furthermore, we would like to highlight its advantages and features
+so that the number of users and package writers
+who benefit from the \textbf{maxLik} package increases ;-)
 
 %\nocite{ref1,ref2}
 %\bibliographystyle{amsplain}
-%\bibliography{biblioExample}
+%\bibliography{agrarpol}
 
 \end{document}
