@@ -1,0 +1,49 @@
+\documentclass[10pt]{article}
+
+\usepackage{url}
+
+\renewcommand{\title}[1]{\begin{center}{\bf \LARGE #1}\end{center}}
+\newcommand{\affiliations}{\footnotesize}
+\newcommand{\keywords}{\paragraph{Keywords:}}
+
+\setlength{\oddsidemargin}{0cm} \setlength{\evensidemargin}{0cm}
+\setlength{\textwidth}{16.5cm} \setlength{\topmargin}{-1cm}
+\setlength{\textheight}{24.5cm}
+
+\begin{document}
+\pagestyle{empty}
+
+\title{Title of your submission}
+
+\begin{center}
+  {\bf FistNameA LastNameA$^{1,2,*}$ , FirstNameB LastNameB$^{1,3}$}
+\end{center}
+
+\begin{affiliations}
+1. Affiliation of author A and author B \par
+2. Second affiliation of author A \par
+3. Second affiliation of author B \par
+* Contact author: email@adresse.fr
+\end{affiliations}
+
+\keywords First, Second, ... up to 5 keywords
+
+\vskip 0.8cm
+
+Here come the abstract of your presentation. Since it is an abstract, we propose to avoid the use of \verb£\section£ and \verb£\paragraph£. 
+You can add all the packages you want (graphics, amsmath, amssymb, ...) since you will only send us the pdf file.
+The document is up to one page. Do not number the page.
+
+%%% Up to three references
+\paragraph{References}
+\begin{description}
+\item AuthorA (2007). Title of a web ressource,\\ \url{http://url.has.to.be/on.a.separate/line/}.
+\item AuthorB (2007). Title of an article. \textit{Name of the review}, 6, 13--17.
+\item AuthorC (2008). Article example in proceedings, User!2008 (Dortmund, Germany), July 2008, 31--37.
+\end{description}
+
+%\nocite{ref1,ref2}
+%\bibliographystyle{amsplain}
+%\bibliography{biblioExample}
+
+\end{document}
