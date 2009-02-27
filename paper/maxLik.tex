@@ -82,12 +82,13 @@ can be used to select the maximisation routine.
 It defaults to \code{"NR"}, but it can also be \code{"BHHH"},
 \code{"BFGS"}, \code{"NM"}, or \code{"SANN"}.  The \code{maxLik}
 wrapper capabilities are designed in a transparent way, so that the
-user may easily swap the methods without need the change the
+user can easily swap the methods without changing the
 arguments.  The arguments not used by a particular optimization
 method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
 are ignored.
 
-\code{maxLik} returns a list of class \code{"maxLik"}.
+The \textbf{maxLik} package is implemented using S3 classes.
+The \code{maxLik} wrapper returns a list of class \code{"maxLik"}.
 Corresponding methods can handle the likelihood-specific properties
 of the estimate including the fact
 that inverse of the negative Hessian is the variance-covariance matrix
@@ -99,8 +100,6 @@ The most important methods for objects of class \code{"maxLik"} are:
 of the estimated parameters,
 \code{logLik} for extracting the log likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
-
-\textbf{maxLik} is implemented using S3 classes.
 
 Currently, the \textbf{maxLik} package is used for maximum likelihood
 estimations in three packages that are available on CRAN:
