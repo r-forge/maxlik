@@ -75,15 +75,17 @@ that return the gradients and the Hessian of the objective function,
 respectively.
 If these functions are not provided by the user,
 numerical gradients and Hessians are calculated if necessary.
-\code{maxBHHH} does not need a Hessian and
-\code{maxSANN} neither needs the gradients nor the Hessian.
-If these arguments are specified anyway, they are ignored.
 The fourth argument (\code{start}) is mandatory and
 must be used to specify a vector of starting values.
 Finally, the fifth argument (\code{method}) is optional and
 can be used to select the maximisation routine.
 It defaults to \code{"NR"}, but it can also be \code{"BHHH"},
-\code{"BFGS"}, \code{"NM"}, or \code{"SANN"}.
+\code{"BFGS"}, \code{"NM"}, or \code{"SANN"}.  The \code{maxLik}
+wrapper capabilities are designed in a transparent way, so that the
+user may easily swap the methods without need the change the
+arguments.  The arguments not used by a particular optimization
+method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
+are ignored.
 
 \code{maxLik} returns a list of class \code{"maxLik"}.
 Corresponding methods can handle the likelihood-specific properties
@@ -97,6 +99,8 @@ The most important methods for objects of class \code{"maxLik"} are:
 of the estimated parameters,
 \code{logLik} for extracting the log likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
+
+\textbf{maxLik} is implemented using S3 classes.
 
 Currently, the \textbf{maxLik} package is used for maximum likelihood
 estimations in three packages that are available on CRAN:
