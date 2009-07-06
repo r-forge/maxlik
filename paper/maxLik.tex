@@ -33,7 +33,7 @@
 
 \vskip 0.8cm
 
-The \textbf{maxLik} package %~\cite{r-maxlik-0.5}
+The \textbf{maxLik} package~\cite{r-maxlik-0.5}
 provides convenient tools
 for maximum likelihood (ML) estimations
 in the statistical software environment \textsf{R}.
@@ -50,10 +50,11 @@ to the selected optimisation routine.
 Five optimisation methods are currently available
 (names of the corresponding functions in parenthesis):
 Newton-Raphson (\code{maxNR}),
-Berndt-Hall-Hall-Hausman (\code{maxBHHH}), %\cite{berndt74},
-Broyden-Fletcher-Goldfarb-Shanno~(\code{maxBFGS}),
-Nelder-Mead~(\code{maxNM}), and
-simulated-annealing~(\code{maxSANN}).
+Berndt-Hall-Hall-Hausman (\code{maxBHHH} \cite{berndt74}),
+Broyden-Fletcher-Goldfarb-Shanno~(\code{maxBFGS}
+\cite{broyden70,fletcher70,goldfarb70,shanno70}),
+Nelder-Mead~(\code{maxNM} \cite{nelder65}), and
+simulated-annealing~(\code{maxSANN} \cite{belisle92}).
 While the actual optimisation in
 \code{maxBFGS}, \code{maxNM}, and \code{maxSANN}
 is done by \code{optim},
@@ -112,8 +113,7 @@ with other participants
 in order to make the \textbf{maxLik} package more attractive
 to users and package writers.
 
-%\nocite{ref1,ref2}
-%\bibliographystyle{amsplain}
-%\bibliography{agrarpol}
+\bibliographystyle{amsplain}
+\bibliography{agrarpol}
 
 \end{document}
