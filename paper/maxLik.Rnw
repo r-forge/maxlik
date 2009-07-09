@@ -45,7 +45,7 @@ count-data, or survival models.
 However, if practitioners and researchers want to estimate
 non-standard models or develop new models,
 they have to implement the routines
-for the maximum-likelihood estimations themselves.
+for the maximum likelihood estimations themselves.
 In this case, the \textbf{maxLik} package~\cite{r-maxlik-0.5}
 for the statistical software environment \textsf{R} \cite{r-project09}
 might be very helpful.
@@ -60,13 +60,7 @@ homepage (\url{http://www.maxLik.org/}).
 
 \section{Using the \textbf{maxLik} package}
 
-The most important tool for a user of the \textbf{maxLik} package
-is probably the \code{maxLik} function.
-It is mainly a wrapper function
-that delegates the maximum likelihood estimation
-to the selected optimisation routine.
-
-We demonstrate the usage of this package by a simple example:
+We demonstrate the usage of the \textbf{maxLik} package by a simple example:
 we fit a normal distribution by maximum likelihood.
 First, we generate a vector ($x$) of 100 draws
 from a normal distribution with a mean of $\mu = 1$
@@ -92,15 +86,22 @@ L( x, \mu, \sigma ) = \prod_{i=1}^N
 \frac{1}{\sigma \sqrt{2 \pi}}
 \exp \left( - \frac{( x_i - \mu )^2}{2 \sigma^2} \right)
 \end{equation}
-and its logarithm (i.e.\ the log likelihood function) is
+and its logarithm (i.e.\ the log-likelihood function) is
 \begin{equation}
 \log( L( x, \mu, \sigma ) ) =
 - \frac{1}{2} N \log ( 2 \pi ) - N \log ( \sigma )
 - \frac{1}{2} \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^2}.
 \end{equation}
 
-The first step for the maximum likelihood estimation
-is the implementation of the log likelihood function in \textsf{R}.
+As a prerequisite for the maximum likelihood estimation,
+we have to implement the log-likelihood function in \textsf{R}.
+Its first argument must be the vector of the parameters to be estimated
+and it must return the log-likelihood value.%
+\footnote{
+Alternatively, it could return a numeric vector
+where each component is the log-likelihood value
+corresponding to an individual observations (see below).
+}
 <<>>=
 logLikFun <- function( param ) {
    mu <- param[ 1 ]
@@ -117,16 +118,14 @@ The following command loads the \textbf{maxLik} package.
 <<>>=
 library( maxLik )
 @
-Now, we can use the \code{maxLik} function
+Now, we can use the \code{maxLik} functionn ---
+the most important user interface
+of the \textbf{maxLik} package ---
 to find the values for the $\mu$ and $\beta$ parameters
-that give the best fit, i.e.\ the largest value of the (log)
+that give the best fit, i.e.\ the largest value of the (log-)
 likelihood function.
 The first argument of \code{maxLik} (\code{logLik})
 is mandatory and specifies the log-likelihood function.
-Its first argument must be the vector of the parameters to be estimated
-and it must return either a single log-likelihood value or
-a numeric vector where each component is the log-likelihood value
-corresponding to an individual observations.
 Starting values must be provided through argument \code{start}.
 In our examples, we use the parameters of a standard normal distribution
 ($\mu = 0$, $\sigma = 1$) as starting values.
@@ -139,7 +138,7 @@ and the standard deviation (without correction for degrees of freedom)
 of the values in vector~$x$.
 <<>>=
 mean( x )
-sqrt( var( x ) * 99 / 100 )
+sqrt( sum( ( x - mean( x ) )^2 ) / 100 )
 @
 
 If no analytical gradients are provided by the user,
@@ -149,8 +148,8 @@ which are also included in the \textbf{maxLik} package.
 While the maximisation of the likelihood function of this simple model
 works well with numerical gradients and Hessians,
 providing analytical gradients could increase the speed and probability
-of convergence.
-The gradients of the likelihood function of the standard normal distribution
+of convergence in more complex models.
+The gradients of the log-likelihood function of the standard normal distribution
 are
 \begin{align}
 \frac{\partial \log( L( x, \mu, \sigma ) )}{ \partial \mu } & =
@@ -159,7 +158,7 @@ are
    - \frac{ N }{ \sigma }
    + \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^3}.
 \end{align}
-These gradients are calculated by following function:
+These gradients are calculated in \textsf{R} by following function:
 <<>>=
 logLikGrad <- function( param ) {
    mu <- param[ 1 ]
@@ -180,22 +179,23 @@ names( mle )[ c(3,4) ]
 @
 Providing analytical gradients has no significant effect on the estimates
 but the gradients and the Hessian calculated at the maximum
-of the likelihood function are slightly different.%
+of the log-likelihood function are slightly different.%
 \footnote{%
 \code{all.equal} considers two elements as unequal
 if both the mean absolute difference and the mean relative difference
-is larger than the tolerance
+are larger than the tolerance
 (defaults to \code{.Machine\$double.eps\^{ }0.5},
-usually \Sexpr{round(.Machine$double.eps^0.5,10)}).
+usually around \Sexpr{round(.Machine[["double.eps"]]^0.5,9)}).
 }
 
-If a function to calculate gradients but no function to calculate Hessians
-is provided by the user,
+The user can use argument \code{hess} of the \code{maxLik} function
+to provide a function that returns the Hessian matrix
+of the log-likelihood function.
+If the user provides a function to calculate the gradients
+but does not use argument \code{hess},
 the Hessians are calculated numerically by the function
 \code{numericHessian}.
-However, the user can use the argument \code{hess}
-to provide a function that calculates the Hessian analytically.
-The elements of the Hessian of the log likelihood function
+The elements of the Hessian matrix of the log-likelihood function
 of the normal distribution are
 \begin{align}
 \frac{\partial^2 \log( L( x, \mu, \sigma ) )}{ ( \partial \mu )^2 } & =
@@ -206,7 +206,7 @@ of the normal distribution are
    \frac{ N }{ \sigma^2 }
    - 3 \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^4}.
 \end{align}
-They can be calculated using the following function:
+They can be calculated in \textsf{R} using the following function:
 <<>>=
 logLikHess <- function( param ) {
    mu <- param[ 1 ]
@@ -220,31 +220,37 @@ logLikHess <- function( param ) {
    return( logLikHessValues )
 }
 @
-This function can be provided to the \code{maxLik} function
-by the argument \code{hess}:
+Now we call the \code{maxLik} function with argument \code{hess}
+set to this function:
 <<>>=
 mleHess <- maxLik( logLik = logLikFun, grad = logLikGrad,
    hess = logLikHess, start = c( 0, 1 ) )
 all.equal( mleHess, mleGrad )
 @
 Providing an analytical Hessian has no significant effect
-on the outcome of the ML estimation.
+on the outcome of the ML estimation in our simple example.
 
 \subsection{Optimisation Methods}
 
 Currently, the user can use argument \code{method} to choose between
 five different optimisation algorithms.
 Argument \code{method} defaults to
-\code{"NR"} for the Newton-Raphson algorithm, but it can also be
+\code{"NR"} for the Newton-Raphson algorithm, but it can be also
 \code{"BHHH"} for Berndt-Hall-Hall-Hausman \cite{berndt74},
 \code{"BFGS"} for Broyden-Fletcher-Goldfarb-Shanno
 \cite{broyden70,fletcher70,goldfarb70,shanno70},
 \code{"NM"} for Nelder-Mead \cite{nelder65}, or
-\code{"SANN"} for simulated-annealing \cite{belisle92}).
+\code{"SANN"} for simulated-annealing \cite{belisle92}.
+
+
+\section{Implementation}
+
 The \code{maxLik} function delegates the actual optimisation
-to the corresponding functions
+to the functions
 \code{maxNR}, \code{maxBHHH}, \code{maxBFGS}, \code{maxNM}, and
-\code{maxSANN}, respectively.
+\code{maxSANN},
+for the ``NR'', ``BHHH'', ``BFGS'', ``NM'', and ``SANN'' algorithms,
+respectively.
 While the actual optimisation in
 \code{maxBFGS}, \code{maxNM}, and \code{maxSANN}
 is done by \code{optim},
@@ -261,8 +267,6 @@ method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
 are ignored.
 
 
-\section{Implementation}
-
 The \textbf{maxLik} package is implemented using S3 classes.
 The \code{maxLik} wrapper returns a list of class \code{"maxLik"}.
 Corresponding methods can handle the likelihood-specific properties
@@ -274,7 +278,7 @@ The most important methods for objects of class \code{"maxLik"} are:
 \code{coef} for extracting the estimated parameters,
 \code{vcov} for calculating the variance covariance matrix
 of the estimated parameters,
-\code{logLik} for extracting the log likelihood value, and
+\code{logLik} for extracting the log-likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
 
 Currently, the \textbf{maxLik} package is used for maximum likelihood
