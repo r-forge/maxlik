@@ -1,6 +1,7 @@
 \documentclass[12pt,a4paper]{article}
 
 \usepackage{url}
+\usepackage{amsmath}
 \usepackage{Sweave}
 
 \renewcommand{\title}[1]{\begin{center}{\bf \LARGE #1}\end{center}}
@@ -132,6 +133,152 @@ The following command loads the \textbf{maxLik} package.
 <<>>=
 library( maxLik )
 @
+
+We demonstrate the usage of this package by a simple example:
+we fit a normal distribution by maximum likelihood.
+First, we generate a vector ($x$) of 100 draws
+from a normal distribution with a mean of $\mu = 1$
+and a standard deviation of~$\sigma = 2$:
+<<echo=FALSE,results=hide>>=
+set.seed( 123 )
+@
+<<>>=
+x <- rnorm( 100, mean = 1, sd = 2 )
+@
+%
+The probability density function of a standard normal distribution
+for a value $x_i$ is
+\begin{equation}
+P(x_i) =
+\frac{1}{\sigma \sqrt{2 \pi}}
+\exp \left( - \frac{( x_i - \mu )^2}{2 \sigma^2} \right).
+\end{equation}
+Hence, the likelihood function for $\mu$, $\sigma$,
+and the values in vector $x = ( x_1, \ldots, x_N )$ is
+\begin{equation}
+L( x, \mu, \sigma ) = \prod_{i=1}^N
+\frac{1}{\sigma \sqrt{2 \pi}}
+\exp \left( - \frac{( x_i - \mu )^2}{2 \sigma^2} \right)
+\end{equation}
+and its logarithm (i.e.\ the log likelihood function) is
+\begin{equation}
+\log( L( x, \mu, \sigma ) ) =
+- \frac{1}{2} N \log ( 2 \pi ) - N \log ( \sigma )
+- \frac{1}{2} \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^2}.
+\end{equation}
+
+The first step for the maximum likelihood estimation
+is the implementation of the log likelihood function in \textsf{R}.
+<<>>=
+logLikFun <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   N <- length( x )
+   logLikValue <- -0.5 * N * log( 2 * pi ) - N * log( sigma ) -
+      0.5 * sum( ( x - mu )^2 / sigma^2 )
+   return( logLikValue )
+}
+@
+Now, we can use the \texttt{maxLik} function ---
+which is probably the most important user interface
+of the \textbf{maxLik} package ---
+to find the values for the $\mu$ and $\beta$ parameters
+that give the best fit, i.e.\ the largest value of the (log)
+likelihood function.
+We use the parameters of a standard normal distribution
+($\mu = 0$, $\sigma = 1$) as starting values.
+<<>>=
+mle <- maxLik( logLik = logLikFun, start = c( 0, 1 ) )
+mle
+@
+As expected, the estimated parameters are equal to the mean
+and the standard deviation (without correction for degrees of freedom)
+of the values in vector~$x$.
+<<>>=
+mean( x )
+sqrt( var( x ) * 99 / 100 )
+@
+
+If no analytical gradients are provided by the user,
+the optimisation algorithm uses numerical gradients.
+While the maximisation of the likelihood function of this simple model
+works well with numerical gradients,
+providing analytical gradients could increase the speed and probability
+of convergence.
+The gradients of the likelihood function of the standard normal distribution
+are
+\begin{align}
+\frac{\partial \log( L( x, \mu, \sigma ) )}{ \partial \mu } & =
+   \sum_{i=1}^N \frac{( x_i - \mu )}{\sigma^2}\\
+\frac{\partial \log( L( x, \mu, \sigma ) )}{ \partial \sigma } & =
+   - \frac{ N }{ \sigma }
+   + \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^3}.
+\end{align}
+These gradients can be calculated by following function:
+<<>>=
+logLikGrad <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   N <- length( x )
+   logLikGradValues <- numeric( 2 )
+   logLikGradValues[ 1 ] <- sum( ( x - mu ) / sigma^2 )
+   logLikGradValues[ 2 ] <- - N / sigma + sum( ( x - mu )^2 / sigma^3 )
+   return( logLikGradValues )
+}
+@
+This function can be provided to the \texttt{maxLik} function
+as an additional argument \texttt{grad}:
+<<>>=
+mleGrad <- maxLik( logLik = logLikFun, grad = logLikGrad, start = c( 0, 1 ) )
+all.equal( mleGrad, mle )
+names( mle )[ c(3,4) ]
+@
+Providing analytical gradients has no significant effect on the estimates
+but the gradients and the Hessian calculated at the maximum
+of the likelihood function are slightly different.%
+\footnote{%
+\texttt{all.equal} considers two elements as unequal
+if both the mean absolute difference and the mean relative difference
+is larger than the tolerance
+(defaults to \texttt{.Machine\$double.eps\^{ }0.5},
+usually \Sexpr{round(.Machine$double.eps^0.5,10)}).
+}
+
+Moreover, the user can provide a function to calculate the Hessian
+analytically.
+The elements of the Hessian are
+\begin{align}
+\frac{\partial^2 \log( L( x, \mu, \sigma ) )}{ ( \partial \mu )^2 } & =
+   - \frac{ N }{\sigma^2}\\
+\frac{\partial^2 \log( L( x, \mu, \sigma ) )}{ \partial \mu \; \partial \sigma } & =
+   - 2 \sum_{i=1}^N \frac{( x_i - \mu )}{\sigma^3}\\
+\frac{\partial^2 \log( L( x, \mu, \sigma ) )}{ ( \partial \sigma )^2 } & =
+   \frac{ N }{ \sigma^2 }
+   - 3 \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^4}.
+\end{align}
+<<>>=
+logLikHess <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   N <- length( x )
+   logLikHessValues <- matrix( 0, nrow = 2, ncol = 2 )
+   logLikHessValues[ 1, 1 ] <- - N / sigma^2
+   logLikHessValues[ 1, 2 ] <-  - 2 * sum( ( x - mu ) / sigma^3 )
+   logLikHessValues[ 2, 1 ] <- logLikHessValues[ 1, 2 ]
+   logLikHessValues[ 2, 2 ] <- N / sigma^2 - 3 * sum( ( x - mu )^2 / sigma^4 )
+   return( logLikHessValues )
+}
+@
+This function can be provided to the \texttt{maxLik} function
+by the argument \texttt{hess}:
+<<>>=
+mleHess <- maxLik( logLik = logLikFun, grad = logLikGrad,
+   hess = logLikHess, start = c( 0, 1 ) )
+all.equal( mleHess, mleGrad )
+@
+Providing an analytical Hessian has no significant effect
+on the outcome of the ML estimation.
+
 
 \bibliographystyle{amsplain}
 \bibliography{agrarpol}
