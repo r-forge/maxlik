@@ -33,7 +33,8 @@
 
 \keywords Maximum Likelihood, Optimisation
 
-\vskip 0.8cm
+
+\section{Introduction}
 
 The Maximum Likelihood (ML) method is one of the most important
 techniques in statistics and econometrics.
@@ -56,83 +57,14 @@ CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
 homepage (\url{http://www.maxLik.org/}).
 
+
+\section{Using the \textbf{maxLik} package}
+
 The most important tool for a user of the \textbf{maxLik} package
 is probably the \code{maxLik} function.
-It is a wrapper function
+It is mainly a wrapper function
 that delegates the maximum likelihood estimation
 to the selected optimisation routine.
-Five optimisation methods are currently available
-(names of the corresponding functions in parenthesis):
-Newton-Raphson (\code{maxNR}),
-Berndt-Hall-Hall-Hausman (\code{maxBHHH} \cite{berndt74}),
-Broyden-Fletcher-Goldfarb-Shanno~(\code{maxBFGS}
-\cite{broyden70,fletcher70,goldfarb70,shanno70}),
-Nelder-Mead~(\code{maxNM} \cite{nelder65}), and
-simulated-annealing~(\code{maxSANN} \cite{belisle92}).
-While the actual optimisation in
-\code{maxBFGS}, \code{maxNM}, and \code{maxSANN}
-is done by \code{optim},
-the Newton-Raphson algorithm is implemented
-in the function \code{maxNR} itself.
-The actual optimisation in \code{maxBHHH}
-is done by \code{maxNR}.
-
-The first argument of \code{maxLik} (\code{logLik})
-is mandatory and specifies the log-likelihood function.
-Its first argument must be the vector of the parameters to be estimated
-and it must return either a single log-likelihood value or
-a numeric vector where each component is the log-likelihood value
-corresponding to an individual observations.
-The second and third argument (\code{grad} and \code{hess})
-are optional and can be used to specify functions
-that return the gradients and the Hessian of the objective function,
-respectively.
-If these functions are not provided by the user,
-numerical gradients and Hessians are calculated if necessary.
-The fourth argument (\code{start}) is mandatory and
-must be used to specify a vector of starting values.
-Finally, the fifth argument (\code{method}) is optional and
-can be used to select the maximisation routine.
-It defaults to \code{"NR"}, but it can also be \code{"BHHH"},
-\code{"BFGS"}, \code{"NM"}, or \code{"SANN"}.  The \code{maxLik}
-wrapper capabilities are designed in a transparent way, so that the
-user can easily swap the methods without changing the
-arguments.  The arguments not used by a particular optimisation
-method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
-are ignored.
-
-The \textbf{maxLik} package is implemented using S3 classes.
-The \code{maxLik} wrapper returns a list of class \code{"maxLik"}.
-Corresponding methods can handle the likelihood-specific properties
-of the estimate including the fact
-that the inverse of the negative Hessian is the variance-covariance matrix
-of the estimated parameters.
-The most important methods for objects of class \code{"maxLik"} are:
-\code{summary} for returning (and printing) summary results,
-\code{coef} for extracting the estimated parameters,
-\code{vcov} for calculating the variance covariance matrix
-of the estimated parameters,
-\code{logLik} for extracting the log likelihood value, and
-\code{AIC} for calculating the Akaike information criterion.
-
-Currently, the \textbf{maxLik} package is used for maximum likelihood
-estimations in three \textsf{R} packages that are available on CRAN:
-\textbf{mlogit}, \textbf{sampleSelection},
-and \textbf{truncreg}.
-On the DSC conference,
-we would like to demonstrate the implementation and the usage
-of the \textbf{maxLik} package.
-Furthermore, we want to discuss future improvements and features
-with other participants
-in order to make the \textbf{maxLik} package more attractive
-to users and package writers.
-
-After installing the \textbf{maxLik} package,
-it must be loaded before it can be used.
-The following command loads the \textbf{maxLik} package.
-<<>>=
-library( maxLik )
-@
 
 We demonstrate the usage of this package by a simple example:
 we fit a normal distribution by maximum likelihood.
@@ -179,13 +111,24 @@ logLikFun <- function( param ) {
    return( logLikValue )
 }
 @
-Now, we can use the \texttt{maxLik} function ---
-which is probably the most important user interface
-of the \textbf{maxLik} package ---
+The \textbf{maxLik} package must be installed and loaded
+before it can be used.
+The following command loads the \textbf{maxLik} package.
+<<>>=
+library( maxLik )
+@
+Now, we can use the \texttt{maxLik} function
 to find the values for the $\mu$ and $\beta$ parameters
 that give the best fit, i.e.\ the largest value of the (log)
 likelihood function.
-We use the parameters of a standard normal distribution
+The first argument of \code{maxLik} (\code{logLik})
+is mandatory and specifies the log-likelihood function.
+Its first argument must be the vector of the parameters to be estimated
+and it must return either a single log-likelihood value or
+a numeric vector where each component is the log-likelihood value
+corresponding to an individual observations.
+Starting values must be provided through argument \code{start}.
+In our examples, we use the parameters of a standard normal distribution
 ($\mu = 0$, $\sigma = 1$) as starting values.
 <<>>=
 mle <- maxLik( logLik = logLikFun, start = c( 0, 1 ) )
@@ -200,9 +143,11 @@ sqrt( var( x ) * 99 / 100 )
 @
 
 If no analytical gradients are provided by the user,
-the optimisation algorithm uses numerical gradients.
+numerical gradients and numerical Hessians are calculated
+by the functions \code{numericGradient} and \code{numericNHessian},
+which are also included in the \textbf{maxLik} package.
 While the maximisation of the likelihood function of this simple model
-works well with numerical gradients,
+works well with numerical gradients and Hessians,
 providing analytical gradients could increase the speed and probability
 of convergence.
 The gradients of the likelihood function of the standard normal distribution
@@ -244,9 +189,14 @@ is larger than the tolerance
 usually \Sexpr{round(.Machine$double.eps^0.5,10)}).
 }
 
-Moreover, the user can provide a function to calculate the Hessian
-analytically.
-The elements of the Hessian are
+If a function to calculate gradients but no function to calculate Hessians
+is provided by the user,
+the Hessians are calculated numerically by the function
+\code{numericHessian}.
+However, the user can use the argument \code{hess}
+to provide a function that calculates the Hessian analytically.
+The elements of the Hessian of the log likelihood function
+of the normal distribution are
 \begin{align}
 \frac{\partial^2 \log( L( x, \mu, \sigma ) )}{ ( \partial \mu )^2 } & =
    - \frac{ N }{\sigma^2}\\
@@ -279,6 +229,65 @@ all.equal( mleHess, mleGrad )
 @
 Providing an analytical Hessian has no significant effect
 on the outcome of the ML estimation.
+
+\subsection{Optimisation Methods}
+
+Currently, the user can use argument \code{method} to choose between
+five different optimisation algorithms.
+Argument \code{method} defaults to
+\code{"NR"} for the Newton-Raphson algorithm, but it can also be
+\code{"BHHH"} for Berndt-Hall-Hall-Hausman \cite{berndt74},
+\code{"BFGS"} for Broyden-Fletcher-Goldfarb-Shanno
+\cite{broyden70,fletcher70,goldfarb70,shanno70},
+\code{"NM"} for Nelder-Mead \cite{nelder65}, or
+\code{"SANN"} for simulated-annealing \cite{belisle92}).
+The \texttt{maxLik} function delegates the actual optimisation
+to the corresponding functions
+\code{maxNR}, \code{maxBHHH}, \code{maxBFGS}, \code{maxNM}, and
+\code{maxSANN}, respectively.
+While the actual optimisation in
+\code{maxBFGS}, \code{maxNM}, and \code{maxSANN}
+is done by \code{optim},
+the Newton-Raphson algorithm is implemented
+in the function \code{maxNR} itself.
+The actual optimisation in \code{maxBHHH}
+is done by \code{maxNR}.
+
+The \code{maxLik}
+wrapper capabilities are designed in a transparent way, so that the
+user can easily swap the methods without changing the
+arguments.  The arguments not used by a particular optimisation
+method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
+are ignored.
+
+
+\section{Implementation}
+
+The \textbf{maxLik} package is implemented using S3 classes.
+The \code{maxLik} wrapper returns a list of class \code{"maxLik"}.
+Corresponding methods can handle the likelihood-specific properties
+of the estimate including the fact
+that the inverse of the negative Hessian is the variance-covariance matrix
+of the estimated parameters.
+The most important methods for objects of class \code{"maxLik"} are:
+\code{summary} for returning (and printing) summary results,
+\code{coef} for extracting the estimated parameters,
+\code{vcov} for calculating the variance covariance matrix
+of the estimated parameters,
+\code{logLik} for extracting the log likelihood value, and
+\code{AIC} for calculating the Akaike information criterion.
+
+Currently, the \textbf{maxLik} package is used for maximum likelihood
+estimations in three \textsf{R} packages that are available on CRAN:
+\textbf{mlogit}, \textbf{sampleSelection},
+and \textbf{truncreg}.
+On the DSC conference,
+we would like to demonstrate the implementation and the usage
+of the \textbf{maxLik} package.
+Furthermore, we want to discuss future improvements and features
+with other participants
+in order to make the \textbf{maxLik} package more attractive
+to users and package writers.
 
 
 \bibliographystyle{amsplain}
