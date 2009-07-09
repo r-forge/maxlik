@@ -117,7 +117,7 @@ The following command loads the \textbf{maxLik} package.
 <<>>=
 library( maxLik )
 @
-Now, we can use the \texttt{maxLik} function
+Now, we can use the \code{maxLik} function
 to find the values for the $\mu$ and $\beta$ parameters
 that give the best fit, i.e.\ the largest value of the (log)
 likelihood function.
@@ -171,7 +171,7 @@ logLikGrad <- function( param ) {
    return( logLikGradValues )
 }
 @
-Now we call the \texttt{maxLik} function and use argument \texttt{grad}
+Now we call the \code{maxLik} function and use argument \code{grad}
 to specify the function that calculates the gradients:
 <<>>=
 mleGrad <- maxLik( logLik = logLikFun, grad = logLikGrad, start = c( 0, 1 ) )
@@ -182,10 +182,10 @@ Providing analytical gradients has no significant effect on the estimates
 but the gradients and the Hessian calculated at the maximum
 of the likelihood function are slightly different.%
 \footnote{%
-\texttt{all.equal} considers two elements as unequal
+\code{all.equal} considers two elements as unequal
 if both the mean absolute difference and the mean relative difference
 is larger than the tolerance
-(defaults to \texttt{.Machine\$double.eps\^{ }0.5},
+(defaults to \code{.Machine\$double.eps\^{ }0.5},
 usually \Sexpr{round(.Machine$double.eps^0.5,10)}).
 }
 
@@ -220,8 +220,8 @@ logLikHess <- function( param ) {
    return( logLikHessValues )
 }
 @
-This function can be provided to the \texttt{maxLik} function
-by the argument \texttt{hess}:
+This function can be provided to the \code{maxLik} function
+by the argument \code{hess}:
 <<>>=
 mleHess <- maxLik( logLik = logLikFun, grad = logLikGrad,
    hess = logLikHess, start = c( 0, 1 ) )
@@ -241,7 +241,7 @@ Argument \code{method} defaults to
 \cite{broyden70,fletcher70,goldfarb70,shanno70},
 \code{"NM"} for Nelder-Mead \cite{nelder65}, or
 \code{"SANN"} for simulated-annealing \cite{belisle92}).
-The \texttt{maxLik} function delegates the actual optimisation
+The \code{maxLik} function delegates the actual optimisation
 to the corresponding functions
 \code{maxNR}, \code{maxBHHH}, \code{maxBFGS}, \code{maxNM}, and
 \code{maxSANN}, respectively.
