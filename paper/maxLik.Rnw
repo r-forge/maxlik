@@ -1,6 +1,7 @@
 \documentclass[12pt,a4paper]{article}
 
 \usepackage{url}
+\usepackage{Sweave}
 
 \renewcommand{\title}[1]{\begin{center}{\bf \LARGE #1}\end{center}}
 \newcommand{\affiliations}{\footnotesize}
@@ -124,6 +125,13 @@ Furthermore, we want to discuss future improvements and features
 with other participants
 in order to make the \textbf{maxLik} package more attractive
 to users and package writers.
+
+After installing the \textbf{maxLik} package,
+it must be loaded before it can be used.
+The following command loads the \textbf{maxLik} package.
+<<>>=
+library( maxLik )
+@
 
 \bibliographystyle{amsplain}
 \bibliography{agrarpol}
