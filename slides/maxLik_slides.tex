@@ -1,0 +1,186 @@
+\documentclass{beamer}
+%\documentclass[notes=show,handout]{beamer}
+% \documentclass[handout]{beamer}
+
+\mode<handout>{
+\usepackage{pgfpages}
+\pgfpagesuselayout{4 on 1}[a4paper,landscape,border shrink=3mm]
+\setbeamercolor{background canvas}{bg=black!5}
+}
+
+\input{commands.tex}
+
+\title[maxLik: Maximum Likelihood in \R]{
+   maxLik: A Package for Maximum Likelihood Estimation in \textsf{R}}
+\author[Arne Henningsen]{Ott Toomet$^{1,2}$ and Arne Henningsen$^3$}
+\date{\footnotesize{
+1. Department of Economics, University of Tartu\\
+2. Department of Economics, Aarhus School of Business, University of Aarhus\\
+3. Institute of Food and Resource Economics, University of Copenhagen}}
+
+\begin{document}
+\begin{frame}[plain]
+\setlength{\textwidth}{1.15\textwidth}
+\titlepage
+\end{frame}
+
+\section{Introduction}
+\begin{frame}
+\frametitle{Introduction}
+Maximum Likelihood Estimation
+\begin{itemize}
+\item important technique in statistics and econometrics
+\item software packages: ready-made routines for standard models
+\item non-standard or new models: users have to implement them theirselves
+\item \pkg{maxLik} package could help
+\item \pkg{maxLik} for implementing new standard models
+\item \pkg{maxLik} available on CRAN, R-Forge, and \url{maxLik.org}
+\end{itemize}
+\end{frame}
+
+\section{Using maxLik}
+\begin{frame}
+\frametitle{Using \pkg{maxLik}}
+ML estimation with the \pkg{maxLik} package
+\begin{itemize}
+\item function \code{maxLik}
+\item 2 mandatory arguments:
+   \begin{itemize}
+   \item \code{logLik} = log-likelihood function
+   \item \code{start} = vector of starting values
+   \end{itemize}
+\end{itemize}
+\vspace*{2ex}
+Example
+\begin{itemize}
+\item fit normal distribution
+\item 100 draws, $\mu = 1$, $\sigma = 2$\\
+   \code{x <- rnorm( 100, mean = 1, sd = 2 )}
+\item ML estimation of $\mu$ and $\sigma$
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Using \pkg{maxLik}: Estimation}
+Log-likelihood function
+\begin{itemize}
+\item first argument = vector of parameters
+\item return: log-likelihood value (scalar) OR\\
+   vector of log-likelihood values of each observation
+\item \code{logLikFun <- function( param ) ...}
+\end{itemize}
+\vspace*{2ex}
+Maximum likelihood estimation
+\begin{itemize}
+\item \code{mle <- maxLik( logLik = logLikFun,\\
+   ~~~start = c( mu = 0, sigma = 1 ) )}
+\item convergence in 7 iterations
+\item estimated $\mu$ = sample mean
+\item estimated $\sigma$ = sample std.\ dev.\ (no df cor.)
+\end{itemize}
+\end{frame}
+
+\subsection{Gradients}
+\begin{frame}
+\frametitle{Using \pkg{maxLik}: Gradients}
+Numerical and analytical gradients
+\begin{itemize}
+\item numerical calculation of gradients
+   (\code{numericGradient})
+\item optional argument \code{grad}:
+   function to calculate (analytical) gradients
+\item first argument = vector of parameters
+\item return: vector of gradients OR\\
+   matrix of gradients evaluated at each observation
+\item \code{logLikGrad <- function( param ) ...}
+\end{itemize}
+\vspace*{2ex}
+ML estimation with gradients
+\begin{itemize}
+\item \code{mleGrad <- maxLik( logLik = logLikFun,\\
+   ~~~grad = logLikGrad,\\
+   ~~~start = c( mu = 0, sigma = 1 ) )}
+\item same estimates as before
+\item standard errors slightly different
+\end{itemize}
+\end{frame}
+
+\subsection{Hessian}
+\begin{frame}
+\frametitle{Using \pkg{maxLik}: Hessian}
+Numerical and analytical Hessian
+\begin{itemize}
+\item numerical calculation of Hessian
+   (\code{numericHessian} or \code{numericNHessian})
+\item optional argument \code{hess}:
+   function to calculate (analytical) Hessian
+\item first argument = vector of parameters
+\item return: Hessian matrix
+\item \code{logLikHess <- function( param ) ...}
+\end{itemize}
+\vspace*{2ex}
+ML estimation with gradients and Hessian
+\begin{itemize}
+\item \code{mleHess <- maxLik( logLik = logLikFun,\\
+   ~~~grad = logLikGrad, hess = logLikHess,\\
+   ~~~start = c( mu = 0, sigma = 1 ) )}
+\item same estimates and standard errors as before
+\end{itemize}
+\end{frame}
+
+\subsection{Methods}
+\begin{frame}
+\frametitle{Using \pkg{maxLik}: Optimization methods}
+\begin{itemize}
+\item optional argument \code{method}
+\item 5 optimisation methods
+   \begin{itemize}
+   \item \code{"NR"}: Newton-Raphson (default, G, H)
+   \item \code{"BHHH"}: Berndt-Hall-Hall-Hausman (Gi)
+   \item \code{"BFGS"}: Broyden-Fletcher-Goldfarb-Shanno (G)
+   \item \code{"NM"}: Nelder-Mead
+   \item \code{"SANN"}: simulated-annealing
+   \end{itemize}
+\item NR: implemented in \pkg{maxLik}
+\item BHHH: uses the NR algorithm
+\item BFGS, NM, SANN: use \code{optim}
+\end{itemize}
+\end{frame}
+
+\subsection{S3 methods}
+\begin{frame}
+\frametitle{S3 methods}
+\code{summary} method
+\begin{itemize}
+\item calculates the covariance matrix of the estimates (inverse of the Hessian)
+\item calculates the standard errors, t-values, and P-values of the estimates
+\end{itemize}
+
+\end{frame}
+
+
+\section{Future}
+\begin{frame}
+\frametitle{Future Plans and Issues}
+Implement further optimization tools, e.g.
+\begin{itemize}
+\item \code{nlm} (G, H)
+\item \code{nlminb}: PORT routines, box constraints (G, H)
+\item L-BFGS-B (\code{optim}): box constraints (G)
+\item \code{constrOptim}: linear inequality constraints (G)
+\end{itemize}
+\vspace*{1ex}
+Gradients and Hessian: ``attributes'' of objective function
+\begin{itemize}
+\item (intermediate) results for calculating the log-likelihood
+   can be used for the calculation of gradients and Hessian\\
+   $\Rightarrow$ less code and faster
+\item used by \code{nlm}
+\item could be implemented for NR, BHHH, (\code{nlm})
+\item could not be implemented for BFGS, (L-BFGS-B,
+   \code{constrOptim}, \code{nlminb})
+   (NM, SANN)
+\end{itemize}
+\end{frame}
+
+\end{document}

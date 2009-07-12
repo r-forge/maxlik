@@ -1,0 +1,33 @@
+\usepackage[latin1]{inputenc}
+\usepackage{textcomp}
+\usepackage{setspace}
+\usepackage{bm}
+
+\usetheme[right]{CopenhagenFOI}
+\usecolortheme{sidebartab}
+% \usepackage{beamerthemesplit}
+% \setbeamertemplate{itemize subitem}{$\Rightarrow$}
+\setbeamertemplate{enumerate item}[square]
+
+\setbeamercolor{alerted text}{fg=red}
+
+\usepackage{natbib}
+
+\AtBeginDocument{
+\setlength{\abovedisplayskip}{0.1em}
+\setlength{\belowdisplayskip}{0.1em}
+}
+\makeatletter
+\setbeamertemplate{note page}[plain]
+\setbeamerfont{note page}{size=\scriptsize}
+\hyphenpenalty = 5000
+\binoppenalty = 10000
+\relpenalty = 5000
+\newcommand{\pkg}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\ELA}{\mbox{\large$\varepsilon$}}
+\newcommand{\myhrule}{\vspace{1ex} \hrule \vspace{1ex}}
+\newcommand{\argmin}{\mathop{\rm argmin}}
+%\setbeamersize{text margin left=0.5cm}
+\newcommand{\R}{\textsf{R}}
+\makeatother
