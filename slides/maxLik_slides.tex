@@ -12,7 +12,7 @@
 
 \title[maxLik: Maximum Likelihood in \R]{
    maxLik: A Package for Maximum Likelihood Estimation in \textsf{R}}
-\author[Arne Henningsen]{Ott Toomet$^{1,2}$ and Arne Henningsen$^3$}
+\author[Arne Henningsen]{Ott Toomet$^{1,2}$ and \underline{Arne Henningsen}$^3$}
 \date{\footnotesize{
 1. Department of Economics, University of Tartu\\
 2. Department of Economics, Aarhus School of Business, University of Aarhus\\
@@ -32,8 +32,10 @@ Maximum Likelihood Estimation
 \item important technique in statistics and econometrics
 \item software packages: ready-made routines for standard models
 \item non-standard or new models: users have to implement them theirselves
-\item \pkg{maxLik} package could help
-\item \pkg{maxLik} for implementing new standard models
+   $\Rightarrow$ \pkg{maxLik} package could help
+\item packages for MLE of specific models could use \pkg{maxLik}
+   (\textbf{LambertW}, \textbf{mlogit}, \textbf{sampleSelection},
+   \textbf{truncreg})
 \item \pkg{maxLik} available on CRAN, R-Forge, and \url{maxLik.org}
 \end{itemize}
 \end{frame}
@@ -62,7 +64,7 @@ Example
 
 \begin{frame}
 \frametitle{Using \pkg{maxLik}: Estimation}
-Log-likelihood function
+Log-likelihood function (argument \code{logLik})
 \begin{itemize}
 \item first argument = vector of parameters
 \item return: log-likelihood value (scalar) OR\\
@@ -128,58 +130,100 @@ ML estimation with gradients and Hessian
 \end{itemize}
 \end{frame}
 
-\subsection{Methods}
+\subsection{Algorithms}
 \begin{frame}
-\frametitle{Using \pkg{maxLik}: Optimization methods}
+\frametitle{Using \pkg{maxLik}: Optimisation algorithm}
 \begin{itemize}
 \item optional argument \code{method}
 \item 5 optimisation methods
    \begin{itemize}
    \item \code{"NR"}: Newton-Raphson (default, G, H)
-   \item \code{"BHHH"}: Berndt-Hall-Hall-Hausman (Gi)
-   \item \code{"BFGS"}: Broyden-Fletcher-Goldfarb-Shanno (G)
-   \item \code{"NM"}: Nelder-Mead
-   \item \code{"SANN"}: simulated-annealing
+   \item \code{"BHHH"}: Berndt-Hall-Hall-Hausman (Gi, \noH{})
+   \item \code{"BFGS"}: Broyden-Fletcher-Goldfarb-Shanno (G, \noH{})
+   \item \code{"NM"}: Nelder-Mead (\noG{}, \noH{})
+   \item \code{"SANN"}: simulated-annealing (\noG{}, \noH{})
    \end{itemize}
-\item NR: implemented in \pkg{maxLik}
-\item BHHH: uses the NR algorithm
+\item unused gradients (\noG) and Hessians (\noH) are ignored
+\item NR: implemented in \pkg{maxLik} (\code{maxNR})
+\item BHHH: uses the NR algorithm (wrapper: \code{maxBHHH})
 \item BFGS, NM, SANN: use \code{optim}
+   (wrapper: \code{maxBFGS}, \code{maxNM}, \code{maxSANN})
 \end{itemize}
 \end{frame}
 
-\subsection{S3 methods}
+\subsection{S3 class}
 \begin{frame}
-\frametitle{S3 methods}
-\code{summary} method
+\frametitle{S3 class and methods}
+Class
 \begin{itemize}
-\item calculates the covariance matrix of the estimates (inverse of the Hessian)
-\item calculates the standard errors, t-values, and P-values of the estimates
+\item \code{maxLik} returns an object of class \code{"maxLik"}
 \end{itemize}
-
+\vspace*{2ex}
+Methods for Objects of Class \code{"maxLik"}
+\begin{itemize}
+\item \code{summary}
+   \begin{itemize}
+   \item calculates the covariance matrix of the estimates\\
+      (inverse of the negative Hessian)
+   \item calculates the standard errors, t-values, and P-values of the estimates
+   \end{itemize}
+\item print (also for summary.maxLik)
+\item coef, vcov
+\item logLik, AIC
+\end{itemize}
 \end{frame}
 
 
 \section{Future}
 \begin{frame}
-\frametitle{Future Plans and Issues}
-Implement further optimization tools, e.g.
+\frametitle{Future Plans}
 \begin{itemize}
-\item \code{nlm} (G, H)
-\item \code{nlminb}: PORT routines, box constraints (G, H)
-\item L-BFGS-B (\code{optim}): box constraints (G)
-\item \code{constrOptim}: linear inequality constraints (G)
+\item Further optimization tools, e.g.
+   \begin{itemize}
+   \item \code{nlm} (G, H)
+   \item \code{nlminb}: PORT routines, box constraints (G, H)
+   \item L-BFGS-B (\code{optim}): box constraints (G)
+   \item \code{constrOptim}: linear inequality constraints (G)
+   \end{itemize}
+\item Gradients and Hessian: ``attributes'' of objective function\\
+   (next slide)
+\item Features requested by users
+\item Features suggested by you
 \end{itemize}
-\vspace*{1ex}
+\end{frame}
+
+\begin{frame}
+\frametitle{Future Issues}
 Gradients and Hessian: ``attributes'' of objective function
 \begin{itemize}
-\item (intermediate) results for calculating the log-likelihood
-   can be used for the calculation of gradients and Hessian\\
+\item intermediate results for calculating the log-likelihood\\
+   $\rightarrow$ calculation of gradients and Hessian\\
    $\Rightarrow$ less code and faster
-\item used by \code{nlm}
-\item could be implemented for NR, BHHH, (\code{nlm})
-\item could not be implemented for BFGS, (L-BFGS-B,
-   \code{constrOptim}, \code{nlminb})
-   (NM, SANN)
+\item user can choose: \code{grad}/\code{hess} OR attributes?
+\item attributes could be implemented for NR, BHHH, (\code{nlm})
+\item \code{nlm} uses attributes
+   (compatibility: wrapper function calls \code{logLik}, \code{grad},
+   and \code{hess} and returns LLV + attributes)
+\item attributes could not be implemented for BFGS, (NM, SANN,)
+   (L-BFGS-B, \code{constrOptim}, \code{nlminb})\\
+   (\code{grad} and \code{hess} functions
+   extract attribute \code{"gradient"} and \code{"hessian"}
+   of \code{logLik})
+\end{itemize}
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+\textbf{maxLik} package
+\begin{itemize}
+\item Simplifies ML estimations\\
+   (users and package developers)
+\item Gradients and Hessians: numerical or analytical
+\item 5 different optimisation algorithms
+\item Algorithm can be switched easily
+\item Future plans
 \end{itemize}
 \end{frame}
 
