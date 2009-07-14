@@ -2,6 +2,7 @@
 \usepackage{textcomp}
 \usepackage{setspace}
 \usepackage{bm}
+\usepackage{Sweave}
 
 \usetheme[right]{CopenhagenFOI}
 \usecolortheme{sidebartab}
@@ -24,7 +25,7 @@
 \binoppenalty = 10000
 \relpenalty = 5000
 \newcommand{\pkg}[1]{\textbf{#1}}
-\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\code}[1]{{\color{blue}\texttt{#1}}}
 \newcommand{\ELA}{\mbox{\large$\varepsilon$}}
 \newcommand{\myhrule}{\vspace{1ex} \hrule \vspace{1ex}}
 \newcommand{\argmin}{\mathop{\rm argmin}}

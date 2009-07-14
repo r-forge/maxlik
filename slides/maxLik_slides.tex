@@ -40,6 +40,30 @@ Maximum Likelihood Estimation
 \end{itemize}
 \end{frame}
 
+\begin{frame}
+\frametitle{History and Alternatives}
+History
+\begin{itemize}
+\item 2003: \pkg{micEcon} package:\\
+   2-step estimation of Heckman sample selection model
+\item 2005: Ott Toomet:\\
+   ML estimation of Heckman sample selection model
+\item 1/2008: split-up \pkg{micEcon} package:
+   \begin{itemize}
+   \item \pkg{micEcon}
+   \item \pkg{sampleSelection}
+   \item \pkg{maxLik}
+   \end{itemize}
+\end{itemize}
+\vspace*{1ex}
+Alternatives
+\begin{itemize}
+\item \code{mle} (\pkg{stats4})
+\item using a general solver
+   (e.g.\ \code{optim}, \code{nlm})
+\end{itemize}
+\end{frame}
+
 \section{Using maxLik}
 \begin{frame}
 \frametitle{Using \pkg{maxLik}}
@@ -80,6 +104,32 @@ Maximum likelihood estimation
 \item estimated $\mu$ = sample mean
 \item estimated $\sigma$ = sample std.\ dev.\ (no df cor.)
 \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Using \pkg{maxLik}: Results}
+\begin{small}
+\begin{Schunk}
+\begin{Sinput}
+> summary(mle)
+\end{Sinput}
+\begin{Soutput}
+--------------------------------------------
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 7 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18185  6.4935 8.388e-11 ***
+sigma  1.81648    0.12849 14.1367 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+--------------------------------------------
+\end{Soutput}
+\end{Schunk}
+\end{small}
 \end{frame}
 
 \subsection{Gradients}
@@ -159,7 +209,7 @@ Class
 \item \code{maxLik} returns an object of class \code{"maxLik"}
 \end{itemize}
 \vspace*{2ex}
-Methods for Objects of Class \code{"maxLik"}
+Methods for objects of class \code{"maxLik"}
 \begin{itemize}
 \item \code{summary}
    \begin{itemize}
@@ -167,9 +217,9 @@ Methods for Objects of Class \code{"maxLik"}
       (inverse of the negative Hessian)
    \item calculates the standard errors, t-values, and P-values of the estimates
    \end{itemize}
-\item print (also for summary.maxLik)
-\item coef, vcov
-\item logLik, AIC
+\item \code{print} (also for \code{"summary.maxLik"})
+\item \code{coef}, \code{vcov}
+\item \code{logLik}, \code{AIC}
 \end{itemize}
 \end{frame}
 
@@ -178,13 +228,15 @@ Methods for Objects of Class \code{"maxLik"}
 \begin{frame}
 \frametitle{Future Plans}
 \begin{itemize}
-\item Further optimization tools, e.g.
+\item more S3 methods
+\item Further optimisation tools, e.g.
    \begin{itemize}
    \item \code{nlm} (G, H)
    \item \code{nlminb}: PORT routines, box constraints (G, H)
    \item L-BFGS-B (\code{optim}): box constraints (G)
    \item \code{constrOptim}: linear inequality constraints (G)
    \end{itemize}
+\item change to S4 classes?
 \item Gradients and Hessian: ``attributes'' of objective function\\
    (next slide)
 \item Features requested by users
@@ -221,7 +273,7 @@ Gradients and Hessian: ``attributes'' of objective function
 \item Simplifies ML estimations\\
    (users and package developers)
 \item Gradients and Hessians: numerical or analytical
-\item 5 different optimisation algorithms
+\item 5 different optimisation algorithms (incl.~BHHH)
 \item Algorithm can be switched easily
 \item Future plans
 \end{itemize}
