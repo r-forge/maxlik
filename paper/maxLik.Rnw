@@ -1,37 +1,51 @@
-\documentclass[12pt,a4paper]{article}
-
+\documentclass[smallextended,natbib]{svjour3}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{mathptmx}
+\usepackage{textcomp}
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{Sweave}
-
-\renewcommand{\title}[1]{\begin{center}{\bf \LARGE #1}\end{center}}
-\newcommand{\affiliations}{\footnotesize}
-\newcommand{\keywords}{\paragraph{Keywords:}}
-
-\setlength{\oddsidemargin}{0cm} \setlength{\evensidemargin}{0cm}
-\setlength{\textwidth}{16.5cm} \setlength{\topmargin}{-1cm}
-\setlength{\textheight}{24.5cm}
+\usepackage{bm}
+\smartqed
 
 \newcommand{\code}[1]{\texttt{#1}}
 \setlength{\emergencystretch}{3em}
 
+\journalname{Computational Statistics}
+
 \begin{document}
-\pagestyle{empty}
 
-\title{maxLik: A Package for Maximum\\[3mm]Likelihood Estimation in \textsf{R}}
+\title{maxLik: A Package for Maximum Likelihood Estimation in \textsf{R}}
 
-\begin{center}
-  {\bf Ott Toomet$^{1,2}$ and Arne Henningsen$^{3,*}$}
-\end{center}
+\titlerunning{maxLik: Maximum Likelihood Estimation}
 
-\begin{affiliations}
-1. Department of Economics, University of Tartu (Estonia)\par
-2. Department of Economics, Aarhus School of Business, University of Aarhus (Denmark)\par
-3. Institute of Food and Resource Economics, University of Copenhagen (Denmark)\par
-* Contact author: arne.henningsen@gmail.com
-\end{affiliations}
+\author{Ott Toomet \and Arne Henningsen}
 
-\keywords Maximum Likelihood, Optimisation
+\institute{Ott Toomet \at
+   Department of Economics, University of Tartu (Estonia)\\
+   Department of Economics, Aarhus School of Business,
+      University of Aarhus (Denmark)\\
+\and
+   Arne Henningsen \at
+   Institute of Food and Resource Economics\\
+   University of Copenhagen\\
+   Rolighedsvej 25\\
+   1958 Frederiksberg C, Denmark\\
+   Tel.: +45-353-32274\\
+   \email{arne@foi.dk}
+}
+
+\date{Received: date / Accepted: date}
+
+\maketitle
+
+\begin{abstract}
+Insert your abstract here.
+\keywords{Maximum Likelihood \and Optimisation}
+\end{abstract}
 
 
 \section{Introduction}
@@ -46,8 +60,8 @@ However, if practitioners and researchers want to estimate
 non-standard models or develop new models,
 they have to implement the routines
 for the maximum likelihood estimations themselves.
-In this case, the \textbf{maxLik} package~\cite{r-maxlik-0.5}
-for the statistical software environment \textsf{R} \cite{r-project09}
+In this case, the \textbf{maxLik} package~\citep{r-maxlik-0.5}
+for the statistical software environment \textsf{R} \citep{r-project09}
 might be very helpful.
 Furthermore, developers that implement routines for maximum likelihood
 estimations of specific models,
@@ -236,11 +250,11 @@ Currently, the user can use argument \code{method} to choose between
 five different optimisation algorithms.
 Argument \code{method} defaults to
 \code{"NR"} for the Newton-Raphson algorithm, but it can be also
-\code{"BHHH"} for Berndt-Hall-Hall-Hausman \cite{berndt74},
+\code{"BHHH"} for Berndt-Hall-Hall-Hausman \citep{berndt74},
 \code{"BFGS"} for Broyden-Fletcher-Goldfarb-Shanno
-\cite{broyden70,fletcher70,goldfarb70,shanno70},
-\code{"NM"} for Nelder-Mead \cite{nelder65}, or
-\code{"SANN"} for simulated-annealing \cite{belisle92}.
+\citep{broyden70,fletcher70,goldfarb70,shanno70},
+\code{"NM"} for Nelder-Mead \citep{nelder65}, or
+\code{"SANN"} for simulated-annealing \citep{belisle92}.
 
 
 \section{Implementation}
@@ -293,8 +307,10 @@ with other participants
 in order to make the \textbf{maxLik} package more attractive
 to users and package writers.
 
+%\begin{acknowledgements}
+%\end{acknowledgements}
 
-\bibliographystyle{amsplain}
+\bibliographystyle{spbasic}
 % \bibliography{agrarpol}
 \bibliography{references}
 
