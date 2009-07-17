@@ -130,8 +130,8 @@ Starting values must be provided through argument \code{start}.
 In our examples, we use the parameters of a standard normal distribution
 ($\mu = 0$, $\sigma = 1$) as starting values.
 <<>>=
-mle <- maxLik( logLik = logLikFun, start = c( 0, 1 ) )
-mle
+mle <- maxLik( logLik = logLikFun, start = c( mu = 0,  sigma = 1 ) )
+summary( mle )
 @
 As expected, the estimated parameters are equal to the mean
 and the standard deviation (without correction for degrees of freedom)
@@ -173,20 +173,12 @@ logLikGrad <- function( param ) {
 Now we call the \code{maxLik} function and use argument \code{grad}
 to specify the function that calculates the gradients:
 <<>>=
-mleGrad <- maxLik( logLik = logLikFun, grad = logLikGrad, start = c( 0, 1 ) )
-all.equal( mleGrad, mle )
-names( mle )[ c(3,4) ]
+mleGrad <- maxLik( logLik = logLikFun, grad = logLikGrad,
+   start = c( mu = 0, sigma = 1 ) )
+summary( mleGrad )
 @
-Providing analytical gradients has no significant effect on the estimates
-but the gradients and the Hessian calculated at the maximum
-of the log-likelihood function are slightly different.%
-\footnote{%
-\code{all.equal} considers two elements as unequal
-if both the mean absolute difference and the mean relative difference
-are larger than the tolerance
-(defaults to \code{.Machine\$double.eps\^{ }0.5},
-usually around \Sexpr{round(.Machine[["double.eps"]]^0.5,9)}).
-}
+Providing analytical gradients has no (visible) effect on the estimates
+but the standard errors are slightly different.
 
 The user can use argument \code{hess} of the \code{maxLik} function
 to provide a function that returns the Hessian matrix
@@ -224,11 +216,19 @@ Now we call the \code{maxLik} function with argument \code{hess}
 set to this function:
 <<>>=
 mleHess <- maxLik( logLik = logLikFun, grad = logLikGrad,
-   hess = logLikHess, start = c( 0, 1 ) )
+   hess = logLikHess, start = c( mu = 0, sigma = 1 ) )
+summary( mleHess )
 all.equal( mleHess, mleGrad )
 @
 Providing an analytical Hessian has no significant effect
-on the outcome of the ML estimation in our simple example.
+on the outcome of the ML estimation in our simple example.%
+\footnote{%
+\code{all.equal} considers two elements as equal
+if either the mean absolute difference or the mean relative difference
+are smaller than the tolerance
+(defaults to \code{.Machine\$double.eps\^{ }0.5},
+usually around \Sexpr{round(.Machine[["double.eps"]]^0.5,9)}).
+}
 
 \subsection{Optimisation Methods}
 
@@ -295,6 +295,7 @@ to users and package writers.
 
 
 \bibliographystyle{amsplain}
-\bibliography{agrarpol}
+% \bibliography{agrarpol}
+\bibliography{references}
 
 \end{document}
