@@ -12,6 +12,7 @@
 \smartqed
 
 \newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{\textbf{#1}}
 \setlength{\emergencystretch}{3em}
 
 \journalname{Computational Statistics}
@@ -59,26 +60,26 @@ However, if practitioners and researchers want to estimate
 non-standard models or develop new models,
 they have to implement the routines
 for the maximum likelihood estimations themselves.
-In this case, the \textbf{maxLik} package~\citep{r-maxlik-0.5}
+In this case, the \pkg{maxLik} package~\citep{r-maxlik-0.5}
 for the statistical software environment \textsf{R} \citep{r-project09}
 might be very helpful.
 Furthermore, developers that implement routines for maximum likelihood
 estimations of specific models,
-can save time and lines of code by using the \textbf{maxLik} package.
-The \textbf{maxLik} package is available from
+can save time and lines of code by using the \pkg{maxLik} package.
+The \pkg{maxLik} package is available from
 CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
 homepage (\url{http://www.maxLik.org/}).
 
 
-\section{Using the \textbf{maxLik} package}
+\section{Using the \pkg{maxLik} package}
 
-The \textbf{maxLik} package must be installed and loaded before it can be used.
-The following command loads the \textbf{maxLik} package:
+The \pkg{maxLik} package must be installed and loaded before it can be used.
+The following command loads the \pkg{maxLik} package:
 <<>>=
 library( maxLik )
 @
-The most important user interface of the \textbf{maxLik} package
+The most important user interface of the \pkg{maxLik} package
 is a function with the (same) name \code{maxLik}.
 This function has two mandatory arguments
 <<eval=FALSE>>=
@@ -88,7 +89,7 @@ The first argument (\code{logLik}) must be a function
 that calculates the log-likelihood value.
 The second argument (\code{start}) must be a vector of starting values.
 
-We demonstrate the usage of the \textbf{maxLik} package by a simple example:
+We demonstrate the usage of the \pkg{maxLik} package by a simple example:
 we fit a normal distribution by maximum likelihood.
 First, we generate a vector ($x$) of 100 draws
 from a normal distribution with a mean of $\mu = 1$
@@ -168,7 +169,7 @@ sqrt( sum( ( x - mean( x ) )^2 ) / 100 )
 If no analytical gradients are provided by the user,
 numerical gradients and numerical Hessians are calculated
 by the functions \code{numericGradient} and \code{numericNHessian},
-which are also included in the \textbf{maxLik} package.
+which are also included in the \pkg{maxLik} package.
 While the maximisation of the likelihood function of this simple model
 works well with numerical gradients and Hessians,
 providing analytical gradients could increase the speed and probability
@@ -291,7 +292,7 @@ method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
 are ignored.
 
 
-The \textbf{maxLik} package is implemented using S3 classes.
+The \pkg{maxLik} package is implemented using S3 classes.
 The \code{maxLik} wrapper returns a list of class \code{"maxLik"}.
 Corresponding methods can handle the likelihood-specific properties
 of the estimate including the fact
@@ -305,16 +306,16 @@ of the estimated parameters,
 \code{logLik} for extracting the log-likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
 
-Currently, the \textbf{maxLik} package is used for maximum likelihood
+Currently, the \pkg{maxLik} package is used for maximum likelihood
 estimations in three \textsf{R} packages that are available on CRAN:
-\textbf{mlogit}, \textbf{sampleSelection},
-and \textbf{truncreg}.
+\pkg{mlogit}, \pkg{sampleSelection},
+and \pkg{truncreg}.
 On the DSC conference,
 we would like to demonstrate the implementation and the usage
-of the \textbf{maxLik} package.
+of the \pkg{maxLik} package.
 Furthermore, we want to discuss future improvements and features
 with other participants
-in order to make the \textbf{maxLik} package more attractive
+in order to make the \pkg{maxLik} package more attractive
 to users and package writers.
 
 %\begin{acknowledgements}
