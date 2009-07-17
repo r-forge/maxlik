@@ -22,20 +22,19 @@
 
 \titlerunning{maxLik: Maximum Likelihood Estimation}
 
-\author{Ott Toomet \and Arne Henningsen}
+\author{Arne Henningsen \and Ott Toomet}
 
-\institute{Ott Toomet \at
-   Department of Economics, University of Tartu (Estonia)\\
-   Department of Economics, Aarhus School of Business,
-      University of Aarhus (Denmark)\\
-\and
+\institute{
    Arne Henningsen \at
-   Institute of Food and Resource Economics\\
-   University of Copenhagen\\
-   Rolighedsvej 25\\
-   1958 Frederiksberg C, Denmark\\
+   Institute of Food and Resource Economics, University of Copenhagen\\
+   Rolighedsvej 25, 1958 Frederiksberg C, Denmark\\
    Tel.: +45-353-32274\\
    \email{arne@foi.dk}
+\and
+   Ott Toomet \at
+   Department of Economics, University of Tartu (Estonia)\\
+   Department of Economics, Aarhus School of Business,
+      University of Aarhus (Denmark)
 }
 
 \date{Received: date / Accepted: date}
