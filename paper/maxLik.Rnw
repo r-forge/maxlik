@@ -64,8 +64,17 @@ In this case, the \pkg{maxLik} package~\citep{r-maxlik-0.5}
 for the statistical software environment \textsf{R} \citep{r-project09}
 might be very helpful.
 Furthermore, developers that implement routines for maximum likelihood
-estimations of specific models,
-can save time and lines of code by using the \pkg{maxLik} package.
+estimations of specific models
+can reduce their effort
+by using the \pkg{maxLik} package for the actual parameter estimation.
+For instance, the packages
+\pkg{LambertW} \citep{r-lambertw-0.1.6},
+\pkg{mlogit} \citep{r-mlogit-0.1},
+\pkg{sampleSelection} \citep{toomet08}, and
+\pkg{truncreg} \citep{r-truncreg-0.1}
+use the \pkg{maxLik} package
+for their maximum likelihood estimations.
+
 The \pkg{maxLik} package is available from
 CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
@@ -306,10 +315,6 @@ of the estimated parameters,
 \code{logLik} for extracting the log-likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
 
-Currently, the \pkg{maxLik} package is used for maximum likelihood
-estimations in three \textsf{R} packages that are available on CRAN:
-\pkg{mlogit}, \pkg{sampleSelection},
-and \pkg{truncreg}.
 On the DSC conference,
 we would like to demonstrate the implementation and the usage
 of the \pkg{maxLik} package.
