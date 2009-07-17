@@ -73,6 +73,21 @@ homepage (\url{http://www.maxLik.org/}).
 
 \section{Using the \textbf{maxLik} package}
 
+The \textbf{maxLik} package must be installed and loaded before it can be used.
+The following command loads the \textbf{maxLik} package:
+<<>>=
+library( maxLik )
+@
+The most important user interface of the \textbf{maxLik} package
+is a function with the (same) name \code{maxLik}.
+This function has two mandatory arguments
+<<eval=FALSE>>=
+maxLik( logLik, start )
+@
+The first argument (\code{logLik}) must be a function
+that calculates the log-likelihood value.
+The second argument (\code{start}) must be a vector of starting values.
+
 We demonstrate the usage of the \textbf{maxLik} package by a simple example:
 we fit a normal distribution by maximum likelihood.
 First, we generate a vector ($x$) of 100 draws
@@ -106,8 +121,9 @@ and its logarithm (i.e.\ the log-likelihood function) is
 - \frac{1}{2} \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^2}.
 \end{equation}
 
-As a prerequisite for the maximum likelihood estimation,
-we have to implement the log-likelihood function in \textsf{R}.
+Given the log-likelihood function above,
+we create an \textsf{R} function
+that calculates the log-likelihood value.
 Its first argument must be the vector of the parameters to be estimated
 and it must return the log-likelihood value.%
 \footnote{
@@ -125,23 +141,18 @@ logLikFun <- function( param ) {
    return( logLikValue )
 }
 @
-The \textbf{maxLik} package must be installed and loaded
-before it can be used.
-The following command loads the \textbf{maxLik} package.
-<<>>=
-library( maxLik )
-@
-Now, we can use the \code{maxLik} functionn ---
-the most important user interface
-of the \textbf{maxLik} package ---
+Now, we use the \code{maxLik} function
 to find the values for the $\mu$ and $\beta$ parameters
 that give the best fit, i.e.\ the largest value of the (log-)
 likelihood function.
-The first argument of \code{maxLik} (\code{logLik})
-is mandatory and specifies the log-likelihood function.
-Starting values must be provided through argument \code{start}.
-In our examples, we use the parameters of a standard normal distribution
-($\mu = 0$, $\sigma = 1$) as starting values.
+We set the first argument (\code{logLik}) equal to the log-likelihood function
+that we have defined above (\code{logLikFun})
+and we use the parameters of a standard normal distribution
+($\mu = 0$, $\sigma = 1$) as starting values (argument \code{start}).
+Assigning names to the vector of starting values is not required
+but has the advantage
+that the returned estimates have also names,
+which improves the readability of the results.
 <<>>=
 mle <- maxLik( logLik = logLikFun, start = c( mu = 0,  sigma = 1 ) )
 summary( mle )
