@@ -422,13 +422,37 @@ of the estimated parameters,
 \code{logLik} for extracting the log-likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
 
-On the DSC conference,
-we would like to demonstrate the implementation and the usage
-of the \pkg{maxLik} package.
-Furthermore, we want to discuss future improvements and features
-with other participants
-in order to make the \pkg{maxLik} package more attractive
-to users and package writers.
+
+\section{Summary and Outlook}
+
+The \pkg{maxLik} package provides a convenient interface
+for maximum likelyhood estimations
+--- both for end users and package developers.
+Alternatively, the \code{mle} function
+\citep[package \pkg{stats4},][]{r-project09}
+and general-purpose solvers can be used for maximum likelyhood estimations
+in \textsf{R}.
+However, the \pkg{maxLik} package has three important features
+that are not available in at least some of the alternatives:
+First, the covariance matrix of the estimates can be calculated automatically.
+Second, the user can easily switch between different optimisation algorithms.
+Third, the package provides the Berndt-Hall-Hall-Hausman (BHHH) algorithm,
+which is very popular for maximum likelihood estimations.
+
+In the future,
+we plan to add support for further optimisation algorithms,
+e.g.\ function \code{nlm},
+the "L-BFGS-B" algorithm in function \code{optim}
+   that allows for box constraints,
+function \code{nlminb}
+   that uses PORT routines \citep{gay90}
+   and also allows for box constraints,
+function \code{constrOptim}
+   that allows for linear inequality constraints, or
+function \code{ucminf} of the \pkg{ucminf} package \citep{r-ucminf-1.0}.
+
+We hope that these improvements make the \pkg{maxLik} package
+even more attractive for users and package writers.
 
 %\begin{acknowledgements}
 %\end{acknowledgements}
