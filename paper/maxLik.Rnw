@@ -272,7 +272,7 @@ on the outcome of the ML estimation in our simple example.
 
 \subsection{Optimisation Methods}
 
-Currently, the user can use argument \code{method} to choose between
+The user can use argument \code{method} to choose between
 five different optimisation algorithms.
 Argument \code{method} defaults to
 \code{"NR"} for the Newton-Raphson algorithm, but it can be also
@@ -281,6 +281,109 @@ Argument \code{method} defaults to
 \citep{broyden70,fletcher70,goldfarb70,shanno70},
 \code{"NM"} for Nelder-Mead \citep{nelder65}, or
 \code{"SANN"} for simulated-annealing \citep{belisle92}.
+The Newton-Raphson algorithm uses (numerical or analytical)
+gradients and Hessians;
+the BHHH and BFGS algorithms use only (numerical or analytical) gradients;
+the NM and SANN algorithms use neither gradients nor Hessians
+but only function values.
+The gradients and Hessians provided by a user through
+the arguments \code{grad} and \code{hess} are ignored
+if the selected method does not require this information,
+e.g.\ argument \code{hess} for the Berndt-Hall-Hall-Hausman method.
+Hence, the user can easily change the optimisation method
+without changing the arguments.
+
+\subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
+The BHHH method requires
+that the log-likelihood function (argument \code{logLik})
+must return a vector of log-likelihood values,
+where each element corresponds to an individual observation.
+<<>>=
+logLikFunInd <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   logLikValue <- -0.5 * log( 2 * pi ) - log( sigma ) -
+      0.5 * ( x - mu )^2 / sigma^2
+   return( logLikValue )
+}
+mleBHHH <- maxLik( logLik = logLikFunInd,
+   start = c( mu = 0, sigma = 1 ), method = "BHHH" )
+summary( mleBHHH )
+all.equal( logLik( mleBHHH ), logLik( mle ) )
+all.equal( coef( mleBHHH ), coef( mle ) )
+all.equal( vcov( mleBHHH ), vcov( mle ) )
+@
+While the estimated parameters and the corresponding log-likelihood value
+are (almost) equal to the previous estimates,
+the covariance matrix of the estimated parameters is slightly different.
+
+If the user wants to provide analytical gradients,
+the function that calculates the gradients (argument \code{grad})
+must return a numeric matrix,
+where each column corresponds to an estimated parameter
+and each row corresponds to an individual observation.
+<<>>=
+logLikGradInd <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   logLikGradValues <- cbind( ( x - mu ) / sigma^2,
+      - 1 / sigma + ( x - mu )^2 / sigma^3 )
+   return( logLikGradValues )
+}
+mleGradBHHH <- maxLik( logLik = logLikFun, grad = logLikGradInd,
+   start = c( mu = 0, sigma = 1 ), method = "BHHH" )
+all.equal( list( logLik( mleBHHH ), coef( mleBHHH ), vcov( mleBHHH ) ),
+   list( logLik( mleGradBHHH ), coef( mleGradBHHH ), vcov( mleGradBHHH ) ) )
+@
+There are no (relevant) differences between
+the estimates based on numerical gradients and
+the estimates based on analytical gradients.
+
+\subsubsection{Broyden-Fletcher-Goldfarb-Shannon (BFGS)}
+<<>>=
+mleGradBFGS <- maxLik( logLik = logLikFun, grad = logLikGrad,
+   start = c( mu = 0, sigma = 1 ), method = "BFGS" )
+summary( mleGradBFGS )
+all.equal( logLik( mleGradBFGS ), logLik( mleGrad ) )
+all.equal( coef( mleGradBFGS ), coef( mleGrad ) )
+all.equal( vcov( mleGradBFGS ), vcov( mleGrad ) )
+@
+The differences between
+the estimation results of the BFGS algorithm and
+the results of the Newton-Raphson algorithm are negligible.
+
+\subsubsection{Nelder-Mead (NM)}
+<<>>=
+mleNM <- maxLik( logLik = logLikFun,
+   start = c( mu = 0, sigma = 1 ), method = "NM" )
+summary( mleNM )
+logLik( mleNM ) - logLik( mleGrad )
+all.equal( coef( mleNM ), coef( mleGrad ) )
+all.equal( vcov( mleNM ), vcov( mleGrad ) )
+@
+The estimates and the covariance matrix
+obtained from the Nelder-Mead algorithm slightly differ
+from previous results using other algorithms
+and the fit (log-likelihood value) of the model
+is slightly worse (smaller) than for the previous models.
+
+\subsubsection{Simulated annealing (SANN)}
+<<echo=FALSE,results=hide>>=
+set.seed( 123 )
+@
+<<>>=
+mleSANN <- maxLik( logLik = logLikFun,
+   start = c( mu = 0, sigma = 1 ), method = "SANN" )
+summary( mleSANN )
+logLik( mleSANN ) - logLik( mleGrad )
+all.equal( coef( mleSANN ), coef( mleGrad ) )
+all.equal( vcov( mleSANN ), vcov( mleGrad ) )
+@
+Also the estimates and the covariance matrix
+obtained from the SANN algorithm slightly differ
+from previous results
+and the fit (log-likelihood value) of the model
+is also slightly worse (smaller) than for the previous models.
 
 
 \section{Implementation}
@@ -299,12 +402,10 @@ in the function \code{maxNR} itself.
 The actual optimisation in \code{maxBHHH}
 is done by \code{maxNR}.
 
-The \code{maxLik}
+As already mentioned above, the \code{maxLik}
 wrapper capabilities are designed in a transparent way, so that the
 user can easily swap the methods without changing the
-arguments.  The arguments not used by a particular optimisation
-method, such as \code{hess} for the Berndt-Hall-Hall-Hausman method,
-are ignored.
+arguments.
 
 
 The \pkg{maxLik} package is implemented using S3 classes.
