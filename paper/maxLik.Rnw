@@ -138,8 +138,8 @@ Its first argument must be the vector of the parameters to be estimated
 and it must return the log-likelihood value.%
 \footnote{
 Alternatively, it could return a numeric vector
-where each component is the log-likelihood value
-corresponding to an individual observations (see below).
+where each element is the log-likelihood value
+corresponding to an individual observation (see below).
 }
 <<>>=
 logLikFun <- function( param ) {
@@ -171,8 +171,9 @@ As expected, the estimated parameters are equal to the mean
 and the standard deviation (without correction for degrees of freedom)
 of the values in vector~$x$.
 <<>>=
-mean( x )
-sqrt( sum( ( x - mean( x ) )^2 ) / 100 )
+all.equal( coef( mle ), c( mean( x ),
+   sqrt( sum( ( x - mean( x ) )^2 ) / 100 ) ),
+   check.attributes = FALSE )
 @
 
 If no analytical gradients are provided by the user,
@@ -210,9 +211,20 @@ to specify the function that calculates the gradients:
 mleGrad <- maxLik( logLik = logLikFun, grad = logLikGrad,
    start = c( mu = 0, sigma = 1 ) )
 summary( mleGrad )
+all.equal( logLik( mleGrad ), logLik( mle ) )
+all.equal( coef( mleGrad ), coef( mle ) )
+all.equal( vcov( mleGrad ), vcov( mle ) )
 @
-Providing analytical gradients has no (visible) effect on the estimates
-but the standard errors are slightly different.
+Providing analytical gradients has no (relevant)%
+\footnote{%
+The function \code{all.equal} considers two elements as equal
+if either the mean absolute difference or the mean relative difference
+is smaller than the tolerance
+(defaults to \code{.Machine\$double.eps\^{ }0.5},
+usually around \Sexpr{round(.Machine[["double.eps"]]^0.5,9)}).
+}
+effect on the estimates
+but their covariance matrix and standard errors are slightly different.
 
 The user can use argument \code{hess} of the \code{maxLik} function
 to provide a function that returns the Hessian matrix
@@ -252,17 +264,11 @@ set to this function:
 mleHess <- maxLik( logLik = logLikFun, grad = logLikGrad,
    hess = logLikHess, start = c( mu = 0, sigma = 1 ) )
 summary( mleHess )
-all.equal( mleHess, mleGrad )
+all.equal( list( logLik( mleHess ), coef( mleHess ), vcov( mleHess ) ),
+   list( logLik( mleGrad ), coef( mleGrad ), vcov( mleGrad ) ) )
 @
-Providing an analytical Hessian has no significant effect
-on the outcome of the ML estimation in our simple example.%
-\footnote{%
-\code{all.equal} considers two elements as equal
-if either the mean absolute difference or the mean relative difference
-are smaller than the tolerance
-(defaults to \code{.Machine\$double.eps\^{ }0.5},
-usually around \Sexpr{round(.Machine[["double.eps"]]^0.5,9)}).
-}
+Providing an analytical Hessian has no (relevant) effect
+on the outcome of the ML estimation in our simple example.
 
 \subsection{Optimisation Methods}
 
