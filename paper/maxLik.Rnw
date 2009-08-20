@@ -12,6 +12,7 @@
 \smartqed
 
 \newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\loglik}{\mathcal{l}}
 \newcommand{\pkg}[1]{\textbf{#1}}
 \setlength{\emergencystretch}{3em}
 
@@ -43,8 +44,15 @@
 \maketitle
 
 \begin{abstract}
-Insert your abstract here.
-\keywords{Maximum Likelihood \and Optimisation}
+  This paper describes the \pkg{maxLik} for \textsl{R} statistical
+  environment.  The package is essentially a unified wrapper interface
+  to various optimization routines with interface, offering easy
+  access to likelihood-specific features like standard errors, or
+  information equality (BHHH method).  More advanced features of the
+  opimization algorithms, such as forcing the value of a particular
+  parameter be fixed, is also supported.
+  
+  \keywords{Maximum Likelihood \and Optimisation}
 \end{abstract}
 
 
@@ -82,6 +90,9 @@ homepage (\url{http://www.maxLik.org/}).
 
 
 \section{Using the \pkg{maxLik} package}
+
+\subsection{Basic usage}
+\label{sec:basic_usage}
 
 The \pkg{maxLik} package must be installed and loaded before it can be used.
 The following command loads the \pkg{maxLik} package:
@@ -384,6 +395,101 @@ obtained from the SANN algorithm slightly differ
 from previous results
 and the fit (log-likelihood value) of the model
 is also slightly worse (smaller) than for the previous models.
+
+
+\subsection{More advanced usage}
+\label{sec:advanced_usage}
+
+Optimization methods may support various additional features, such as
+the temperature-related parameters for \code{maxSANN}.  Below, we
+demonstrate how it is possible to fix certain parameters, we would
+like to handle as constants in the optimization process.  This feature
+is implemented in \code{maxNR} (and hence supported by \code{maxBHHH}
+as well), which is a part of \pkg{maxLik}.
+
+Let us return to our original task of estimating the parameters of a
+normal sample.  However, assume we know that the true value of $\sigma
+= 2$.  Instead of writing a new likelihood function, we may use the
+existing one while specifying that $\sigma$ is fixed at 2.  This is
+done via argument \code{activePar} of \code{maxNR}.  It is a logical
+vector of length of the parameter vector which specifies which
+components are allowed to change (are ``active'').  So, as $\sigma$
+was the second parameter, we should call:
+<<code:activePar>>=
+summary(maxLik(logLikFun, start=c(mu=0, sigma=2), activePar=c(TRUE, FALSE)))
+@ As we can see, the $\sigma$ is indeed exactly 2 while it's standard
+error and $t-$value do not carry any useful information.  Note also
+that the estimate of $\mu$ is unchanged (indeed, MLE estimate of it is
+still the sample average) while the estimated standard error is
+different.  Obviously, log-likelihood is lower in the constrained
+space although the reader may verify that allowing $\sigma$ to be free
+is an insignificant improvement according to the likelihood ratio
+test.
+
+Next, we demonstrate, how it is possible to fix a parameter
+automatically during the computations.  This may be useful if a large
+number of similar models where parameters occasionally converge toward
+the boundary of the parameter space.  Most popular optimization
+algorithms do not work well at such circumstances.  We demonstrate it
+by estimating a mixture model of two normal distributions on a sample,
+drawn from a single normal distribution.  Note that the following
+example is highly dependent on the initialization of random number
+generator and initial values for the estimation.  This happens often
+with mixture models.
+
+First, we generate a mixture of normals:
+<<code:generate_mixture>>=
+xMix <- c(rnorm(500), rnorm(500, mean=1))
+@ 
+Hence \code{xMix} is a 50\%-50\% mixture of two normal distributions: the
+first one has mean equal to 0 and the second has mean 1 (standard
+deviations are fixed to 1 for both distributions).  The log-likelihood
+of a mixture is simply
+\begin{equation}
+  \loglik = \sum_{i=1}^{N} 
+  \log( \varrho \phi (x_{i} - \mu_{1}) +
+  (1 - \varrho) \phi(x_{i} - \mu_{2})),
+\end{equation}
+where $\varrho$ is the percentage of the first component in the
+mixture and $\phi(\cdot)$ is the standard normal density function.  We
+implement this in \textsl{R}:
+<<code:logLikMix>>=
+logLikMix <- function(param) {
+   rho <- param[1]
+   if(rho < 0 || rho > 1)
+       return(NA)
+   mu1 <- param[2]
+   mu2 <- param[3]
+   ll <- log(rho*dnorm(xMix - mu1) + (1 - rho)*dnorm(xMix - mu2))
+}
+@ 
+Note that the function includes checking for feasible parameter
+values.  If $\varrho \not\in [0,1]$, it returns \code{NA}.  This
+signals to the \code{maxNR} that the attempted parameter value was out
+of range, and forces it to find a new one (closer to the previous
+value).  The results look the following:
+<<code:mix1>>=
+summary(m1 <- maxLik(logLikMix, start=c(0.5, 0, 0)))
+@ The estimates replicate the true parameters with high precision
+(although $\mu_{1}$ and $\mu_{2}$ are swapped).  However, let us now
+replace the mixture by a pure normal sample
+<<code:generate_pure_normal>>=
+xMix <- rnorm(1000)
+@ 
+and estimate it using the same log-likelihood implementation:
+<<code:mix2>>=
+summary(m2 <- maxLik(logLikMix, start=c(0.5, 0, 0)))
+@ 
+The estimation does not converge, although it approaches the correct
+point of the parameter space: mixture of 100\% normal with mean 0 and
+0\% with mean 1.  If the estimation is done by hand, it would be easy
+to fix the third parameter as in the example above.  However, this may
+not be a suitable approach if we perform computations on a large
+number of samples automatically.  In that case the logLik function has
+to signal the \code{maxNR} routine that the parameter is now fixed.
+
+
+
 
 
 \section{Implementation}
