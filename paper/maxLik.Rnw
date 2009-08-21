@@ -14,6 +14,7 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\loglik}{\mathcal{l}}
 \newcommand{\pkg}[1]{\textbf{#1}}
+\newcommand{\R}{\textsl{R}}
 \setlength{\emergencystretch}{3em}
 
 \journalname{Computational Statistics}
@@ -100,7 +101,11 @@ The following command loads the \pkg{maxLik} package:
 library( maxLik )
 @
 The most important user interface of the \pkg{maxLik} package
-is a function with the (same) name \code{maxLik}.
+is a function with the (same) name \code{maxLik}.  It mostly a wrapper
+for different optimization routines with a few additional features,
+useful for ML estimations.  This includes interpretation of Hessian as
+the inverse of negative variance-covariance matrix, and methods for
+printing and accessing results.
 This function has two mandatory arguments
 <<eval=FALSE>>=
 maxLik( logLik, start )
@@ -162,6 +167,8 @@ logLikFun <- function( param ) {
    return( logLikValue )
 }
 @
+(Note that the reader may want to consider using \R function
+\code{dnorm} instead.)
 Now, we use the \code{maxLik} function
 to find the values for the $\mu$ and $\beta$ parameters
 that give the best fit, i.e.\ the largest value of the (log-)
@@ -298,7 +305,8 @@ the BHHH and BFGS algorithms use only (numerical or analytical) gradients;
 the NM and SANN algorithms use neither gradients nor Hessians
 but only function values.
 The gradients and Hessians provided by a user through
-the arguments \code{grad} and \code{hess} are ignored
+the arguments \code{grad} and \code{hess} are always accepted in order
+to make the changing the algorithms easier, but they are ignored
 if the selected method does not require this information,
 e.g.\ argument \code{hess} for the Berndt-Hall-Hall-Hausman method.
 Hence, the user can easily change the optimisation method
@@ -308,7 +316,10 @@ without changing the arguments.
 The BHHH method requires
 that the log-likelihood function (argument \code{logLik})
 must return a vector of log-likelihood values,
-where each element corresponds to an individual observation.
+where each element corresponds to an individual observation.  This
+vector is used for calculating the gradient matrix which corresponds
+to the gradients for every individual observation, later used for
+outer product approximation.
 <<>>=
 logLikFunInd <- function( param ) {
    mu <- param[ 1 ]
@@ -326,13 +337,21 @@ all.equal( vcov( mleBHHH ), vcov( mle ) )
 @
 While the estimated parameters and the corresponding log-likelihood value
 are (almost) equal to the previous estimates,
-the covariance matrix of the estimated parameters is slightly different.
+the covariance matrix of the estimated parameters is slightly
+different.  This is because different ways of calculating the Hessian
+matrix may result in substantially different standard errors
+\citep{calzolari+fiorentini1993}. The NR algorithm uses exact
+analytic Hessian, BHHH uses
+outer product approximation.
 
 If the user wants to provide analytical gradients,
 the function that calculates the gradients (argument \code{grad})
 must return a numeric matrix,
 where each column corresponds to an estimated parameter
-and each row corresponds to an individual observation.
+and each row corresponds to an individual observation.  Note that in
+this case, the log-likelihood function itself does not have to return
+a vector of log-likelihood values by observations, as the gradient by
+observation is supplied by the \code{grad} function.
 <<>>=
 logLikGradInd <- function( param ) {
    mu <- param[ 1 ]
@@ -469,7 +488,7 @@ signals to the \code{maxNR} that the attempted parameter value was out
 of range, and forces it to find a new one (closer to the previous
 value).  The results look the following:
 <<code:mix1>>=
-summary(m1 <- maxLik(logLikMix, start=c(0.5, 0, 0)))
+summary(m1 <- maxLik(logLikMix, start=c(rho=0.5, mu1=0, mu2=0)))
 @ The estimates replicate the true parameters with high precision
 (although $\mu_{1}$ and $\mu_{2}$ are swapped).  However, let us now
 replace the mixture by a pure normal sample
@@ -482,14 +501,64 @@ summary(m2 <- maxLik(logLikMix, start=c(0.5, 0, 0)))
 @ 
 The estimation does not converge, although it approaches the correct
 point of the parameter space: mixture of 100\% normal with mean 0 and
-0\% with mean 1.  If the estimation is done by hand, it would be easy
+0\% with mean 1.  Note also that the Hessian of the model at the
+estimated parameter value is not
+negative definite.
+If the estimation is done by hand, it would be easy
 to fix the third parameter as in the example above.  However, this may
 not be a suitable approach if we perform computations on a large
 number of samples automatically.  In that case the logLik function has
 to signal the \code{maxNR} routine that the parameter is now fixed.
+We may rewrite the log-likelihood function as follows:
+<<code:logLikMix2>>=
+freePar <- rep(TRUE, 3)
+logLikMix1 <- function(param) {
+   rho <- param[1]
+   if(rho < 0 | rho > 1)
+       return(NA)
+   mu1 <- param[2]
+   mu2 <- param[3]
+   constPar <- NULL
+   if(freePar[1] & (rho > 0.99)) {
+      rho <- 1
+      constPar <- c(1, 3)
+      newVal <- c(1, 0)
+      fp <- freePar
+      fp[constPar] <- FALSE
+      assign("freePar", fp, inherits=TRUE)
+   }
+   ll <- log(rho*dnorm(xMix - mu1) + (1 - rho)*dnorm(xMix - mu2))
+   if(!is.null(constPar)) {
+      attr(ll, "constPar") <- constPar
+      attr(ll, "newVal") <- list(index=constPar, val=newVal)
+   }
+   ll
+}
+@ 
+If changing the fixed parameters run-time, we have to keep track of
+the process.  This is why we introduce \code{freePar} \emph{outside}
+the function itself -- it must retain it's value over successive calls
+to the function.  Next novelty is related to checking the proximity to
+the parameter space boundary: \code{if(freePar[1] \& (rho < 0.01))}.
+Hence, if we haven't fixed the first parameter ($\varrho$) yet, and if
+it is too close to 0, we set a new value 0 to it, and mark the first
+parameter in the parameter vector to be fixed.  Note that because
+$\mu_{1}$ is undefined as $\varrho = 0$, we also have to fix that
+parameter.  Accordingly, we write \code{constPar <- c(1, 2)} for
+fixing both of these parameters and \code{newVal <- c(1, 0)} for
+assigning new values.  Later we also set according attributes to
+log-likelihood.  Attribute \code{newVal} must contain two components
+-- indices and values.  This is because in general we may want to fix
+a parameter which value is not changed, or change a value of a
+parameter which is not fixed.
 
-
-
+Now the estimation results look like:
+<<code:mix3>>=
+summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0)))
+@ 
+with parameters \code{rho} and \code{mu2} fixed.  Now the Hessian at the
+maximum, based on the free parameters (i.e. \code{mu1}) is negative
+definite. 
 
 
 \section{Implementation}
@@ -506,7 +575,8 @@ is done by \code{optim},
 the Newton-Raphson algorithm is implemented
 in the function \code{maxNR} itself.
 The actual optimisation in \code{maxBHHH}
-is done by \code{maxNR}.
+is done by \code{maxNR} using outer product approximation as the
+Hessian. 
 
 As already mentioned above, the \code{maxLik}
 wrapper capabilities are designed in a transparent way, so that the
