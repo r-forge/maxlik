@@ -13,6 +13,7 @@
 
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\loglik}{\mathcal{l}}
+\newcommand{\maxlik}{\pkg{maxLik}}
 \newcommand{\pkg}[1]{\textbf{#1}}
 \newcommand{\R}{\textsl{R}\xspace}
 \setlength{\emergencystretch}{3em}
@@ -89,8 +90,69 @@ CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
 homepage (\url{http://www.maxLik.org/}).
 
+The paper proceeds as follows: in the next section we explain the
+implementation of the package.  Section~\ref{sec:usage} decribes the
+basic and more advanced usage of the pacakge, and
+Section~\ref{sec:summary} concludes.
+
+% .... exists in GAUSS
+
+\section{Implementation}
+\label{sec:implementation}
+
+\maxlik is designed to provide a single, unified interface to
+different optimization routines, and to treat the results in a way
+which is suitable for maximum likelihood (ML) estimation.  The package
+implements a flexible multi-purpose Newton-Raphson type optimization
+routine \code{maxNR}.  This is used for basis of \code{maxBHHH}, a
+Bernt-Hall-Hall-Hausman type optimizer, popular for ML problems.  In
+addition, various methods from the \code{optim} function (from package
+\pkg{stats}) is wrapped in a unified way (functions
+\code{maxBFGS}, \code{maxNM}, and
+\code{maxSANN}).  
+
+The package is designed in two layers: first is the optimization
+(maximization) layer: all the maximization routines are designed to be
+directly usable for being easy to switch.  All the main parameters
+have identical names and similar order (however, method-specific
+parameters may vary).  These functions can be used for different types
+of optimization tasks, both related and not related to the
+likelihood.  They return an object of class \code{maxim} including
+both estimated parameters and various diagnostics information.
+
+The second layer is the likelihood maximization layer.  It's main
+purpose is to treat the estimates in ML-specific way (for instance,
+computing the variance-covariance matrix based on estimated Hessian).
+The \code{maxBHHH} function belong to this layer as well, being
+essentially a call for \code{maxNR} using information equality as the
+approximate Hessian matrix.  A new class \code{maxLik} is added to the
+maximization object for automatic selection of the ML-related methods.
+
+The maximization layer supports linear equality and inequality
+constraints.  The equality constraints are estimated using sequential
+unconstrained maximization technique (SUMT), implemented in the
+package.  The inequality constraints are delegated to
+\code{constrOptim} in the package \pkg{stats}.  The likelihood layer
+is aware of the constraints and is able to select a suitable method,
+however, no attempt is made to correct the resulting
+variance-covariance matrix (just a warning is printed).
+
+The \pkg{maxLik} package is implemented using S3 classes.
+Corresponding methods can handle the likelihood-specific properties
+of the estimate including the fact
+that the inverse of the negative Hessian is the variance-covariance matrix
+of the estimated parameters.
+The most important methods for objects of class \code{"maxLik"} are:
+\code{summary} for returning (and printing) summary results,
+\code{coef} for extracting the estimated parameters,
+\code{vcov} for calculating the variance covariance matrix
+of the estimated parameters,
+\code{logLik} for extracting the log-likelihood value, and
+\code{AIC} for calculating the Akaike information criterion.
+
 
 \section{Using the \pkg{maxLik} package}
+\label{sec:usage}
 
 \subsection{Basic usage}
 \label{sec:basic_usage}
@@ -561,45 +623,8 @@ maximum, based on the free parameters (i.e. \code{mu1}) is negative
 definite. 
 
 
-\section{Implementation}
-
-The \code{maxLik} function delegates the actual optimisation
-to the functions
-\code{maxNR}, \code{maxBHHH}, \code{maxBFGS}, \code{maxNM}, and
-\code{maxSANN},
-for the ``NR'', ``BHHH'', ``BFGS'', ``NM'', and ``SANN'' algorithms,
-respectively.
-While the actual optimisation in
-\code{maxBFGS}, \code{maxNM}, and \code{maxSANN}
-is done by \code{optim},
-the Newton-Raphson algorithm is implemented
-in the function \code{maxNR} itself.
-The actual optimisation in \code{maxBHHH}
-is done by \code{maxNR} using outer product approximation as the
-Hessian. 
-
-As already mentioned above, the \code{maxLik}
-wrapper capabilities are designed in a transparent way, so that the
-user can easily swap the methods without changing the
-arguments.
-
-
-The \pkg{maxLik} package is implemented using S3 classes.
-The \code{maxLik} wrapper returns a list of class \code{"maxLik"}.
-Corresponding methods can handle the likelihood-specific properties
-of the estimate including the fact
-that the inverse of the negative Hessian is the variance-covariance matrix
-of the estimated parameters.
-The most important methods for objects of class \code{"maxLik"} are:
-\code{summary} for returning (and printing) summary results,
-\code{coef} for extracting the estimated parameters,
-\code{vcov} for calculating the variance covariance matrix
-of the estimated parameters,
-\code{logLik} for extracting the log-likelihood value, and
-\code{AIC} for calculating the Akaike information criterion.
-
-
 \section{Summary and Outlook}
+\label{sec:summary}
 
 The \pkg{maxLik} package provides a convenient interface
 for maximum likelyhood estimations
