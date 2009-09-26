@@ -157,7 +157,8 @@ of the estimated parameters,
 \subsection{Basic usage}
 \label{sec:basic_usage}
 
-The \pkg{maxLik} package must be installed and loaded before it can be used.
+As the other packages in \R, the
+\pkg{maxLik} package must be installed and loaded before it can be used.
 The following command loads the \pkg{maxLik} package:
 <<>>=
 library( maxLik )
@@ -173,7 +174,8 @@ This function has two mandatory arguments
 maxLik( logLik, start )
 @
 The first argument (\code{logLik}) must be a function
-that calculates the log-likelihood value.
+that calculates the log-likelihood value as a function of the
+parameter (usually parameter vector).
 The second argument (\code{start}) must be a vector of starting values.
 
 We demonstrate the usage of the \pkg{maxLik} package by a simple example:
@@ -198,7 +200,7 @@ P(x_i) =
 Hence, the likelihood function for $\mu$, $\sigma$,
 and the values in vector $x = ( x_1, \ldots, x_N )$ is
 \begin{equation}
-L( x, \mu, \sigma ) = \prod_{i=1}^N
+L( x; \mu, \sigma ) = \prod_{i=1}^N
 \frac{1}{\sigma \sqrt{2 \pi}}
 \exp \left( - \frac{( x_i - \mu )^2}{2 \sigma^2} \right)
 \end{equation}
@@ -219,23 +221,17 @@ Alternatively, it could return a numeric vector
 where each element is the log-likelihood value
 corresponding to an individual observation (see below).
 }
+The easiest way is to use the capabilities of the function
+\code{dnorm}: 
 <<>>=
 logLikFun <- function( param ) {
    mu <- param[ 1 ]
    sigma <- param[ 2 ]
-   N <- length( x )
-   logLikValue <- -0.5 * N * log( 2 * pi ) - N * log( sigma ) -
-      0.5 * sum( ( x - mu )^2 / sigma^2 )
-   return( logLikValue )
+   sum(dnorm(x, mean=mu, sd=sigma, log=TRUE))
 }
 @
-(Note that the reader may want to consider using \R function
-\code{dnorm} instead.)
-Now, we use the \code{maxLik} function
-to find the values for the $\mu$ and $\beta$ parameters
-that give the best fit, i.e.\ the largest value of the (log-)
-likelihood function.
-We set the first argument (\code{logLik}) equal to the log-likelihood function
+For the actual estimation we
+set the first argument (\code{logLik}) equal to the log-likelihood function
 that we have defined above (\code{logLikFun})
 and we use the parameters of a standard normal distribution
 ($\mu = 0$, $\sigma = 1$) as starting values (argument \code{start}).
@@ -261,9 +257,15 @@ numerical gradients and numerical Hessians are calculated
 by the functions \code{numericGradient} and \code{numericNHessian},
 which are also included in the \pkg{maxLik} package.
 While the maximisation of the likelihood function of this simple model
-works well with numerical gradients and Hessians,
-providing analytical gradients could increase the speed and probability
-of convergence in more complex models.
+works well with numerical gradients and Hessians, 
+this may not be the case for more complicated models.  Numerical
+derivatives may turn out to be costly to compute and noisy, which may
+result the estimation either to slow down considerably or even fail to
+converge.  In these cases the user is recommended either to provide
+analytic derivatives, or switch to a more robust estimation method,
+such as Nelder-Mead, which does not require gradient.
+
+% hertil ....
 The gradients of the log-likelihood function of the standard normal distribution
 are
 \begin{align}
