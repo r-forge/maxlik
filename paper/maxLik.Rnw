@@ -500,7 +500,8 @@ components are allowed to change (are ``active'').  So, as $\sigma$
 was the second parameter, we should call:
 <<code:activePar>>=
 summary(maxLik(logLikFun, start=c(mu=0, sigma=2), activePar=c(TRUE, FALSE)))
-@ As we can see, the $\sigma$ is indeed exactly 2 while it's standard
+@ 
+As we can see, the $\sigma$ is indeed exactly 2 while it's standard
 error and $t-$value do not carry any useful information.  Note also
 that the estimate of $\mu$ is unchanged (indeed, MLE estimate of it is
 still the sample average) while the estimated standard error is
@@ -664,4 +665,19 @@ even more attractive for users and package writers.
 % \bibliography{agrarpol}
 \bibliography{references}
 
+TODO:
+
+* Describe that numeric gradients are computed by us, not by optim
+
+* Merge maxBFGS, maxNM, maxSANN (if have time)
+
+* add activePar for optim-based methods
+
+* fixed parameters ``are treated as known''
+
+* metion that constraints API is experimental
+
 \end{document}
+
+
+
