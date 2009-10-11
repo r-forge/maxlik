@@ -702,15 +702,11 @@ even more attractive for users and package writers.
 
 TODO:
 
-* Describe that numeric gradients are computed by us, not by optim
-
 * Merge maxBFGS, maxNM, maxSANN (if have time)
 
 * add activePar for optim-based methods
 
-* fixed parameters ``are treated as known''
-
-* metion that constraints API is experimental
+* std method
 
 \end{document}
 
