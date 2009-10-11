@@ -25,7 +25,6 @@
 options(width=70)
 set.seed( 123 )
 @
-@ 
 \title{maxLik: A Package for Maximum Likelihood Estimation in \textsf{R}}
 
 \titlerunning{maxLik: Maximum Likelihood Estimation}
@@ -92,11 +91,14 @@ for their maximum likelihood estimations.
 The \pkg{maxLik} package is available from
 CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
-homepage (\url{http://www.maxLik.org/}).
+homepage (\url{http://www.maxLik.org/}).  
+The focus on this paper is the maximum likelihood related
+usage of the package, the other features (including numerical
+derivatives and optimization) are only briefly mentioned.
 
 The paper proceeds as follows: in the next section we explain the
 implementation of the package.  Section~\ref{sec:usage} decribes the
-basic and more advanced usage of the pacakge, and
+basic and more advanced usage of the package, and
 Section~\ref{sec:summary} concludes.
 
 % .... exists in GAUSS
@@ -140,7 +142,9 @@ package.  The inequality constraints are delegated to
 \code{constrOptim} in the package \pkg{stats}.  The likelihood layer
 is aware of the constraints and is able to select a suitable optimization method,
 however, no attempt is made to correct the resulting
-variance-covariance matrix (just a warning is printed).
+variance-covariance matrix (just a warning is printed).  As the
+constrained optimization should still be considered as experimental,
+we refer the reader to the documentation of the package for examples.
 
 The \pkg{maxLik} package is implemented using S3 classes.
 Corresponding methods can handle the likelihood-specific properties
@@ -455,7 +459,14 @@ virtually identical.
 The other maximization methods: Nelder-Mead,
 Broyden-Fletcher-Goldfarb-Shannon, and Simulated Annealing, are
 implemented by a call to the the \code{optim} function in package
-\pkg{stats}.  To give the reader a taste, we give an example using
+\pkg{stats}.  In order to retain compatibility with ``BHHH'' method,
+all these methods accept the log-likelihood function returning a
+vector of individual likelihoods (these are summed internally).
+Gradient matrix by observations is accepted as well.  If the user does
+not provide gradients, the gradients are computed based on the
+implementation of the numeric derivatives in the package.
+
+To give the reader a taste, we give an example using
 gradientless Nelder-Mead method:
 <<>>=
 mleNM <- maxLik( logLik = logLikFun,
@@ -493,7 +504,9 @@ normal sample.  However, assume we know that the true value of $\sigma
 existing one while specifying that $\sigma$ is fixed at 2.  This is
 done via argument \code{activePar} of \code{maxNR}.  It is a logical
 vector of length of the parameter vector which specifies which
-components are allowed to change (are ``active'').  So, as $\sigma$
+components are allowed to change (are ``active'').  The other,
+``non-active'' parameters are treated as known constants, always
+retaining their initial value.  So, as $\sigma$
 was the second parameter, we should call:
 <<code:activePar>>=
 summary(maxLik(logLikFun, start=c(mu=0, sigma=2), 
@@ -570,7 +583,6 @@ xMix <- rnorm(1000)
 and estimate it using the same log-likelihood implementation:
 <<code:mix2>>=
 summary(m2 <- maxLik(logLikMix, start=c(rho=0.5, mu1=0, mu2=0.01)))
-vcov(m2)
 @ 
 Although the estimates seem to be close to the correct point in the
 parameter space: mixture of 100\% normal with mean 0 and
@@ -596,7 +608,7 @@ logLikMix1 <- function(param) {
    mu1 <- param[2]
    mu2 <- param[3]
    constPar <- NULL
-   if(freePar[1] & (abs(mu1 - mu2) < 1e-2)) {
+   if(freePar[1] & (abs(mu1 - mu2) < 1e-3)) {
       rho <- 1
       constPar <- c(1, 3)
       newVal <- c(1, 0)
@@ -612,30 +624,38 @@ logLikMix1 <- function(param) {
    ll
 }
 @ 
-If changing the fixed parameters run-time, we have to keep track of
-the process.  This is why we introduce \code{freePar} \emph{outside}
-the function itself -- it must retain it's value over successive calls
-to the function.  Next novelty is related to checking the proximity to
-the parameter space boundary: \code{if(freePar[1] \& (rho < 0.01))}.
-Hence, if we haven't fixed the first parameter ($\varrho$) yet, and if
-it is too close to 0, we set a new value 0 to it, and mark the first
-parameter in the parameter vector to be fixed.  Note that because
-$\mu_{1}$ is undefined as $\varrho = 0$, we also have to fix that
-parameter.  Accordingly, we write \code{constPar <- c(1, 2)} for
-fixing both of these parameters and \code{newVal <- c(1, 0)} for
-assigning new values.  Later we also set according attributes to
-log-likelihood.  Attribute \code{newVal} must contain two components
--- indices and values.  This is because in general we may want to fix
-a parameter which value is not changed, or change a value of a
-parameter which is not fixed.
+We have introduced three changes into the log-likelihood function.
+\begin{itemize}
+\item First, while changing the fixed parameters run-time, we have to
+  keep track of the process.  This is why we introduce \code{freePar}
+  \emph{outside} the function itself, as it have to retain it's value over
+  successive calls to the function.
+\item Next novelty is related to checking the proximity to the region
+  of trouble: \code{if(freePar[1] \& (abs(mu1 - mu2) < 1e-3))}.
+  Hence, if we haven't fixed the first parameter ($\varrho$) yet (this
+  is what \code{freePar[1]} keeps track of), and the estimated means
+  of the components are close to each other, we set $\varrho$ to 1.
+  This means we assume the mixture contains only component 1.  Note
+  that because $\mu_{2}$ is undefined as $\varrho = 1$, we also have
+  to fix that parameter.  We mark both of these parameters in the
+  parameter vector to be fixed (\code{constPar <- c(1, 3)}), and
+  provide the new values for them (\code{newVal <- c(1, 0)}).
+\item At the end, we send inform \code{maxNR} algorithm of our
+  dicision by seting respective attributes to log-likelihood.  Two
+  attributes are used: \code{constPar} informs the algorithm that
+  corresponding parameters in the parameter vector must further be treated as
+  fixed; and \code{newVal} (which contains two components -- indices and
+  values) informs the algorithm which parameters have new values.  It
+  is possible to fix parameters without providing new values by
+  setting the \code{constPar} attribute only.
+\end{itemize}
 
 Now the estimation results look like:
 <<code:mix3>>=
-summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0)))
+summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0.1)))
 @ 
-with parameters \code{rho} and \code{mu2} fixed.  Now the Hessian at the
-maximum, based on the free parameters (i.e. \code{mu1}) is negative
-definite. 
+with parameters \code{rho} and \code{mu2} fixed.  The resulting
+one-component model has small standard errors.
 
 
 \section{Summary and Outlook}
@@ -663,9 +683,12 @@ the "L-BFGS-B" algorithm in function \code{optim}
 function \code{nlminb}
    that uses PORT routines \citep{gay90}
    and also allows for box constraints,
-function \code{constrOptim}
-   that allows for linear inequality constraints, or
-function \code{ucminf} of the \pkg{ucminf} package \citep{r-ucminf-1.0}.
+or
+function \code{ucminf} of the \pkg{ucminf} package
+\citep{r-ucminf-1.0}.  
+% mention ROI here? ....
+Another future extension includes comprehensive handling of constrained
+maximum likelihood problems.
 
 We hope that these improvements make the \pkg{maxLik} package
 even more attractive for users and package writers.
