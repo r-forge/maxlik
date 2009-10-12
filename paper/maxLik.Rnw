@@ -72,14 +72,20 @@ count-data, or survival models.
 However, if practitioners and researchers want to estimate
 non-standard models or develop new models,
 they have to implement the routines
-for the maximum likelihood estimations themselves.
-In this case, the \pkg{maxLik} package~\citep{r-maxlik-0.5}
-for the statistical software environment \textsf{R} \citep{r-project09}
-might be very helpful.
-Furthermore, developers that implement routines for maximum likelihood
-estimations of specific models
-can reduce their effort
-by using the \pkg{maxLik} package for the actual parameter estimation.
+for the maximum likelihood estimations themselves.  Several popular
+statistical packages include framework for simplifying the
+estimation, allowing the user to easily choose between a number of
+optimization algorithms, different ways of calculation
+variance-covariance matrices, and reporting the results.  The examples
+include the \code{ml} command in \textsf{stata} and \textsf{GAUSS}
+\code{maxlik} library.
+
+Although \R \citep{r-project09} has had built-in optimization
+algorithms  since it's early days, a comprehensive environment for ML
+estimation has been missing until recently.  The package \pkg{maxLik}
+\citep{r-maxlik-0.5} is intended to fill this gap.  The package can be
+used both by end-users, developing their own statistical methods, and by package
+developers, implementing ML estimators of specific models.
 For instance, the packages
 \pkg{LambertW} \citep{r-lambertw-0.1.6},
 \pkg{mlogit} \citep{r-mlogit-0.1},
