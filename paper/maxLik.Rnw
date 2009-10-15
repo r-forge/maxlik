@@ -162,7 +162,7 @@ The most important methods for objects of class \code{"maxLik"} are:
 \code{summary} for returning (and printing) summary results,
 \code{coef} for extracting the estimated parameters,
 \code{vcov} for calculating the variance covariance matrix
-of the estimated parameters, \code{std} for calculation standard
+of the estimated parameters, \code{stdEr} for calculation standard
 errors of the estimates,
 \code{logLik} for extracting the log-likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
@@ -258,10 +258,10 @@ mle <- maxLik( logLik = logLikFun, start = c( mu = 0,  sigma = 1 ) )
 summary( mle )
 @
 For convenience, the estimated parameters can be accessed by the
-\code{coef} method and standard errors by the \code{std} method:
+\code{coef} method and standard errors by the \code{stdEr} method:
 <<code:coef-std>>=
 coef(mle)
-std(mle)
+stdEr(mle)
 @ 
 As expected, the estimated parameters are equal to the mean
 and the standard deviation (without correction for degrees of freedom)
@@ -543,7 +543,7 @@ summary(maxLik(logLikFun, start=c(mu=0, sigma=2),
                activePar=c(TRUE, FALSE)))
 @ 
 As we can see, the $\sigma$ is indeed exactly 2 while it's standard
-error and $t-$value do not carry any useful information.  Note also
+error and $t-$value are not defined.  Note also
 that the estimate of $\mu$ is unchanged (indeed, ML estimate of it is
 still the sample average) while the estimated standard error is
 different.  Obviously, log-likelihood is lower in the constrained
@@ -622,7 +622,7 @@ summary(m2 <- maxLik(logLikMix, start=c(rho=0.5, mu1=0, mu2=0.01)))
 Although the estimates seem to be close to the correct point in the
 parameter space: mixture of 100\% normal with mean 0 and
 0\% with mean 1, the Hessian matrix is singular and hence standard
-errors are missing.  This is because both components of the mixture
+errors are infinite.  This is because both components of the mixture
 converge to the same value and hence $\varrho$ is not identified.  
 Hence we have no way establishing whether
 the common mean of the sample is, in fact, significantly different from
