@@ -23,7 +23,6 @@
 \begin{document}
 <<echo=FALSE, results=hide>>=
 options(width=70)
-set.seed( 123 )
 @
 \title{maxLik: A Package for Maximum Likelihood Estimation in \textsf{R}}
 
@@ -49,12 +48,12 @@ set.seed( 123 )
 \maketitle
 
 \begin{abstract}
-  This paper describes the package \pkg{maxLik} for \textsl{R}
-  statistical environment.  The package is essentially a unified
+  This paper describes the package \pkg{maxLik} for the
+  statistical environment ``\textsl{R}''.  The package is essentially a unified
   wrapper interface to various optimization routines with interface,
   offering easy access to likelihood-specific features like standard
   errors, or information equality (BHHH method).  More advanced
-  features of the opimization algorithms, such as forcing the value of
+  features of the optimization algorithms, such as forcing the value of
   a particular parameter to be fixed, is also supported.
   
   \keywords{Maximum Likelihood \and Optimisation}
@@ -77,10 +76,10 @@ statistical packages include framework for simplifying the
 estimation, allowing the user to easily choose between a number of
 optimization algorithms, different ways of calculating
 variance-covariance matrices, and easily reporting the results.  The examples
-include the \code{ml} command in \textsf{stata} and \textsf{GAUSS}
-\code{maxlik} library.
+include the \code{ml} command in \textsf{stata} and
+the \code{maxlik} library for \textsf{GAUSS}.
 
-Although \R \citep{r-project09} has had built-in optimization
+Although \R \citep{r-project09} has built-in optimization
 algorithms  since it's early days, a comprehensive environment for ML
 estimation has been missing until recently.  The package \pkg{maxLik}
 \citep{r-maxlik-0.5} is intended to fill this gap.  The package can be
@@ -98,12 +97,12 @@ The \pkg{maxLik} package is available from
 CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
 homepage (\url{http://www.maxLik.org/}).  
-The focus on this paper is the maximum likelihood related
-usage of the package, the other features (including numerical
+This paper focuses on the maximum likelihood related
+usage of the package; the other features (including numerical
 derivatives and optimization) are only briefly mentioned.
 
 The paper proceeds as follows: in the next section we explain the
-implementation of the package.  Section~\ref{sec:usage} decribes the
+implementation of the package.  Section~\ref{sec:usage} describes the
 usage of the package, including the basic and more advanced features, and
 Section~\ref{sec:summary} concludes.
 
@@ -117,7 +116,7 @@ different optimization routines, and to treat the results in a way,
 suitable for maximum likelihood (ML) estimation.  The package
 implements a flexible multi-purpose Newton-Raphson type optimization
 routine \code{maxNR}.  This is used as a basis of \code{maxBHHH}, a
-Bernt-Hall-Hall-Hausman type optimizer \citep{berndt74}, popular for ML problems.  In
+Berndt-Hall-Hall-Hausman type optimizer \citep{berndt74}, popular for ML problems.  In
 addition, various methods from the \code{optim} function (from package
 \pkg{stats}) are included by the package in a unified way (functions \code{maxBFGS},
 \code{maxNM}, and \code{maxSANN}).
@@ -125,19 +124,21 @@ addition, various methods from the \code{optim} function (from package
 The package is designed in two layers.  The first (innermost) is the
 optimization (maximization) layer: all the maximization routines are
 designed to have a unified and intuitive interface which allows the
-user to switch easily between them.  All the main parameters have
-identical names and similar order (however, method-specific parameters
-may vary).  These functions can be used for different types of
+user to switch easily between them.  All the main arguments have
+identical names and similar order; only method-specific parameters
+may vary.  These functions can be used for different types of
 optimization tasks, both related and not related to the likelihood.
 They return an S3 object of class \code{maxim} including both
 estimated parameters and various diagnostics information.
 
-The second layer is the likelihood maximization layer.  It's main
+The second layer is the likelihood maximization layer.
+The most important tool of this layer is the function \code{maxLik}.
+Its main
 purpose is to treat the inputs and maximization results in a ML-specific way (for instance,
 computing the variance-covariance matrix based on the estimated
-Hessian).  The \code{maxBHHH} function belong to this layer as well,
+Hessian).  The \code{maxBHHH} function belongs to this layer as well,
 being essentially a call for \code{maxNR} using information equality
-as the way to approxime the Hessian matrix.  A new class \code{maxLik} is added
+as the way to approximate the Hessian matrix.  A new class \code{maxLik} is added
 to the returned maximization object for automatic selection of the ML-related
 methods.
 
@@ -145,7 +146,7 @@ The maximization layer supports linear equality and inequality
 constraints.  The equality constraints are estimated using sequential
 unconstrained maximization technique (SUMT), implemented in the
 package.  The inequality constraints are delegated to
-\code{constrOptim} in the package \pkg{stats}.  The likelihood layer
+\code{constrOptim} in the package \pkg{stats}.  The \code{maxLik} function
 is aware of the constraints and is able to select a suitable optimization method,
 however, no attempt is made to correct the resulting
 variance-covariance matrix (just a warning is printed).  As the
@@ -198,6 +199,7 @@ First, we generate a vector ($x$) of 100 draws
 from a normal distribution with a mean of $\mu = 1$
 and a standard deviation of~$\sigma = 2$:
 <<>>=
+set.seed( 123 )
 x <- rnorm( 100, mean = 1, sd = 2 )
 @
 %
@@ -256,7 +258,7 @@ mle <- maxLik( logLik = logLikFun, start = c( mu = 0,  sigma = 1 ) )
 summary( mle )
 @
 For convenience, the estimated parameters can be accessed by the
-\code{coef}, and standard errors by \code{std} function:
+\code{coef} method and standard errors by the \code{std} method:
 <<code:coef-std>>=
 coef(mle)
 std(mle)
@@ -282,16 +284,16 @@ by the functions \code{numericGradient} and \code{numericNHessian},
 which are also included in the \pkg{maxLik} package.
 While the maximisation of the likelihood function of this simple model
 works well with numerical gradients and Hessians, 
-this may not be the case for more complicated models.  Numerical
+this may not be the case for more complex models.  Numerical
 derivatives may be costly to compute, and, even more, they may turn out to
-be noisy and unreliable, and in this way
-result the estimation either to slow down considerably or even fail to
-converge.  In these cases the user is recommended either to provide
-analytic derivatives, or to switch to a more robust estimation method,
-such as Nelder-Mead, which is not based on gradient.
+be noisy and unreliable. In this way
+numerical derivatives might either slow down the estimation or even impede the
+convergence. In these cases, the user is recommended to either provide
+analytical derivatives or switch to a more robust estimation method,
+such as Nelder-Mead, which is not based on gradients.
 
-The gradient of the log-likelihood function of the log-likelihood
-function is
+The gradients of the log-likelihood function with respect to the two
+parameters are
 \begin{align}
 \frac{\partial \log( L( x, \mu, \sigma ) )}{ \partial \mu } & =
    \sum_{i=1}^N \frac{( x_i - \mu )}{\sigma^2}\\
@@ -321,7 +323,7 @@ all.equal( logLik( mleGrad ), logLik( mle ) )
 all.equal( coef( mleGrad ), coef( mle ) )
 all.equal( vcov( mleGrad ), vcov( mle ) )
 @
-Providing analytical gradients has no (relevant)%
+Providing analytical gradients has no (relevant)
 effect on the estimates
 but their covariance matrix and standard errors are slightly different.
 
@@ -330,12 +332,12 @@ the argument \code{hess}.
 If the user provides a function to calculate the gradients
 but does not use argument \code{hess},
 the Hessians are calculated numerically by the function
-\code{numericHessian}.\footnote{Only Newton-Raphson 
-  algorithm uses Hessian directly for obtaining the estimates.  The
-  other algorithms ignore it for estimation but use for computing the
+\code{numericHessian}.\footnote{Only the Newton-Raphson 
+  algorithm uses the Hessian directly for obtaining the estimates.  The
+  other algorithms ignore it during the estimation but use it for computing the
   final variance-covariance matrix.}
 The elements of the Hessian matrix of the log-likelihood function
-of the normal distribution are
+for the normal distribution are
 \begin{align}
 \frac{\partial^2 \log( L( x, \mu, \sigma ) )}{ ( \partial \mu )^2 } & =
    - \frac{ N }{\sigma^2}\\
@@ -370,14 +372,14 @@ all.equal( list( logLik( mleHess ), coef( mleHess ), vcov( mleHess ) ),
 @
 Providing an analytical Hessian has no (relevant) effect
 on the outcome of the ML estimation in our simple example.  However,
-exactly as in the case of gradient, numerical Hessian may turn out to
+as in the case of numerical gradients, numerical Hessians may turn out to
 be slow and unreliable.
 
 
 \subsection{Optimisation Methods}
 
-The \code{maxLik} function allows to select between five actual underlying
-optimization algorithm by argument \code{method}.
+The \code{maxLik} function allows to select between five
+optimization algorithms by argument \code{method}.
 It defaults to
 \code{"NR"} for the Newton-Raphson algorithm.  The other options are
 \code{"BHHH"} for Berndt-Hall-Hall-Hausman \citep{berndt74},
@@ -399,20 +401,20 @@ In this way the user can easily change the optimisation method
 without changing the arguments.
 
 In general, it is advisable to use all the available information,
-e.g. to use \code{"NR"} method if analytic Hessian is available, one
+e.g.\ to use the \code{"NR"} method if both analytical gradients and Hessians are available, one
 of the gradient-based methods (either \code{"BHHH"} or \code{"BFGS"})
-if analytic gradient is available, and to resort to the value-only
+if analytical gradients but no Hessians are available, and to resort to the value-only
 methods only if gradients are not provided.  
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
 The BHHH method approximates the Hessian by the negative of the
 expectation of the outer product of the gradient (score) vector.  In
-order to calculate the expecation, the algorithm needs gradient
+order to calculate the expectation, the algorithm needs gradient
 vectors by individual observations.  This can be achieved either by
-providing corresponding gradient function (see below) or providing a
+providing a corresponding gradient function (see below) or providing a
 vector of individual observation-specific likelihood values by the
-log-likelihood function itself.  In the latter case, those values are
-used to compute corresponding numeric gradients.
+log-likelihood function itself (if no analytical gradients are provided).
+In the latter case, numeric gradients are used to calculate the Hessian.
 
 We modify our example above accordingly: instead of returning a single
 summary value of log-likelihood, we return the values by individual
@@ -440,13 +442,15 @@ from the derivative-based Hessian on finite samples
 If the user chooses to provide analytical gradients,
 the function that calculates the gradients (argument \code{grad})
 must return a numeric matrix,
-where each column represents gradient according the the respective
-component of the parameter vector 
+where each column represents the gradient with respect to the corresponding
+element of the parameter vector
 and each row corresponds to an individual observation.  Note that in
 this case, the log-likelihood function itself does not have to return
 a vector of log-likelihood values by observations, as the gradient by
 observation is supplied by the \code{grad} function.  In the
-following example uses a single summed log-likelihood from the
+following example, we define a function that calculates the gradient matrix
+and we estimate the model by BHHH method
+using this gradient matrix and the single summed log-likelihood from the
 Newton-Raphson example.
 <<>>=
 logLikGradInd <- function( param ) {
@@ -470,10 +474,11 @@ virtually identical.
 The other maximization methods: Nelder-Mead,
 Broyden-Fletcher-Goldfarb-Shannon, and Simulated Annealing, are
 implemented by a call to the the \code{optim} function in package
-\pkg{stats}.  In order to retain compatibility with ``BHHH'' method,
+\pkg{stats}.  In order to retain compatibility with the BHHH method,
 all these methods accept the log-likelihood function returning a
 vector of individual likelihoods (these are summed internally).
-Gradient matrix, based on individual observations, is accepted as well.  If the user does
+A Gradient matrix with gradients of individual observations, is accepted as well.
+If the user does
 not provide gradients, the gradients are computed numerically.
 
 To give the reader a taste, we give an example using
@@ -492,7 +497,7 @@ from previous results using other algorithms
 and the fit (log-likelihood value) of the model
 is slightly worse (smaller) than for the previous models.
 
-Note that although \code{summary} reports the number of iterations for
+Note that although the \code{summary} method reports the number of iterations for
 all the methods, the meaning of ``iteration'' may be completely
 different for different optimization techniques.
 
@@ -501,16 +506,16 @@ different for different optimization techniques.
 \label{sec:advanced_usage}
 
 \code{maxLik} function supports a variety of other arguments, most of
-which are passed to the selected optimizer.  Among the most imporant
+which are passed to the selected optimizer.  Among the most important
 ones is \code{print.level} which controls the output of debugging
-information (0 produces no debugging output, larger number produce
-more). 
+information (0 produces no debugging output, larger numbers produce
+more output). 
 Optimization methods may also support various additional features, such as
 the temperature-related parameters for \code{maxSANN}.  Those will not
 be discussed here, the interested reader is
 referred to the documentation of the corresponding optimizer.
 
-\subsection{Fixed parameter values}
+\subsubsection{Fixed parameter values}
 \label{sec:fixed_parameter_values}
 
 Below, we
@@ -542,7 +547,7 @@ space, although the reader may verify that allowing $\sigma$ to be free
 is an insignificant improvement according to the likelihood ratio
 test.
 
-\bigskip
+\subsubsection{Automatic fixing of parameter values}
 
 Next, we demonstrate, how it is possible to fix a parameter
 automatically during the computations when using \code{maxNR} optimizer.
@@ -616,7 +621,7 @@ parameter space: mixture of 100\% normal with mean 0 and
 errors are missing.  This is because both components of the mixture
 converge to the same value and hence $\varrho$ is not identified.  
 Hence we have no way establishing whether
-the common mean of the sample is, in fact, significally different from
+the common mean of the sample is, in fact, significantly different from
 0.
 If the estimation is done by hand, it would be easy
 to fix $\varrho$ as in the example above.  However, this may
@@ -652,9 +657,9 @@ logLikMix1 <- function(param) {
 @ 
 We have introduced three changes into the log-likelihood function.
 \begin{itemize}
-\item First, while changing the fixed parameters run-time, we have to
+\item First, while changing the fixed parameters at run-time, we have to
   keep track of the process.  This is why we introduce \code{freePar}
-  \emph{outside} the function itself, as it have to retain it's value over
+  \emph{outside} the function itself, as it has to retain its value over
   successive calls to the function.
 \item Next novelty is related to checking the proximity to the region
   of trouble: \code{if(freePar[1] \& (abs(mu1 - mu2) < 1e-3))}.
@@ -680,7 +685,7 @@ Now the estimation results look like:
 <<code:mix3>>=
 summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0.1)))
 @ 
-with parameters \code{rho} and \code{mu2} fixed.  The resulting
+With parameters \code{rho} and \code{mu2} fixed, the resulting
 one-component model has small standard errors.
 
 
@@ -691,16 +696,16 @@ The \pkg{maxLik} package fills an existing gap in the \R statistical environment
 and provides a convenient interface
 for maximum likelihood estimations
 --- both for end users and package developers.
-Although the general-purpoze optimizers, such as \code{nlm} function,
-have existed in \R for a long time, 
+Although \R includes general-purpose optimizers such as \code{nlm}
+and \code{optim} for a long time,
 the \pkg{maxLik} package has three important features
 that are not available in at least some of the alternatives:
 First, the covariance matrix of the estimates can be calculated automatically.
 Second, the user can easily switch between different optimization
 algorithms.
 Third, the package provides the Berndt-Hall-Hall-Hausman (BHHH) algorithm,
-a popular optimzation method which is available only for
-likelihood-type porblems.
+a popular optimization method which is available only for
+likelihood-type problems.
 
 In the future,
 we plan to add support for further optimisation algorithms,
@@ -717,7 +722,7 @@ function \code{ucminf} of the \pkg{ucminf} package
 Another future extension includes comprehensive handling of constrained
 maximum likelihood problems.
 
-We hope that these improvements make the \pkg{maxLik} package
+We hope that these improvements will make the \pkg{maxLik} package
 even more attractive for users and package writers.
 
 %\begin{acknowledgements}
