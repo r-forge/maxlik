@@ -396,7 +396,11 @@ The gradients and Hessians provided by the user through
 the arguments \code{grad} and \code{hess} are always accepted in order
 to make the switching the algorithms easier, but they are ignored
 if the selected method does not require this information,
-for instance, the argument \code{hess} for the Berndt-Hall-Hall-Hausman method.
+for instance, the argument \code{hess} for the
+Berndt-Hall-Hall-Hausman method.\footnote{Even if the optimization
+  method itself does not make use of the Hessian, this information is
+  used (except for \code{"BHHH"}) for computing the final
+  variance-covariance matrix.}
 In this way the user can easily change the optimisation method
 without changing the arguments.
 
