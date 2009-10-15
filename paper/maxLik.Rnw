@@ -57,6 +57,15 @@ options(width=70)
   a particular parameter to be fixed, is also supported.
   
   \keywords{Maximum Likelihood \and Optimisation}
+% classifications
+% 1.01080: Econometrics
+% 1.02570: Maximum Likelihood
+% 1.03030: Nonlinear Optimization
+% 1.03130: Numerical Optimization
+% 1.04290: Software: R
+% 1.04440: S Programming Language
+% 1.04490: Statistical Computing
+% 1.04580: Statistical Software
 \end{abstract}
 
 
