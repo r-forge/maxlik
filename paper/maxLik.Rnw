@@ -542,8 +542,8 @@ was the second parameter, we should call:
 summary(maxLik(logLikFun, start=c(mu=0, sigma=2), 
                activePar=c(TRUE, FALSE)))
 @ 
-As we can see, the $\sigma$ is indeed exactly 2 while it's standard
-error and $t-$value are not defined.  Note also
+As we can see, the $\sigma$ is indeed exactly 2.  It's standard error
+is set to zero while $t$-value is not defined.  Note also
 that the estimate of $\mu$ is unchanged (indeed, ML estimate of it is
 still the sample average) while the estimated standard error is
 different.  Obviously, log-likelihood is lower in the constrained
