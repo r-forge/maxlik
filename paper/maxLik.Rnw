@@ -49,7 +49,7 @@ options(width=70)
 
 \begin{abstract}
   This paper describes the package \pkg{maxLik} for the
-  statistical environment ``\textsl{R}''.  The package is essentially a unified
+  statistical environment \R.  The package is essentially a unified
   wrapper interface to various optimization routines with interface,
   offering easy access to likelihood-specific features like standard
   errors, or information equality (BHHH method).  More advanced
@@ -88,19 +88,22 @@ variance-covariance matrices, and easily reporting the results.  The examples
 include the \code{ml} command in \textsf{stata} and
 the \code{maxlik} library for \textsf{GAUSS}.
 
-Although \R \citep{r-project09} has built-in optimization
-algorithms  since it's early days, a comprehensive environment for ML
-estimation has been missing until recently.  The package \pkg{maxLik}
-\citep{r-maxlik-0.5} is intended to fill this gap.  The package can be
-used both by end-users, developing their own statistical methods, and by package
-developers, implementing ML estimators for specific models.
-For instance, the packages
-\pkg{LambertW} \citep{r-lambertw-0.1.6},
-\pkg{mlogit} \citep{r-mlogit-0.1},
-\pkg{sampleSelection} \citep{toomet08}, and
-\pkg{truncreg} \citep{r-truncreg-0.1}
-use the \pkg{maxLik} package
-for their maximum likelihood estimations.
+\R \citep{r-project09} has built-in optimization algorithms since it's
+early days.  The first general-purpose ML framework (function
+\code{mle} in package \pkg{stats4}) was added in 2003, and an
+extension (\code{mle2} in package {bbmle}) in 2007.  However, both of
+these packages are based on a general-purpose optimizer \code{optim},
+which does not include an option to use Newton-Raphson, and in
+particular, its variant Berndt-Hall-Hall-Hausman optimizer
+\citep{berndt74}, very popular for ML problems.  The package
+\pkg{maxLik} \citep{r-maxlik-0.5} is intended to fill this gap.  The
+package can be used both by end-users, developing their own
+statistical methods, and by package developers, implementing ML
+estimators for specific models.  For instance, the packages
+\pkg{LambertW} \citep{r-lambertw-0.1.6}, \pkg{mlogit}
+\citep{r-mlogit-0.1}, \pkg{sampleSelection} \citep{toomet08}, and
+\pkg{truncreg} \citep{r-truncreg-0.1} use the \pkg{maxLik} package for
+their maximum likelihood estimations.
 
 The \pkg{maxLik} package is available from
 CRAN (\url{http://cran.r-project.org/package=maxLik}),
@@ -696,7 +699,7 @@ We have introduced three changes into the log-likelihood function.
 
 Now the estimation results look like:
 <<code:mix3>>=
-summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0.1)))
+#summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0.1)))
 @ 
 With parameters \code{rho} and \code{mu2} fixed, the resulting
 one-component model has small standard errors.
