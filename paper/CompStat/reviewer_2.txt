@@ -1,0 +1,51 @@
+Reviewer #2: Referee report on MS COST-D-09-00147
+
+Overall:
+
+This paper from DSC-2009 documents the maxLik package, which is mainly
+a wrapper around a number of fairly standard optimization routines. It
+is not highly original in its methodology, but it appears solid and is
+the basis of several other packages, so it deserves publication
+although some minor revision is called for.
+
+Major comments:
+
+In Section 2, the authors have completely overlooked the mle()
+function in the "stats4" package and also the efforts of Ben Bolker in
+his "bbmle" package. These should at least be mentioned.
+
+In Section 3.2.1, "the expectation of the outer product of the
+gradient" is introduced without comment. From a purist point of view,
+the likelihood function does not contain enough information about the
+probability space for that to be a computable quantity. E.g. two
+different probability models can give the same likelihood function. As
+far as I can see, two points are being omitted here: (a) the
+likelihood is a product of independent terms and (b) the expectation
+is being replaced by an average. I think this needs to be said more
+clearly.
+
+In Section 3.3.2, the algorithm automatically constrains some
+parameters, and gives standard errors corresponding to the constrained
+models. The point made in Section 2 (p.3.8-10) applies here as well,
+and should be stated. It is not clear to me whether this code actually
+uses constrOptim or not.
+
+Minor points:
+
+We have "R" in sans-serif, in double quotes, and in italics. Please
+make up your mind!
+
+1.20: delete "with interface"
+1.37: "frameworks"
+1.39: "easy reporting of"
+2.28: "the basis for"
+3.17: stdEr looks wrong, stdErr or SE would be better. Is there no
+     vcov() method?
+5.46-6.4: This could be a c(sum(...), -N/sigma...) construct. I can
+     understand that you don't want to do that for the Hessian on
+     p.7, though.
+10.28: reduce to "We give an example using the gradientless..." (or
+     maybe "gradient-free")
+11.34 (& more): "Fixing" something is ambiguous in English, so replace
+     with "hold fixed" whereever possible.
+12.20: "be free" -> "vary freely"

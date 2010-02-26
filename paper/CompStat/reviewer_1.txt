@@ -1,0 +1,123 @@
+Reviewer #1: 
+
+The authors describe a package that provides various functions to simplify and
+enable maximum likelihood estimation, and inference from maximum likelihood
+estimates, in R. Overall the presentation is clear, technically correct, and
+interesting. My main criticism of the work is that there are significant
+overlaps with other contributed (and even some "recommended") package in R;
+these overlaps should be mentioned. Possibly in the future the authors of some
+of these overlapping packages could collaborate either to differentiate the
+packages or to combine functionality.
+
+In particular, the authors mention ml in stata and maxlik in GAUSS, but they do
+not mention the mle() function in the (recommended) stats4 package, nor the
+mle2() function in the (contributed) bbmle package (as far as I can tell, these
+are the only *general-purpose* maximum likelihood interfaces for R, although
+there are many others for specific purposes such as estimating the parameters of
+distributions from data. A version of mle() has been available since [R version
+1.8.0, Oct 2003] and bbmle has been available since [20-Feb-2007]). mle() and
+mle2() [which is an extension of mle()] offer many of the same features as
+maxLik [logLik(), coef(), vcov(), and AIC() accessor functions; ability to fit a
+model with some parameters fixed; interface to several different optimization
+functions [mle2 only]]. The maxLik package's main advantage is that it offers
+additional optimization choices (BHHH, NR), but some of this functionality might
+eventually be rolled in to the "optimx" package on R-forge, which is aiming to
+provide a unified and user-extensible optimization framework for R. Unlike
+maxLik, mle() and mle2() provide an interface to constructing likelihood
+profiles (the "profileModel" package provides a generic framework for
+constructing profiles, but it is not quite general enough to use for general ML
+frameworks) and profile confidence intervals, and an anova() function for
+comparing different fitted models via the Likelihood Ratio Test; mle2() provides
+a formula interface for (a subset of) likelihood models, as well as predict()
+and simulate() methods for models fitted via this interface. One of the other
+differences between these interfaces is that mle[2]() use functions with lists
+of arguments while optim() and maxLik use functions with a single numeric vector
+(e.g. fun(a,b,c) vs. fun(c(a,b,c)): both have advantages.  maxLik also provides
+functions for generating finite-difference gradients and Hessians, but these are
+also available in the "numDeriv" package as grad() and hessian().
+
+p. 1 l. 20 "with interface" (redundant?)
+
+p. 2 l. 3 "its" (no apostrophe)
+
+p. 2 l. 45 maxBHHH is hyphenated oddly : \hyphenation{max-BHHH}
+
+p. 3 ll. 1-5: it wasn't very clear to me from the description here what the SUMT
+algorithm did and why one would not just implement a function to translate
+between constrained and unconstrained parameters: it is somewhat better
+explained in the help page for ?sumt ...
+
+p. 3 l. 17: stdEr is convenient; other packages that provide a vcov() method
+suggest sqrt(diag(vcov(fit))), or they provide the standard errors as part of a
+summary table (which may be extractable via coef(summary(fit)))
+
+pp. 3-4 the full development of the likelihood equation seems unnecessary: I
+think anyone who is using maxLik is likely to understand eq(3) immediately.
+
+p. 4 a standard trick that is shown (for example) in the deSolve package is to
+use with(as.list(paramvec)) to use the assigned names in the parameter vector
+(thus making order less important, and avoiding several lines of machinery to do
+the unpacking), e.g.
+
+logLikFun <- function(param) {
+ with(as.list(param),
+    sum(dnorm(x, mean=mu, sd=sigma, log=TRUE)))
+}
+
+p. 4 l. 37
+ I found the return code (perhaps the default?) a bit confusing:
+"Return code 1: gradient close to zero. May be a solution" sounds like an
+unreliable solution, for two reasons: (1) the C-like default in other functions
+(such as optim()) is to return a 0 for successful completion and a non-zero
+value otherwise; (2) "May be a solution" sounds wishy-washy.  Is this the
+message that is given when any convergence criteria specified *are* met?
+
+p. 5 footnote: odd hyphenation of .Machine$double.eps, and "1.5e-08" should
+probably be written in text as $1.5 \times 10^{-8}$
+
+in general, I would prefer to refer to numerically calculated gradients and
+Hessians as "finite difference" values rather than "numerical" values (arguably,
+one is always computing numeric values in these cases, even if the numeric
+values are based on analytic formulas for the derivatives).
+
+p. 6 l. 9 "allows [the user] to select"
+
+l. 38 "or [by] providing a vector"
+
+p. 10 l. 22 "Shanno"
+
+l. 25-26 "A function to compute a gradient matrix with gradients of individual
+observations is accepted as well."
+
+l. 28 "using [the] gradientless Nelder-Mead"
+
+p. 11 l. 23 "The maxLik function"
+
+l. 35 delete comma after "parameters"
+
+l. 46-47 for functions with many parameters, it is convenient to be able to
+refer to fixed parameters by position or name (rather than the slightly longer
+version  actPars <- rep(TRUE,nPars); actPars[fixedpos] <- FALSE)
+
+p. 13 l. 16 "The results look as follows" or "like the following"
+
+l. 35 comma -> semicolon at end of line
+
+pp. 14-16: this whole section strikes me as a very complicated way to do
+something that could be done in a considerably easier way. The authors use a
+complicated, special-purpose solution (and one that is not particularly related
+to this package, except for the ability to fix parameters) -- fixing parameters
+on the fly by setting an external/global variable seems especially clunky.  It
+is very easy to diagnose the convergence of the model to the single-component
+model, and in particular it is simple to test whether the likelihood of the
+single-component model differs (beyond numeric fuzz, or significantly) from the
+two-component model.  (There are also better algorithms for fitting mixture
+models, such as expectation-maximization algorithms.)
+(One can also find the confidence intervals without having a
+well-defined/negative definite Hessian, although the standard deviations from
+the Hessian are often a convenient starting point for finding an initial scale
+on which to search for the profile confidence intervals.)
+
+p. 16 l. 7 "Although R has included ..."
+
+
