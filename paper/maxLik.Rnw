@@ -50,7 +50,7 @@ options(width=70)
 \begin{abstract}
   This paper describes the package \pkg{maxLik} for the
   statistical environment \R.  The package is essentially a unified
-  wrapper interface to various optimization routines with interface,
+  wrapper interface to various optimization routines,
   offering easy access to likelihood-specific features like standard
   errors, or information equality (BHHH method).  More advanced
   features of the optimization algorithms, such as forcing the value of
@@ -88,13 +88,13 @@ variance-covariance matrices, and easily reporting the results.  The examples
 include the \code{ml} command in \textsf{stata} and
 the \code{maxlik} library for \textsf{GAUSS}.
 
-\R \citep{r-project09} has built-in optimization algorithms since it's
-early days.  The first general-purpose ML framework (function
-\code{mle} in package \pkg{stats4}) was added in 2003, and an
-extension (\code{mle2} in package {bbmle}) in 2007.  However, both of
-these packages are based on a general-purpose optimizer \code{optim},
-which does not include an option to use Newton-Raphson, and in
-particular, its variant Berndt-Hall-Hall-Hausman optimizer
+\R \citep{r-project09} has included built-in optimization algorithms
+since its early days.  The first general-purpose ML framework
+(function \code{mle} in package \pkg{stats4}) was added in 2003, and
+an extension (\code{mle2} in package {bbmle}) in 2007.  However, both
+of these packages are based on a general-purpose optimizer
+\code{optim}, which does not include an option to use Newton-Raphson,
+and in particular, its variant Berndt-Hall-Hall-Hausman optimizer
 \citep{berndt74}, very popular for ML problems.  The package
 \pkg{maxLik} \citep{r-maxlik-0.5} is intended to fill this gap.  The
 package can be used both by end-users, developing their own
@@ -148,7 +148,7 @@ The most important tool of this layer is the function \code{maxLik}.
 Its main
 purpose is to treat the inputs and maximization results in a ML-specific way (for instance,
 computing the variance-covariance matrix based on the estimated
-Hessian).  The \code{maxBHHH} function belongs to this layer as well,
+Hessian).  The \mbox{\code{maxBHHH}} function belongs to this layer as well,
 being essentially a call for \code{maxNR} using information equality
 as the way to approximate the Hessian matrix.  A new class \code{maxLik} is added
 to the returned maximization object for automatic selection of the ML-related
@@ -157,13 +157,17 @@ methods.
 The maximization layer supports linear equality and inequality
 constraints.  The equality constraints are estimated using sequential
 unconstrained maximization technique (SUMT), implemented in the
-package.  The inequality constraints are delegated to
-\code{constrOptim} in the package \pkg{stats}.  The \code{maxLik} function
-is aware of the constraints and is able to select a suitable optimization method,
-however, no attempt is made to correct the resulting
-variance-covariance matrix (just a warning is printed).  As the
-constrained optimization should still be considered as experimental,
-we refer the reader to the documentation of the package for examples.
+package.  This is achieved by adding a (initially tiny) penalty term,
+related to violation of the constraints, to the target function.
+Thereafter on can solve the problem repeatedly with increasing penalty
+for every new repetition.  The inequality constraints are delegated to
+\code{constrOptim} in the package \pkg{stats}.  The \code{maxLik}
+function is aware of the constraints and is able to select a suitable
+optimization method, however, no attempt is made to correct the
+resulting variance-covariance matrix (just a warning is printed).  As
+the constrained optimization should still be considered as
+experimental, we refer the reader to the documentation of the package
+for examples.
 
 The \pkg{maxLik} package is implemented using S3 classes.
 Corresponding methods can handle the likelihood-specific properties
@@ -175,7 +179,8 @@ The most important methods for objects of class \code{"maxLik"} are:
 \code{coef} for extracting the estimated parameters,
 \code{vcov} for calculating the variance covariance matrix
 of the estimated parameters, \code{stdEr} for calculation standard
-errors of the estimates,
+errors of the estimates (to our knowledge, this is the only ML-related
+package which provides this convenience function),
 \code{logLik} for extracting the log-likelihood value, and
 \code{AIC} for calculating the Akaike information criterion.
 
@@ -215,21 +220,8 @@ set.seed( 123 )
 x <- rnorm( 100, mean = 1, sd = 2 )
 @
 %
-The probability density function of a standard normal distribution
-for a value $x_i$ is
-\begin{equation}
-P(x_i) =
-\frac{1}{\sigma \sqrt{2 \pi}}
-\exp \left( - \frac{( x_i - \mu )^2}{2 \sigma^2} \right).
-\end{equation}
-Hence, the likelihood function for $\mu$, $\sigma$,
-and the values in vector $x = ( x_1, \ldots, x_N )$ is
-\begin{equation}
-L( x; \mu, \sigma ) = \prod_{i=1}^N
-\frac{1}{\sigma \sqrt{2 \pi}}
-\exp \left( - \frac{( x_i - \mu )^2}{2 \sigma^2} \right)
-\end{equation}
-and its logarithm (i.e.\ the log-likelihood function) is
+The logarithm of the probability density of the sample (i.e.\ the
+log-likelihood function) is
 \begin{equation}
 \log( L( x; \mu, \sigma ) ) =
 - \frac{1}{2} N \log ( 2 \pi ) - N \log ( \sigma )
