@@ -33,7 +33,30 @@ have introduced to the paper.
 \item We mention that the other ML-related packages do not provide
   \texttt{stdEr} or a direct analogue.
 \item We streamlined the introduction of normal log-likelihood function.
+\item Unfortunately, \texttt{with}-construct cannot replace indexing
+  everywhere (for instance, in case of vector and unnamed
+  parameter components).  Hence we left it to a footnote.
+\item We re-worded the return messages, removing the ``maybe'' part.
+
+  The return codes are not compatible with \texttt{optim()},
+  but with \texttt{nlm()}.
+\item We now refer to the numerically calculated gradients as
+  ``finite-difference'' ones.
+\item We added an extra argument \texttt{fixedPar} to
+  \texttt{maxNR()}, which allows to specify fixed parameters.  This
+  addresses the reviewer's critizism.
+\item We agree with the reviewer that automatic fixing of the
+  parameter values (section 3.3.2), may be a little complicated.  We
+  also agree, that the problems are easy to diagnose, and there are
+  better algorithms available.  However, as this feature \emph{is}
+  part of the maxLik since it's early days, and since for some reasons
+  the user may choose not to use better-suited specific algorithms, we
+  feel that the sections may still have enough value.
 \end{itemize}
+
+\subsection*{Reviewer 2}
+
+
 
 
 We have also corrected a large number of typos.
