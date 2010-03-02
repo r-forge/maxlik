@@ -24,7 +24,7 @@
 <<echo=FALSE, results=hide>>=
 options(width=70)
 @
-\title{maxLik: A Package for Maximum Likelihood Estimation in \textsf{R}}
+\title{maxLik: A Package for Maximum Likelihood Estimation in \R}
 
 \titlerunning{maxLik: Maximum Likelihood Estimation}
 
@@ -81,10 +81,10 @@ However, if practitioners and researchers want to estimate
 non-standard models or develop new estimators,
 they have to implement the routines
 for the maximum likelihood estimations themselves.  Several popular
-statistical packages include framework for simplifying the
+statistical packages include frameworks for simplifying the
 estimation, allowing the user to easily choose between a number of
 optimization algorithms, different ways of calculating
-variance-covariance matrices, and easily reporting the results.  The examples
+variance-covariance matrices, and easy reporting of the results.  The examples
 include the \code{ml} command in \textsf{stata} and
 the \code{maxlik} library for \textsf{GAUSS}.
 
@@ -127,7 +127,7 @@ Section~\ref{sec:summary} concludes.
 different optimization routines, and to treat the results in a way,
 suitable for maximum likelihood (ML) estimation.  The package
 implements a flexible multi-purpose Newton-Raphson type optimization
-routine \code{maxNR}.  This is used as a basis of \code{maxBHHH}, a
+routine \code{maxNR}.  This is used as the basis of \code{maxBHHH}, a
 Berndt-Hall-Hall-Hausman type optimizer \citep{berndt74}, popular for ML problems.  In
 addition, various methods from the \code{optim} function (from package
 \pkg{stats}) are included by the package in a unified way (functions \code{maxBFGS},
@@ -229,7 +229,7 @@ log-likelihood function) is
 \end{equation}
 
 Given the log-likelihood function above,
-we create an \textsf{R} function
+we create an \R function
 that calculates the log-likelihood value.
 Its first argument must be the vector of the parameters to be estimated
 and it must return the log-likelihood value.%
@@ -308,7 +308,7 @@ parameters are
    - \frac{ N }{ \sigma }
    + \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^3}.
 \end{align}
-This can be calculated in \textsf{R} by the following function:
+This can be calculated in \R by the following function:
 <<>>=
 logLikGrad <- function( param ) {
    mu <- param[ 1 ]
@@ -354,7 +354,7 @@ for the normal distribution are
    \frac{ N }{ \sigma^2 }
    - 3 \sum_{i=1}^N \frac{( x_i - \mu )^2}{\sigma^4}.
 \end{align}
-They can be calculated in \textsf{R} using the following function:
+They can be calculated in \R using the following function:
 <<>>=
 logLikHess <- function( param ) {
    mu <- param[ 1 ]
@@ -418,10 +418,11 @@ if analytical gradients but no Hessians are available, and to resort to the valu
 methods only if gradients are not provided.  
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
-The BHHH method uses the fact, that in case of independent
-observations, the Hessian can be approximeted by the negative of the 
+The BHHH method replaces the Hessian by the negative of the
 expectation of the outer product of the gradient (score) vector.  In
-order to calculate the expectation, the algorithm needs gradient
+case of independent observations, the expectation can be approximated
+by the sample average of the outer product of the score vectors of
+individual observations.  Hence the algorithm needs gradient
 vectors by individual observations.  This can be achieved either by
 providing a corresponding gradient function (see below) or by providing a
 vector of individual observation-specific likelihood values by the
@@ -494,8 +495,8 @@ If the user does
 not provide gradients, the gradients are computed by finite-difference
 approach.
 
-To give the reader a taste, we give an example using the
-gradientless Nelder-Mead method:
+We give an example using the
+gradient-free Nelder-Mead method:
 <<>>=
 mleNM <- maxLik( logLik = logLikFun,
    start = c( mu = 0, sigma = 1 ), method = "NM" )
@@ -532,23 +533,23 @@ referred to the documentation of the corresponding optimizer.
 \label{sec:fixed_parameter_values}
 
 Below, we
-demonstrate how it is possible to fix certain parameters we would
-like to handle as constants in the optimization process.  This feature
+demonstrate how it is possible to keep certain parameters fixed
+as constants in the optimization process.  This feature
 is implemented in \code{maxNR} (and hence supported by \code{maxBHHH}
 as well), which is a part of \pkg{maxLik}.
 
 Let us return to our original task of estimating the parameters of a
 normal sample.  However, assume we know that the true value of $\sigma
 = 2$.  Instead of writing a new likelihood function, we may use the
-existing one while specifying that $\sigma$ is fixed at 2.  This is
+existing one while specifying that $\sigma$ is kept fixed at 2.  This is
 done via argument \code{activePar} of \code{maxNR}.  It is a logical
 vector of length equal to that of the parameter vector which specifies which
 components are allowed to change (are ``active'').  The other,
 ``fixed'' parameters are treated as known constants, always
-retaining their initial value.  Certain parameters can be kept fixed
+retaining their initial value.  Parameters can be kept fixed
 by either specifying the free ones (by argument \code{activePar}), or
-fixed ones (argument \code{fixedPar}).  Both must be index vector, if
-both are specified, the latter are used (and a warning issued).
+fixed ones (argument \code{fixedPar}).  Both of these arguments must be index vectors, if
+both are specified, only the latter is used (and a warning issued).
 So, as $\sigma$
 was the second parameter, we may call:
 <<code:activePar>>=
@@ -560,21 +561,28 @@ is set to zero while the $t$-value is not defined.  Note also
 that the estimate of $\mu$ is unchanged (indeed, ML estimate of it is
 still the sample average) while the estimated standard error is
 different.  Obviously, log-likelihood is lower in the constrained
-space, although the reader may verify that allowing $\sigma$ to be free
+space, although the reader may verify that allowing $\sigma$ to vary freely
 is an insignificant improvement according to the likelihood ratio
 test.
 
-\subsubsection{Automatic fixing of parameter values}
+\subsubsection{Automatic transformation of parameters to fixed constants}
 
-Next, we demonstrate, how it is possible to fix a parameter
-automatically during the computations when using \code{maxNR} optimizer.
+Next, we demonstrate, how it is possible to turn a parameter
+automatically to a fixed constant during the computations when using \code{maxNR} optimizer.
 This may be useful when
 estimating a large
 number of similar models where parameters occasionally converge toward
-the boundary of the parameter space or another problematic region.  Most popular optimization
-algorithms do not work well in such circumstances.  We demonstrate
-this feature
-by estimating the parameters of a mixture model of two normal distributions on a sample,
+the boundary of the parameter space or another problematic region.  
+Most popular optimization
+algorithms do not work well in such circumstances.  In some cases a
+solution is to replace the initial model with a simpler submodel, for
+instance replacing the distribution mixture with a single component.
+Note that this problem cannot be handled by constrained maximization
+either, as the mixture parameters are not identified, if the fraction
+of one component goes to zero.
+Below we demonstrate
+this
+by estimating the parameters of a normal mixture on a sample,
 drawn from a single normal distribution.  Note that this example
 is highly dependent on the initialization of random number
 generator and initial values for the estimation.  This happens often
@@ -597,7 +605,7 @@ of a mixture is simply
 \end{equation}
 where $\varrho$ is the percentage of the first component in the
 mixture and $\phi(\cdot)$ is the standard normal density function.  We
-implement this in \textsl{R}:
+implement this in \R:
 <<code:logLikMix>>=
 logLikMix <- function(param) {
    rho <- param[1]
@@ -641,11 +649,11 @@ Hence we have no way establishing whether
 the common mean of the sample is, in fact, significantly different from
 0.
 If the estimation is done by hand, it would be easy
-to fix $\varrho$ as in the example above.  However, this may
+to treat $\varrho$ as fixed as in the example above.  However, this may
 not be a suitable approach if we want to run a large
 number of similar computations on different samples.  In that case the
 user may want to consider signalling the \code{maxNR} routine that the
-parameters should be treated as fixed.
+parameters should be kept fixed.
 We may rewrite the log-likelihood function as follows:
 <<code:logLikMix2>>=
 freePar <- rep(TRUE, 3)
@@ -680,21 +688,22 @@ We have introduced three changes into the log-likelihood function.
   successive calls to the function.
 \item Next novelty is related to checking the proximity to the region
   of trouble: \code{if(freePar[1] \& (abs(mu1 - mu2) < 1e-3))}.
-  Hence, if we haven't fixed the first parameter ($\varrho$) yet (this
+  Hence, if we haven't set the first parameter ($\varrho$) to a
+  constant yet (this
   is what \code{freePar[1]} keeps track of), and the estimated means
   of the components are close to each other, we set $\varrho$ to 1.
   This means we assume the mixture contains only component 1.  Note
   that because $\mu_{2}$ is undefined as $\varrho = 1$, we also have
-  to fix that parameter.  We mark both of these parameters in the
-  parameter vector to be fixed (\code{constPar <- c(1, 3)}), and
+  to keep that parameter fixed.  We mark both of these parameters in the
+  parameter vector to as fixed (\code{constPar <- c(1, 3)}), and
   provide the new values for them (\code{newVal <- c(1, 0)}).
 \item As the last step, we inform \code{maxNR} algorithm of our
   decision by setting respective attributes to log-likelihood.  Two
   attributes are used: \code{constPar} informs the algorithm that
   corresponding parameters in the parameter vector must be treated as
-  fixed from now on; and \code{newVal} (which contains two components -- indices and
+  constants from now on; and \code{newVal} (which contains two components -- indices and
   values) informs which parameters have new values.  It
-  is possible to fix parameters without changing the values by
+  is possible to set parameters to constants without changing the values by
   setting the \code{constPar} attribute only.
 \end{itemize}
 
@@ -702,7 +711,7 @@ Now the estimation results look like:
 <<code:mix3>>=
 summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0.1, mu2=0)))
 @ 
-With parameters \code{rho} and \code{mu2} fixed, the resulting
+With parameters \code{rho} and \code{mu2} treated as constants, the resulting
 one-component model has small standard errors.
 
 

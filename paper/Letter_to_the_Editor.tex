@@ -56,10 +56,25 @@ have introduced to the paper.
 
 \subsection*{Reviewer 2}
 
+\begin{itemize}
+\item Overlooked packages: see above.
+\item We now explain the need for independent observations as a way to
+  replace expectation with average.
+\item In section 3.3.2 we clarify that our example works if replacing
+  a general model with more specific submodel.  Hence general
+  constraints are not touched in this example.
+\item We chose to retain the function \texttt{stdEr}, as it is a
+  compromise between being easy to remember, short, following the R
+  case traditions; and avoids breaking the API.
 
+  Presence of \texttt{vcov} method is mentioned in the 3rd paragraph,
+  page 3.
+\item In case of presenting the gradient (and Hessian) of our sample
+  likelihood function, we have chosen expositional simplicity over
+  (slightly) more efficient code.
+\end{itemize}
 
-
-We have also corrected a large number of typos.
+We have also corrected a large number of typos, pointed by the referees.
 
 \bibliographystyle{econometrica}
 \bibliography{majandus}
