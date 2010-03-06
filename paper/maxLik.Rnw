@@ -38,9 +38,12 @@ options(width=70)
    \email{arne@foi.dk}
 \and
    Ott Toomet \at
-   Department of Economics, University of Tartu (Estonia)\\
+   Department of Economics, University of Tartu\\
+   Narva 4, Tartu 51009, Estonia\\
    Department of Economics, Aarhus School of Business,
-      University of Aarhus (Denmark)
+      University of Aarhus\\
+   Hermodsvej 22, 8230 Åbyhøj, Denmark\\
+   \email{ottt@asb.dk}
 }
 
 \date{Received: date / Accepted: date}
@@ -709,7 +712,7 @@ We have introduced three changes into the log-likelihood function.
 
 Now the estimation results look like:
 <<code:mix3>>=
-summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0.1, mu2=0)))
+summary(m <- maxLik(logLikMix1, start=c(rho=0.5, mu1=0, mu2=0.01)))
 @ 
 With parameters \code{rho} and \code{mu2} treated as constants, the resulting
 one-component model has small standard errors.
