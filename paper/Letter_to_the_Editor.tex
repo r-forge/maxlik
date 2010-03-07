@@ -18,6 +18,8 @@
 
 Dear Editor,
 
+\bigskip
+
 thank you for the comments we received for our paper ``maxLik: A
 Package for Maximum Likelihood Estimation in R''.  We feel that the
 referees have done an excellent job.  Below is the list of changes we
@@ -28,13 +30,13 @@ have introduced to the paper.
 \begin{itemize}
 \item We mention functions \texttt{mle} and \texttt{mle2}, and discuss
   the advantages/novelty of \texttt{maxLik}.
-\item We briefly describe the idea of sequantial unconstrained
+\item We briefly describe the idea of sequential unconstrained
   maximization technique (SUMT).
 \item We mention that the other ML-related packages do not provide
   \texttt{stdEr} or a direct analogue.
 \item We streamlined the introduction of normal log-likelihood function.
 \item Unfortunately, \texttt{with}-construct cannot replace indexing
-  everywhere (for instance, in case of vector and unnamed
+  everywhere (for instance, in case of vector- and unnamed
   parameter components).  Hence we left it to a footnote.
 \item We re-worded the return messages, removing the ``maybe'' part.
 
@@ -49,9 +51,12 @@ have introduced to the paper.
   parameter values (section 3.3.2), may be a little complicated.  We
   also agree, that the problems are easy to diagnose, and there are
   better algorithms available.  However, as this feature \emph{is}
-  part of the maxLik since it's early days, and since for some reasons
+  part of the maxLik since it's early days, and since for different
+  reasons
   the user may choose not to use better-suited specific algorithms, we
-  feel that the sections may still have enough value.
+  feel that the section 3.3.2 may still have enough value to justify its
+  publication.  However, if you do not agree with us, this can be
+  removed as well.
 \end{itemize}
 
 \subsection*{Reviewer 2}

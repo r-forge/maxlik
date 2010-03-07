@@ -96,9 +96,10 @@ since its early days.  The first general-purpose ML framework
 (function \code{mle} in package \pkg{stats4}) was added in 2003, and
 an extension (\code{mle2} in package {bbmle}) in 2007.  However, both
 of these packages are based on a general-purpose optimizer
-\code{optim}, which does not include an option to use Newton-Raphson,
-and in particular, its variant Berndt-Hall-Hall-Hausman optimizer
-\citep{berndt74}, very popular for ML problems.  The package
+\code{optim} which does not include an option to use Newton-Raphson
+optimizer.  In particular, its variant variant 
+Berndt-Hall-Hall-Hausman optimizer
+\citep{berndt74}, is very popular for ML problems.  The package
 \pkg{maxLik} \citep{r-maxlik-0.5} is intended to fill this gap.  The
 package can be used both by end-users, developing their own
 statistical methods, and by package developers, implementing ML
@@ -162,7 +163,8 @@ constraints.  The equality constraints are estimated using sequential
 unconstrained maximization technique (SUMT), implemented in the
 package.  This is achieved by adding a (initially tiny) penalty term,
 related to violation of the constraints, to the target function.
-Thereafter on can solve the problem repeatedly with increasing penalty
+Thereafter the problem is repeatedly solved while the penalty is
+increased 
 for every new repetition.  The inequality constraints are delegated to
 \code{constrOptim} in the package \pkg{stats}.  The \code{maxLik}
 function is aware of the constraints and is able to select a suitable
@@ -213,8 +215,9 @@ that calculates the log-likelihood value as a function of the
 parameter (usually parameter vector).
 The second argument (\code{start}) must be a vector of starting values.
 
-We demonstrate the usage of the \pkg{maxLik} package by a simple example:
-we fit a normal distribution by maximum likelihood.
+We demonstrate the usage of the \pkg{maxLik} package by a simple
+example: we estimate parameters of normal distribution based on a
+random sample.
 First, we generate a vector ($x$) of 100 draws
 from a normal distribution with a mean of $\mu = 1$
 and a standard deviation of~$\sigma = 2$:
@@ -342,10 +345,7 @@ the argument \code{hess}.
 If the user provides a function to calculate the gradients
 but does not use argument \code{hess},
 the Hessians are calculated by the function
-\code{numericHessian} using finite-difference approach.\footnote{Only the Newton-Raphson 
-  algorithm uses the Hessian directly for obtaining the estimates.  The
-  other algorithms ignore it during the estimation but use it for computing the
-  final variance-covariance matrix.}
+\code{numericHessian} using finite-difference approach.
 The elements of the Hessian matrix of the log-likelihood function
 for the normal distribution are
 \begin{align}
@@ -422,7 +422,9 @@ methods only if gradients are not provided.
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
 The BHHH method replaces the Hessian by the negative of the
-expectation of the outer product of the gradient (score) vector.  In
+expectation of the outer product of the gradient (score) vector.  Note
+that this method is only valid while maximizing log-likelihood and
+hence it is usually not included in general-purpose optimizers.  In
 case of independent observations, the expectation can be approximated
 by the sample average of the outer product of the score vectors of
 individual observations.  Hence the algorithm needs gradient
@@ -545,7 +547,7 @@ Let us return to our original task of estimating the parameters of a
 normal sample.  However, assume we know that the true value of $\sigma
 = 2$.  Instead of writing a new likelihood function, we may use the
 existing one while specifying that $\sigma$ is kept fixed at 2.  This is
-done via argument \code{activePar} of \code{maxNR}.  It is a logical
+done via arguments \code{activePar} or \code{fixedPar} of \code{maxNR}.  It is a logical
 vector of length equal to that of the parameter vector which specifies which
 components are allowed to change (are ``active'').  The other,
 ``fixed'' parameters are treated as known constants, always
@@ -577,13 +579,14 @@ estimating a large
 number of similar models where parameters occasionally converge toward
 the boundary of the parameter space or another problematic region.  
 Most popular optimization
-algorithms do not work well in such circumstances.  In some cases a
+algorithms do not work well in such circumstances.  In some cases, a
 solution is to replace the initial model with a simpler submodel, for
-instance replacing the distribution mixture with a single component.
-Note that this problem cannot be handled by constrained maximization
-either, as the mixture parameters are not identified, if the fraction
+instance replacing a density mixture with a single density component.
+Note that this problem cannot be easily
+handled by constrained maximization
+either, as the mixture parameters are not identified, if the weight
 of one component goes to zero.
-Below we demonstrate
+Below, we demonstrate
 this
 by estimating the parameters of a normal mixture on a sample,
 drawn from a single normal distribution.  Note that this example
@@ -729,12 +732,13 @@ Although \R has included general-purpose optimizers and more specific Maximum
 Likelihood tools for a long time,
 the \pkg{maxLik} package has three important features
 that are not available in at least some of the alternatives:
-First, the covariance matrix of the estimates can be calculated automatically.
-Second, the user can easily switch between different optimization
-algorithms.
-Third, the package provides the Berndt-Hall-Hall-Hausman (BHHH) algorithm,
+First, the package provides the Berndt-Hall-Hall-Hausman (BHHH) 
+algorithm,
 a popular optimization method which is available only for
-likelihood-type problems.
+likelihood-type problems.  Second, the covariance matrix of the
+estimates can be calculated automatically.
+Third, the user can easily switch between different optimization
+algorithms.
 
 In the future,
 we plan to add support for further optimisation algorithms,
