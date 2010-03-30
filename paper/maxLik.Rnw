@@ -426,7 +426,16 @@ methods only if gradients are not provided.
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
 The BHHH method replaces the Hessian by the negative of the
-expectation of the outer product of the gradient (score) vector.  Note
+expectation of the outer product of the gradient (score) vector, i.e.
+\begin{equation}
+H \approx - \frac{1}{N} \sum_{i=1}^N \;
+   \frac{ \partial \log L_i ( \beta ) }{ \partial \beta } \;
+   \left( \frac{ \partial \log L_i ( \beta ) }{ \partial \beta } \right)^\top ,
+\end{equation}
+where $\partial \log L_i ( \beta ) / \partial \beta$ is the gradient
+of the log-likelihood contribution of the $i$th observation
+with respect to the parameter vector $\beta$.
+Note
 that this method is only valid while maximizing log-likelihood and
 hence it is usually not included in general-purpose optimizers.  In
 case of independent observations, the expectation can be approximated
