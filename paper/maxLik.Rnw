@@ -102,7 +102,7 @@ of these packages are based on a general-purpose optimizer
 algorithm.  In particular, its variant,
 the Berndt-Hall-Hall-Hausman algorithm
 \citep{berndt74}, is very popular for ML problems.  The \R package
-\pkg{maxLik} \citep{r-maxlik-0.5} is intended to fill this gap.  The
+\pkg{maxLik} \citep{r-maxlik-0.7} is intended to fill this gap.  The
 package can be used both by end-users, developing their own
 statistical methods, and by package developers, implementing ML
 estimators for specific models.  For instance, the packages
@@ -111,7 +111,7 @@ estimators for specific models.  For instance, the packages
 \pkg{truncreg} \citep{r-truncreg-0.1} use the \pkg{maxLik} package for
 their maximum likelihood estimations.
 
-The \pkg{maxLik} package is available from
+The \pkg{maxLik} package (currently version~0.7) is available from
 CRAN (\url{http://cran.r-project.org/package=maxLik}),
 R-Forge (\url{http://r-forge.r-project.org/projects/maxlik/}), and its
 homepage (\url{http://www.maxLik.org/}).  
