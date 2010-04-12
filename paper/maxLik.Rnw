@@ -96,7 +96,7 @@ The free software environment for statistical computing and graphics
 \R \citep{r-project09} has included built-in optimization algorithms
 since its early days.  The first general-purpose ML framework
 (function \code{mle} in package \pkg{stats4}) was added in 2003, and
-an extension (\code{mle2} in package {bbmle}) in 2007.  However, both
+an extension (\code{mle2} in package \pkg{bbmle}) in 2007.  However, both
 of these packages are based on a general-purpose optimizer
 \code{optim} which does not include an option to use the Newton-Raphson
 algorithm.  In particular, its variant,
