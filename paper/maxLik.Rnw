@@ -549,26 +549,42 @@ referred to the documentation of the corresponding optimizer.
 Below, we
 demonstrate how it is possible to keep certain parameters fixed
 as constants in the optimization process.  This feature
-is implemented in \code{maxNR} (and hence supported by \code{maxBHHH}
-as well), which is a part of \pkg{maxLik}.
+is implemented in all optimization methods supported by \code{maxLik}.
 
 Let us return to our original task of estimating the parameters of a
 normal sample.  However, assume we know that the true value of $\sigma
 = 2$.  Instead of writing a new likelihood function, we may use the
 existing one while specifying that $\sigma$ is kept fixed at 2.  This is
-done via arguments \code{activePar} or \code{fixedPar} of \code{maxNR}.  It is a logical
-vector of length equal to that of the parameter vector which specifies which
-components are allowed to change (are ``active'').  The other,
-``fixed'' parameters are treated as known constants, always
-retaining their initial value.  Parameters can be kept fixed
-by either specifying the free ones (by argument \code{activePar}), or
-fixed ones (argument \code{fixedPar}).  Both of these arguments must be index vectors, if
-both are specified, only the latter is used (and a warning issued).
+done via argument \code{fixed} of \code{maxLik}.%
+\footnote{%
+In earlier version of the \pkg{maxLik} package ($\leq 0.6$),
+parameters could be fixed only in functions \code{maxNR} and \code{maxBHHH}
+by using argument \code{activePar}.
+This argument was a logical vector indicating,
+which parameters should \emph{not} be fixed.
+Since version~0.7 of the \pkg{maxLik} package,
+it is recommended to fix parameters by argument \code{fixed},
+because this has several advantages,
+e.g.\ it is easier to fix just a few out of many parameters
+and this works also with the BFGS, NM, and SANN method.
+However, \code{activePar} of function \code{maxNR}
+is kept for backward compatibility.
+}
+This argument allows for specifying the fixed parameters
+in three different ways:
+First, it can be a logical vector of length equal to that
+of the parameter vector,
+which specifies which components are not allowed to change,
+i.e.\ stay fixed at their starting values.
+Second, argument \code{fixed} can be an index vectors
+that indicates the positions of the fixed parameters.
+Third, this argument can be a vector of character strings
+indicating the names of the fixed parameters,
+where the parameter names are taken from argument \code{start}.
 So, as $\sigma$
 was the second parameter, we may call:
-<<code:activePar>>=
-summary(maxLik(logLikFun, start=c(mu=0, sigma=2), 
-               activePar=c(TRUE, FALSE)))
+<<code:fixed>>=
+summary(maxLik(logLikFun, start=c(mu=0, sigma=2), fixed=2))
 @ 
 As we can see, the $\sigma$ is indeed exactly 2.  Its standard error
 is set to zero while the $t$-value is not defined.  Note also
