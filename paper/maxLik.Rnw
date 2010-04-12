@@ -56,9 +56,9 @@ options(width=70)
   statistical environment \R.  The package is essentially a unified
   wrapper interface to various optimization routines,
   offering easy access to likelihood-specific features like standard
-  errors, or information equality (BHHH method).  More advanced
+  errors or information equality (BHHH method).  More advanced
   features of the optimization algorithms, such as forcing the value of
-  a particular parameter to be fixed, is also supported.
+  a particular parameter to be fixed, are also supported.
   
   \keywords{Maximum Likelihood \and Optimisation}
 % classifications
