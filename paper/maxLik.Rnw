@@ -164,7 +164,7 @@ The maximization layer supports linear equality and inequality
 constraints.  The equality constraints are estimated using the sequential
 unconstrained maximization technique (SUMT), which is also implemented in the
 \maxLik package.  This is achieved by adding a (initially tiny) penalty term,
-related to violation of the constraints, to the target function.
+related to violation of the constraints, to the objective function.
 Thereafter the problem is repeatedly solved while the penalty is
 increased 
 for every new repetition.  The inequality constraints are delegated to
@@ -782,7 +782,7 @@ and function \code{DEoptim} of the \pkg{DEoptim} package
    that performs evolutionary global optimization via the differential
    evolution algorithm.
 % mention ROI here? ....
-Another future extension includes comprehensive handling of constrained
+Another future extension includes a more comprehensive handling of constrained
 maximum likelihood problems.
 
 We hope that these improvements will make the \pkg{maxLik} package
