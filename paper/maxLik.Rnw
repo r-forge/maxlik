@@ -39,11 +39,11 @@ options(width=70)
    \email{arne@foi.dk}
 \and
    Ott Toomet \at
-   Department of Economics, University of Tartu\\
-   Narva 4, Tartu 51009, Estonia\\
    Department of Economics, Aarhus School of Business,
       University of Aarhus\\
    Hermodsvej 22, 8230 Åbyhøj, Denmark\\
+   Department of Economics, University of Tartu\\
+   Narva 4, Tartu 51009, Estonia\\
    \email{ottt@asb.dk}
 }
 
@@ -338,11 +338,10 @@ mleGrad <- maxLik( logLik = logLikFun, grad = logLikGrad,
 all.equal( logLik( mleGrad ), logLik( mle ) )
 all.equal( coef( mleGrad ), coef( mle ) )
 all.equal( stdEr( mleGrad ), stdEr( mle ) )
-all.equal( vcov( mleGrad ), vcov( mle ) )
 @
 Providing analytical gradients has no (relevant)
 effect on the estimates
-but their covariance matrix and standard errors are slightly different.
+but their standard errors are slightly different.
 
 The analytic Hessian of the log-likelihood function can be provided by
 the argument \code{hess}.
@@ -411,7 +410,7 @@ In this way the user can easily switch the optimisation method
 without changing the arguments.
 If arguments \code{grad} or \code{hess} are provided
 but the selected method does not require this information---%
-for instance arguments \code{grad} and \code{hess} for the
+for instance for the
 Nelder-Mead method---%
 they are ignored during the optimization.
 However, even if the optimization
@@ -426,18 +425,14 @@ if analytical gradients but no Hessians are available, and to resort to the valu
 methods only if gradients are not provided.  
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
-The BHHH method replaces the Hessian by the negative of the
-outer product of the gradient matrix $J = [ J_{ij} ]$, i.e.
-$J \, J^\top$,
-where $J_{ij} = \partial \log L_i ( \beta ) / \partial \beta_j$ is the gradient
-of the log-likelihood contribution of the $i$th observation
-with respect to the $j$th parameter ($\beta_j$).
-Note
-that this method is only valid while maximizing log-likelihood and
-hence it is usually not included in general-purpose optimizers.  In
-case of independent observations, the expectation can be approximated
-by the sample average of the outer product of the score vectors of
-individual observations.  Hence the algorithm needs gradient
+The idea of the BHHH method is based on information equality, replacing
+the Hessian by the negative of the
+expectation of outer product of the gradient vector.  Note
+that this is only valid while maximizing log-likelihood and
+hence this method is usually not included in general-purpose optimizers.  In
+practice, the expectation is approximated as the average over
+outer product of gradients of individual (independent) observations.
+Hence, in order to use BHHH method, one has to provide gradient
 vectors by individual observations.  This can be achieved either by
 providing a corresponding gradient function (see below) or by providing a
 vector of individual observation-specific likelihood values by the
@@ -659,7 +654,7 @@ summary(m1 <- maxLik(logLikMix, start=c(rho=0.5, mu1=0, mu2=0.01)))
 @ 
 The estimates replicate the true parameters within the confidence
 intervals; however compared to the examples in Section~\ref{sec:basic_usage}, the
-standard errors are rather large (note that the sample here includes
+standard errors are rather large (note also that the sample here includes
 1000 observations instead of mere 100 above).  This is a common
 outcome while estimating mixture models.
 
