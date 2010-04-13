@@ -134,13 +134,26 @@ The \R package \maxLik is designed to provide a single, unified interface for
 different optimization routines, and to treat the results in a way
 suitable for maximum likelihood (ML) estimation.  The package
 implements a flexible multi-purpose Newton-Raphson type optimization
-routine \code{maxNR}.  This is used as the basis of \code{maxBHHH}, a
-Berndt-Hall-Hall-Hausman type algorithm \citep{berndt74}, popular for ML problems.  In
-addition, various methods from the \code{optim} function (from package
-\pkg{stats}) are included by the package in a unified way (functions \code{maxBFGS},
-\code{maxNM}, and \code{maxSANN}).
+routine in function \code{maxNRCompute}.
+This internal function is not intended to be called by users
+but function \code{maxNR} provides a convenient user-interface
+and calls \code{maxNRCompute} for the actual optimization.
+This Newton-Raphson type algorithm is also used as the basis
+of function \code{maxBHHH},
+which implements a Berndt-Hall-Hall-Hausman type algorithm \citep{berndt74}
+that is popular for ML problems.
+In addition, the Broyden-Fletcher-Goldfarb-Shanno algorithm
+\citep{broyden70,fletcher70,goldfarb70,shanno70},
+the Nelder-Mead routine \citep{nelder65}, and
+a simulated annealing method \citep{belisle92}
+are available in a unified way
+in functions \code{maxBFGS}, \code{maxNM}, and \code{maxSANN}, respectively.
+These three functions are predominantly wrapper functions
+around the internal function \code{maxOptim},
+which calls function \code{optim} (from the built-in package \pkg{stats}) 
+for the actual optimisation.
 
-The package is designed in two layers.  The first (innermost) is the
+The \maxLik package is designed in two layers.  The first (innermost) is the
 optimization (maximization) layer: all the maximization routines are
 designed to have a unified and intuitive interface which allows the
 user to switch easily between them.  All the main arguments have
