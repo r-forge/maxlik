@@ -767,15 +767,20 @@ algorithms.
 
 In the future,
 we plan to add support for further optimisation algorithms,
-e.g.\ function \code{nlm},
+e.g.\ function \code{nlm} of the built-in \pkg{stats} package
+   that uses a Newton-type algorithm,
 the "L-BFGS-B" algorithm in function \code{optim}
    that allows for box constraints,
-function \code{nlminb}
+function \code{nlminb} of the \pkg{stats} package
    that uses PORT routines \citep{gay90}
    and also allows for box constraints,
-or
 function \code{ucminf} of the \pkg{ucminf} package
-\citep{r-ucminf-1.0}.  
+   \citep{r-ucminf-1.0}
+   that uses an improved quasi-Newton type algorithm,
+and function \code{DEoptim} of the \pkg{DEoptim} package
+   \citep{r-DEoptim-2.0-4}
+   that performs evolutionary global optimization via the differential
+   evolution algorithm.
 % mention ROI here? ....
 Another future extension includes comprehensive handling of constrained
 maximum likelihood problems.
@@ -788,6 +793,7 @@ even more attractive for users and package writers.
 
 \bibliographystyle{spbasic}
 \bibliography{references}
+% \bibliography{agrarpol}
 
 % TODO:
 
