@@ -60,7 +60,7 @@ options(width=70)
   features of the optimization algorithms, such as forcing the value of
   a particular parameter to be fixed, are also supported.
   
-  \keywords{Maximum Likelihood \and Optimisation}
+  \keywords{Maximum Likelihood \and Optimization}
 % classifications
 % 1.01080: Econometrics
 % 1.02570: Maximum Likelihood
@@ -151,7 +151,7 @@ in functions \code{maxBFGS}, \code{maxNM}, and \code{maxSANN}, respectively.
 These three functions are predominantly wrapper functions
 around the internal function \code{maxOptim},
 which calls function \code{optim} (from the built-in package \pkg{stats}) 
-for the actual optimisation.
+for the actual optimization.
 
 The \maxLik package is designed in two layers.  The first (innermost) is the
 optimization (maximization) layer: all the maximization routines are
@@ -312,7 +312,7 @@ If no analytical gradient is provided by the user,
 finite-difference gradient and Hessian are calculated
 by the functions \code{numericGradient} and \code{numericNHessian},
 which are also included in the \pkg{maxLik} package.
-While the maximisation of the likelihood function of this simple model
+While the maximization of the likelihood function of this simple model
 works well with finite-difference gradients and Hessians, 
 this may not be the case for more complex models.  Numerical
 derivatives may be costly to compute, and, even more, they may turn out to
@@ -401,7 +401,7 @@ as in the case of finite-difference gradients, finite-difference Hessians may tu
 be slow and unreliable.
 
 
-\subsection{Optimisation Methods}
+\subsection{Optimization Methods}
 
 The \code{maxLik} function allows the user to select between five
 optimization algorithms by argument \code{method}.
@@ -419,7 +419,7 @@ the NM and SANN algorithms use neither gradients nor Hessians
 but only function values.
 The gradients and Hessians provided by the user through
 the arguments \code{grad} and \code{hess} are always accepted.
-In this way the user can easily switch the optimisation method
+In this way the user can easily switch the optimization method
 without changing the arguments.
 If arguments \code{grad} or \code{hess} are provided
 but the selected method does not require this information---%
@@ -692,7 +692,7 @@ If the estimation is done by hand, it would be easy
 to treat $\varrho$ as fixed as in the example in Section~\ref{sec:basic_usage}.
 However, this may not be a suitable approach if we want to run a large
 number of similar computations on different samples.  In that case the
-user may want to consider signalling the \code{maxNR} routine that the
+user may want to consider signaling the \code{maxNR} routine that the
 parameters should be kept fixed.
 We may rewrite the function for calculating the log-likelihood value as follows:
 <<code:logLikMix2>>=
@@ -775,7 +775,7 @@ Third, the user can easily switch between different optimization
 algorithms.
 
 In the future,
-we plan to add support for further optimisation algorithms,
+we plan to add support for further optimization algorithms,
 e.g.\ function \code{nlm} of the built-in \pkg{stats} package
    that uses a Newton-type algorithm,
 the "L-BFGS-B" algorithm in function \code{optim}
