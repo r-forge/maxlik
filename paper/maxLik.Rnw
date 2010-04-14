@@ -316,10 +316,10 @@ by the functions \code{numericGradient} and \code{numericNHessian},
 which are also included in the \pkg{maxLik} package.
 While the maximization of the likelihood function of this simple model
 works well with finite-difference gradients and Hessians, 
-this may not be the case for more complex models.  Numerical
+this may not be the case for more complex models.  Finite-difference
 derivatives may be costly to compute, and, even more, they may turn out to
 be noisy and unreliable. In this way
-numerical derivatives might either slow down the estimation or even impede the
+finite-difference derivatives might either slow down the estimation or even impede the
 convergence. In these cases, the user is recommended to either provide
 analytical derivatives or switch to a more robust estimation method,
 such as Nelder-Mead or SANN, which is not based on gradients.
