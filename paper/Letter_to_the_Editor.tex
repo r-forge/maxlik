@@ -17,11 +17,11 @@
 
 \begin{document}
 
-Dear Editor,
+Dear Friedrich,
 
 \bigskip
 
-thank you for the comments we received for our paper ``maxLik: A
+Thank you for the comments we received for our paper ``maxLik: A
 Package for Maximum Likelihood Estimation in R''.  We feel that the
 referees have done an excellent job.  Below is the list of changes we
 have introduced to the paper.
@@ -35,54 +35,60 @@ have introduced to the paper.
   maximization technique (SUMT).
 \item We mention that the other ML-related packages do not provide
   \texttt{stdEr} or a direct analogue.
-\item We streamlined the introduction of normal log-likelihood function.
-\item Unfortunately, \texttt{with}-construct cannot replace indexing
+\item We streamlined the introduction of the log-likelihood function
+   for the normal distribution.
+\item As the \texttt{with}-construct cannot replace indexing
   everywhere (for instance, in case of vector- and unnamed
-  parameter components).  Hence we left it to a footnote.
+  parameter components), we mention this only in a footnote.
 \item We re-worded the return messages, removing the ``maybe'' part.
-
-  The return codes are not compatible with \texttt{optim()},
+  The return codes are not compatible with \texttt{optim()}
   but with \texttt{nlm()}.
 \item We now refer to the numerically calculated gradients as
   ``finite-difference'' ones.
-\item We added an extra argument \texttt{fixedPar} to
-  \texttt{maxNR()}, which allows to specify fixed parameters.  This
-  addresses the reviewer's critizism.
-\item We agree with the reviewer that automatic fixing of the
-  parameter values (section 3.3.2), may be a little complicated.  We
-  also agree, that the problems are easy to diagnose, and there are
+\item We added an extra argument \texttt{fixed} to
+  \texttt{maxNR}, which allows to specify fixed parameters.  This
+  addresses the reviewer's criticism.
+  Furthermore, we added this argument also to \texttt{maxBFGS},
+  \texttt{maxNM}, and \texttt{maxSANN}
+  so that parameters can be fixed in all optimization methods.
+  We have adjusted this paper accordingly.
+\item We agree with the reviewer that automatic transforming parameters
+  to fixed constants (section~3.3.2) may be a little complicated.  We
+  also agree that the problems are easy to diagnose, and there are
   better algorithms available.  However, as this feature \emph{is}
-  part of the maxLik since it's early days, and since for different
+  part of the \textbf{maxLik} package since its early days, and since for different
   reasons
   the user may choose not to use better-suited specific algorithms, we
-  feel that the section 3.3.2 may still have enough value to justify its
-  publication.  However, if you do not agree with us, this can be
-  removed as well.
+  feel that section~3.3.2 may still have enough value to justify its
+  publication.  However, if you do not agree with us, this section can be
+  removed.
+\item We have implemented all minor suggestions made by this reviewer.
 \end{itemize}
 
 \subsection*{Reviewer 2}
 
 \begin{itemize}
 \item Overlooked packages: see above.
-\item We now explain the need for independent observations as a way to
-  replace expectation with average.
+\item We now mention the need for independent observations as a way to
+  approximate the Hessian.
+  As this paper does not intend to describe the details of the BHHH algorithm
+  and information matrix equality, we refer to \citet[p.~490]{greene08} now.
 \item In section 3.3.2 we clarify that our example works if replacing
-  a general model with more specific submodel.  Hence general
-  constraints are not touched in this example.
+  a general model with a more specific submodel by holding some parameters fixed.
+  Hence, general constraints are not touched in this example.
 \item We chose to retain the function \texttt{stdEr}, as it is a
   compromise between being easy to remember, short, following the R
   case traditions; and avoids breaking the API.
-
-  Presence of \texttt{vcov} method is mentioned in the 3rd paragraph,
+  The presence of a \texttt{vcov} method is mentioned in the last paragraph on
   page 3.
 \item In case of presenting the gradient (and Hessian) of our sample
   likelihood function, we have chosen expositional simplicity over
   (slightly) more efficient code.
+\item We have modified our paper according to all further suggestions
+  made by this reviewer.
 \end{itemize}
 
-We have also corrected a large number of typos, pointed by the referees.
-
-\bibliographystyle{econometrica}
-\bibliography{majandus}
+\bibliographystyle{spbasic}
+\bibliography{references}
 
 \end{document}
