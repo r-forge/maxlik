@@ -729,7 +729,7 @@ We have introduced three changes into the log-likelihood function.
   successive calls to the function.
 \item Next novelty is related to checking the proximity to the region
   of trouble: \code{if(freePar[1] \& (abs(mu1 - mu2) < 1e-3))}.
-  Hence, if we haven't set the first parameter ($\varrho$) to a
+  Hence, if we have not set the first parameter ($\varrho$) to a
   constant yet (this
   is what \code{freePar[1]} keeps track of), and the estimated means
   of the components are close to each other, we set $\varrho$ to 1.
