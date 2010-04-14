@@ -233,7 +233,7 @@ parameter (usually parameter vector).
 The second argument (\code{start}) must be a vector of starting values.
 
 We demonstrate the usage of the \pkg{maxLik} package by a simple
-example: we estimate the parameters of normal distribution based on a
+example: we estimate the parameters of a normal distribution based on a
 random sample.
 First, we generate a vector ($x$) of $N = 100$ draws
 from a normal distribution with a mean of $\mu = 1$
@@ -281,7 +281,9 @@ but has the advantage
 that the returned estimates have also names,
 which improves the readability of the results.\footnote{Alternatively,
 if all the components of the parameter vector have standardized names,
-one may prefer using \code{with}-construct for evaluating the
+one may prefer using the command
+\code{with( as.list(param), sum(dnorm(x, mean=mu, sd=sigma, log=TRUE)))}
+for evaluating the
 likelihood expression.  We are grateful to a referee for this suggestion.}
 <<>>=
 mle <- maxLik( logLik = logLikFun, start = c( mu = 0,  sigma = 1 ) )
@@ -439,13 +441,11 @@ methods only if gradients are not provided.
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
 The idea of the BHHH method is based on information equality, replacing
-the Hessian by the negative of the
-expectation of outer product of the gradient vector.  Note
-that this is only valid while maximizing log-likelihood and
-hence this method is usually not included in general-purpose optimizers.  In
-practice, the expectation is approximated as the average over
-outer product of gradients of individual (independent) observations.
-Hence, in order to use BHHH method, one has to provide gradient
+the Hessian by the negative of the sum over the
+outer products of the gradients of individual (independent) observations.
+Note that this is only valid while maximizing log-likelihood and
+hence this method is usually not included in general-purpose optimizers.
+In order to use the BHHH method, the user has to provide gradient
 vectors by individual observations.  This can be achieved either by
 providing a corresponding gradient function (see below) or by providing a
 vector of individual observation-specific likelihood values by the
