@@ -107,8 +107,8 @@ the Berndt-Hall-Hall-Hausman algorithm
 package can be used both by end-users, developing their own
 statistical methods, and by package developers, implementing ML
 estimators for specific models.  For instance, the packages
-\pkg{LambertW} \citep{r-lambertw-0.1.6}, \pkg{mlogit}
-\citep{r-mlogit-0.1}, \pkg{sampleSelection} \citep{toomet08}, and
+\pkg{mlogitBMA} \citep{r-mlogitBMA-0.1-2},
+\pkg{sampleSelection} \citep{toomet08}, and
 \pkg{truncreg} \citep{r-truncreg-0.1} use the \pkg{maxLik} package for
 their maximum likelihood estimations.
 
