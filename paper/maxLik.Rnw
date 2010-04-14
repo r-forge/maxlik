@@ -797,8 +797,18 @@ maximum likelihood problems.
 We hope that these improvements will make the \pkg{maxLik} package
 even more attractive for users and package writers.
 
-%\begin{acknowledgements}
-%\end{acknowledgements}
+\begin{acknowledgements}
+The authors are grateful to two anonymous referees
+and to the participants of the sixth international workshop
+on Directions in Statistical Computing (DSC)
+in Copenhagen, Denmark, 13$-$14 July 2009
+for giving them valuable comments and suggestions
+regarding the \maxLik package and this paper.
+Arne Henningsen is grateful to the German Research Foundation
+(Deutsche Forschungsgemeinschaft, DFG)
+for financially supporting this research.
+Of course, all errors are the sole responsibility of the authors.
+\end{acknowledgements}
 
 \bibliographystyle{spbasic}
 \bibliography{references}
