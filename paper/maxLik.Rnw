@@ -514,7 +514,7 @@ implemented by a call to the the \code{optim} function in package
 \pkg{stats}.  In order to retain compatibility with the BHHH method,
 all these methods accept the log-likelihood function returning a
 vector of individual likelihoods (these are summed internally).
-A function to compute a gradient matrix with gradients of individual observations, is accepted as well.
+A function to compute a gradient matrix with gradients of individual observations is accepted as well.
 If the user does
 not provide gradients, the gradients are computed by finite-difference
 approach.
