@@ -56,7 +56,7 @@ options(width=70)
   statistical environment \R.  The package is essentially a unified
   wrapper interface to various optimization routines,
   offering easy access to likelihood-specific features like standard
-  errors or information equality (BHHH method).  More advanced
+  errors or information matrix equality (BHHH method).  More advanced
   features of the optimization algorithms, such as forcing the value of
   a particular parameter to be fixed, are also supported.
   
@@ -169,7 +169,7 @@ Its main
 purpose is to treat the inputs and maximization results in a ML-specific way (for instance,
 computing the variance-covariance matrix based on the estimated
 Hessian).  The \mbox{\code{maxBHHH}} function belongs to this layer as well,
-being essentially a call for \code{maxNR} using information equality
+being essentially a call for \code{maxNR} using the information matrix equality
 as the way to approximate the Hessian matrix.  A new class \code{maxLik} is added
 to the returned maximization object for automatic selection of the ML-related
 methods.
@@ -441,9 +441,10 @@ if analytical gradients but no Hessians are available, and to resort to the valu
 methods only if gradients are not provided.  
 
 \subsubsection{Berndt-Hall-Hall-Hausman (BHHH)}
-The idea of the BHHH method is based on information equality, replacing
+The idea of the BHHH method is based on information matrix equality, replacing
 the Hessian by the negative of the sum over the
-outer products of the gradients of individual (independent) observations.
+outer products of the gradients of individual (independent) observations
+\citep[see e.g.][p.~490]{greene08}.
 Note that this is only valid while maximizing log-likelihood and
 hence this method is usually not included in general-purpose optimizers.
 In order to use the BHHH method, the user has to provide gradient
