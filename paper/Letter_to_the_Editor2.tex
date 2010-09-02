@@ -1,0 +1,58 @@
+% -*- coding: utf-8 -*-
+\documentclass[a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[bookmarks=TRUE,
+            colorlinks,
+            pdfpagemode=none,
+            pdfstartview=FitH,
+            citecolor=black,
+            filecolor=black,
+            linkcolor=black,
+            urlcolor=black,
+            ]{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage[estonian]{babel}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{icomma,xspace}
+\input{isomath}
+
+\begin{document}
+
+Dear Editor,
+
+hereby we provide our feedback after the second round of reviews.
+
+\section*{Reviewer 1}
+
+\begin{itemize}
+\item The reviewer is a womewhat concerned about the complex examples.
+  We find the criticism a little hard to understand.  First, all the
+  examples are essentially different ways of estimating the parameters
+  of normal distribution.  As this is perhaps the most widely used and
+  best understoor example of statistical distributions and likelihood
+  functions, we do not think selecting a different statistical model
+  would improve the clarity of the message.
+
+  However, we agree that the section 3.2.2 (fixing the parameters
+  automatically) may feel a little complex.  As the rest of the paper
+  does not depend on the presence of that section, we are willing to
+  remove it, if you believe that would benefit the potential readers.
+\item We agree that the current state of number of partially
+  overlapping packages may not be optimal.  However, it seems to be
+  less related to our package and more to the ``bazaar'' way of free
+  software development.  We have added a related footnote (page 2),
+  but feel that discussing various software development models will be
+  beyond the scope of this paper.
+\item We have fixed the typos and stylistic suggestions.
+\end{itemize}
+
+As we have continued the development of the package between the
+revisions, we also incorporated a few related changes.  In particular,
+we mention an alternative way of providing the analytic gradient, and
+\emph{maxBFGSR} routine, a BFGS optimizer, implemented in R in the
+package. 
+
+
+\end{document}
