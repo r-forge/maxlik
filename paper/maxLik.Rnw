@@ -831,19 +831,13 @@ regarding the \maxLik package and this paper.
 Arne Henningsen is grateful to the German Research Foundation
 (Deutsche Forschungsgemeinschaft, DFG)
 for financially supporting this research.
-Ott Toomet gratefully aknowledges financial support from 
+Ott Toomet gratefully aknowledges financial support from Nordic Centre
+of Excellence in Empirical Labour Economics, and
 Estonian Ministry of Education and Research (Target Financing SF0180037s08).
 Of course, all errors are the sole responsibility of the authors.
 \end{acknowledgements}
 
 \bibliographystyle{spbasic}
 \bibliography{references}
-% \bibliography{agrarpol}
-
-% TODO:
-
-% * Merge maxBFGS, maxNM, maxSANN (if have time)
-
-% * add activePar for optim-based methods
 
 \end{document}
