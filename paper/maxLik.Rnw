@@ -106,10 +106,10 @@ the Berndt-Hall-Hall-Hausman algorithm
 The \R package
 \pkg{maxLik} \citep{r-maxlik-0.7} is intended to fill this gap.%
 \footnote{The other
-  ML-related packages offer capabilities, missing in
-  \code{maxLik} (for instance, likelihood profiling).  This may
-  be suboptimal from the user's persepective who might prefer a single,
-  ``ultimate'', ML package.  However, a number of partially overlapping
+  ML-related packages offer a few capabilities that are missing in
+  \pkg{maxLik} (e.g.\ likelihood profiling).  This may
+  be suboptimal from the user's perspective who might prefer a single
+  ``ultimate'' ML package.  However, a number of partially overlapping
   projects seems to characterize a large part of the free software world.}
 The
 package can be used both by end-users, developing their own
@@ -159,10 +159,10 @@ in functions \code{maxBFGS}, \code{maxNM}, and \code{maxSANN}, respectively.
 These three functions are predominantly wrapper functions
 around the internal function \code{maxOptim},
 which calls function \code{optim} (from the built-in package \pkg{stats}) 
-for the actual optimization.  Additionally, a version of BFGS
-optimizer, \code{maxBFGSR}, is provided by the package, which,
-unlike \code{optim}-based methods, is implemented solely in \R.%
-\footnote{\code{maxBFGSR} supplies more debugging information compared
+for the actual optimization.  The \pkg{maxLik} package provides
+a further implementation of the BFGS optimizer, \code{maxBFGSR}, which%
+---unlike the \code{optim}-based methods---is written solely in \R.%
+\footnote{The \code{maxBFGSR} optimizer supplies more debugging information compared
 to \code{optim}-based methods.  We are grateful to Yves Croissant for
 providing the core of this code.}
 
@@ -299,8 +299,11 @@ mle <- maxLik( logLik = logLikFun, start = c( mu = 0,  sigma = 1 ) )
 summary( mle )
 @
 For convenience, the estimated parameters can be accessed by the
-\code{coef} method and standard errors by the \code{stdEr} method
-(defined in the companion package \code{miscTools}):
+\code{coef} method and standard errors by the \code{stdEr} method%
+\footnote{%
+The generic function \code{stdEr} is defined in package \code{miscTools}
+\citep{r-misctools-0.6}.
+}:
 <<code:coef-std>>=
 coef(mle)
 stdEr(mle)
@@ -369,9 +372,9 @@ effect on the estimates
 but their standard errors are slightly different.
 
 Instead of writing a separate gradient function, the user may prefer
-to compute the gradient value in the likelihood function itself (this
-may be a lot faster under certain circumstances).  The computed
-gradient value may be added to the likelihood value as the attribute
+to compute the gradient value in the log-likelihood function itself,
+because this might be a lot faster under certain circumstances.  The computed
+gradient value may be added to the log-likelihood value as attribute
 ``gradient'', analogously as for the function \code{nlm} of the
 \code{stats} package.
 
@@ -419,8 +422,9 @@ on the outcome of the ML estimation in our simple example.  However,
 as in the case of finite-difference gradients,
 calculating finite-difference Hessians may turn out to
 be slow and unreliable.  If the user prefers to pre-compute the
-Hessian value, instead of supplying the function, this can be done by 
-setting the attribute ``hessian'' to the computed Hessian value.
+Hessian matrix instead of supplying argument \code{hess},
+this can be done by setting attribute ``hessian'' of the object returned
+by the log-likelihood function to the computed Hessian matrix.
 
 
 \subsection{Optimization Methods}
@@ -452,7 +456,7 @@ However, even if the optimization
 method itself does not make use of the Hessian, this information is
 used for computing the (final) variance-covariance matrix
 of the parameters (except for the \code{"BHHH"} method.)%
-\footnote{The user can force \code{maxLik} to use BHHH for
+\footnote{The user can force \code{maxLik} to use the BHHH method for
   computing the final Hessian for other optimizers as well,
   see documentation for the argument \code{finalHessian}.}
 
@@ -716,7 +720,7 @@ If the estimation is done by hand, it would be easy
 to treat $\varrho$ as fixed as in the example in Section~\ref{sec:basic_usage}.
 However, this may not be a suitable approach if we want to run a large
 number of similar computations on different samples.  In that case the
-user may want to consider signaling the \code{maxNR} routine that the
+user may want to consider signalling the \code{maxNR} routine that the
 parameters should be kept fixed.
 We may rewrite the function for calculating the log-likelihood value as follows:
 <<code:logLikMix2>>=
@@ -839,5 +843,6 @@ Of course, all errors are the sole responsibility of the authors.
 
 \bibliographystyle{spbasic}
 \bibliography{references}
+% \bibliography{agrarpol}
 
 \end{document}
