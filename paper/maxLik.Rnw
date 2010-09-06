@@ -378,7 +378,7 @@ Instead of writing a separate gradient function, the user may prefer
 to compute the gradient value in the log-likelihood function itself,
 because this might be a lot faster under certain circumstances.  The computed
 gradient value may be added to the log-likelihood value as attribute
-``gradient'', analogously as in case of the function \code{nlm} of the
+``gradient'', analogously to the case of function \code{nlm} of the
 \code{stats} package.
 
 The analytic Hessian of the log-likelihood function can be provided by
