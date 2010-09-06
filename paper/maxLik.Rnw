@@ -115,7 +115,10 @@ The
 package can be used both by end-users, developing their own
 statistical methods, and by package developers, implementing ML
 estimators for specific models.  For instance, the packages
+\pkg{censReg} \citep{r-censReg-0.5},
+\pkg{mhurdle} \citep{r-mhurdle-0.1},
 \pkg{mlogitBMA} \citep{r-mlogitBMA-0.1-2},
+\pkg{pglm} \citep{r-pglm-0.1},
 \pkg{sampleSelection} \citep{toomet08}, and
 \pkg{truncreg} \citep{r-truncreg-0.1} use the \pkg{maxLik} package for
 their maximum likelihood estimations.
