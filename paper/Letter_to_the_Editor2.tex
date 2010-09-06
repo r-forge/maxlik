@@ -1,5 +1,5 @@
 % -*- coding: utf-8 -*-
-\documentclass[a4paper]{article}
+\documentclass[12pt,parskip=half]{scrartcl}
 \usepackage[T1]{fontenc}
 \usepackage[bookmarks=TRUE,
             colorlinks,
@@ -11,35 +11,51 @@
             urlcolor=black,
             ]{hyperref}
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 \usepackage{amsmath}
-\usepackage[estonian]{babel}
+\usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{natbib}
 \usepackage{icomma,xspace}
-\input{isomath}
+% \input{isomath}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{\textbf{#1}}
+\newcommand{\proglang}[1]{\textsf{#1}}
+
 
 \begin{document}
 
 Dear Editor,
 
-hereby we provide our feedback after the second round of reviews.
+\bigskip
 
-\section*{Reviewer 1}
+Thank you for the further comments on our paper ``maxLik: A
+Package for Maximum Likelihood Estimation in R''.
+We are happy that you and the referees are generally satisfied
+with the revised version of our paper.
+We are grateful particularly to the first referee
+who pointed out some (minor) weaknesses
+that were still present in the revised paper.
+Below we respond to the suggestions of the first reviewer
+and list the changes which we have introduced in the paper.
+
+
+\subsubsection*{Reviewer 1}
 
 \begin{itemize}
-\item The reviewer is a womewhat concerned about the complex examples.
-  We find the criticism a little hard to understand.  First, all the
-  examples are essentially different ways of estimating the parameters
-  of normal distribution.  As this is perhaps the most widely used and
-  best understoor example of statistical distributions and likelihood
-  functions, we do not think selecting a different statistical model
+\item The reviewer is somewhat concerned about the complex examples.
+  We agree that the density function of the normal distribution is not trivial.
+  However, the normal distribution is perhaps the most widely used and
+  best understood example for statistical distributions and likelihood
+  functions.
+  Therefore, we do not think that selecting a different statistical model
   would improve the clarity of the message.
 
-  However, we agree that the section 3.2.2 (fixing the parameters
+  However, we agree that section 3.3.2 (fixing the parameters
   automatically) may feel a little complex.  As the rest of the paper
-  does not depend on the presence of that section, we are willing to
-  remove it, if you believe that would benefit the potential readers.
-\item We agree that the current state of number of partially
+  does not depend on the presence of this section, we are willing to
+  remove it, if you believe that this would benefit the potential readers.
+\item We agree that the current state of a number of partially
   overlapping packages may not be optimal.  However, it seems to be
   less related to our package and more to the ``bazaar'' way of free
   software development.  We have added a related footnote (page 2),
@@ -48,11 +64,17 @@ hereby we provide our feedback after the second round of reviews.
 \item We have fixed the typos and stylistic suggestions.
 \end{itemize}
 
+\subsubsection*{Changes in the maxLik package}
+
+\begin{itemize}
+\item
 As we have continued the development of the package between the
-revisions, we also incorporated a few related changes.  In particular,
-we mention an alternative way of providing the analytic gradient, and
-\emph{maxBFGSR} routine, a BFGS optimizer, implemented in R in the
-package. 
+revisions, we have also incorporated a few related changes in the paper.  In particular,
+we mention an alternative way of providing the analytic gradient
+(i.e.\ as attribute of the log-likelihood value) and
+the new \code{maxBFGSR} routine, which is a BFGS optimizer
+written solely in \proglang{R} and implemented in the \pkg{maxLik} package.
+\end{itemize}
 
 
 \end{document}
