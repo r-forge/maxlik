@@ -1,0 +1,34 @@
+Reviewer #1: The authors have done a nice job revising the paper.
+
+There are aspects of the package, and the paper, that I still think are suboptimal:
+the examples are a little too complicated, and despite the authors' efforts I still
+find the scattering of capabilities across packages to be a bit frustrating.
+
+* maxLik: BHHH and maxNR algorithms; stdEr accessor; SUMT method; greater support
+for analytical gradients and Hessians
+* mle2: formula interface for simple problems; wraps other optimizers (optimize,
+ nlminb, etc.), including box-constraint optimizers; likelihood profiling;
+ predict() and simulate() methods [for models fitted with formula interface]
+
+ (And then there are other optimization wrappers, such as optimx.)
+
+ I do really like the package's approach of separating the 'optimization wrapper' from
+the maximum likelihood capabilities.
+
+ Minor stylistic comments:
+
+p. 3 l. 38 "methods; however,"
+
+l. 46 "approximate" variance-covariance matrix (?)
+
+p. 4 l. 10 "as [with?] the other packages" (or "Like other R packages")
+
+is l. 19 really necessary?
+
+p. 7 l. 51 "select [among] five optimization ..."
+
+p. 11 l. 26 "Those will not be discussed here; the interested ..."
+
+ l. 43 "can be an index vector"
+
+p. 15 l. 24 "The next novelty"
