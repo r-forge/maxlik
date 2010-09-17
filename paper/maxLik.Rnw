@@ -304,7 +304,7 @@ summary( mle )
 For convenience, the estimated parameters can be accessed by the
 \code{coef} method and standard errors by the \code{stdEr} method%
 \footnote{%
-The generic function \code{stdEr} is defined in package \code{miscTools}
+The generic function \code{stdEr} is defined in package \pkg{miscTools}
 \citep{r-misctools-0.6}.
 }:
 <<code:coef-std>>=
@@ -720,7 +720,7 @@ Hence we have no way establishing whether
 the common mean of the sample is, in fact, significantly different from
 0.
 If the estimation is done by hand, it would be easy
-to treat $\varrho$ as fixed as in the example in Section~\ref{sec:basic_usage}.
+to treat $\varrho$ as fixed as in the example in Section~\ref{sec:fixed_parameter_values}.
 However, this may not be a suitable approach if we want to run a large
 number of similar computations on different samples.  In that case the
 user may want to consider signalling the \code{maxNR} routine that the
