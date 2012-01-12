@@ -46,19 +46,33 @@
       <li>(Likelihood) maximization using the following algorithms:
         <ul>
           <li>
-            Newton-Raphson (NR)
+            Newton-Raphson (NR).  This method is based on quadratic
+            approximation and uses both gradient and Hessian of the
+            function. 
           </li>
           <li>
-            Berndt-Hall-Hall-Hausman (BHHH)
+            Berndt-Hall-Hall-Hausman (BHHH).  A version of NR where
+            the Hessian is approximated by information equality (only
+            works for maxmizing log-likelihood).
           </li>
           <li>
-            Broyden-Fletcher-Goldfarb-Shanno (BFGS)
+            Broyden-Fletcher-Goldfarb-Shanno (BFGS).  Another
+            quasi-Newton method with a different approximation of Hessian.
           </li>
           <li>
-            simulated annealing (SANN)
+            conjugate gradients (CG).  A method which only uses
+	    gradients (and function values) and does not approximate
+	    the Hessian.  May be useful (but slow) for large problems.
           </li>
           <li>
-            Nelder-Mead (NM)
+            simulated annealing (SANN).  This method only uses
+            function values.  It is a stochastic optimization method
+            which may be used if the objective function has secondary
+            maximums, and in case of non-differentiable functions.
+          </li>
+          <li>
+            Nelder-Mead (NM).  A simplex-based method using only the
+            function values.
           </li>
         </ul>
       </li>
@@ -73,7 +87,7 @@
     </h3>
     <ul>
       <li>
-        <a href="http://www.obs.ee/~siim/english.html">Ott Toomet</a>
+        <a href="http://www.obs.ee/~siim/index.html">Ott Toomet</a>
       </li>
       <li>
         <a href="http://www.arne-henningsen.name">Arne Henningsen</a>
