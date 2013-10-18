@@ -47,7 +47,15 @@ options(width=70)
    \email{ottt@asb.dk}
 }
 
-\date{Received: date / Accepted: date}
+\date{%
+This article has been published in 
+\emph{Computational Statistics}, September~2011, Volume~26, Issue~3, p.~443--458.
+The original publication is available at \url{www.springerlink.com},
+DOI: 10.1007/s00180-010-0217-1, \url{http://dx.doi.org/10.1007/s00180-010-0217-1}.
+A few numbers in the R outputs slightly differ 
+between the published version and this paper,
+because the R outputs have been re-generated for this version.
+}
 
 \maketitle
 
@@ -61,6 +69,11 @@ options(width=70)
   a particular parameter to be fixed, are also supported.
   
   \keywords{Maximum Likelihood \and Optimization}
+
+\vspace{2ex}
+
+\noindent\textbf{JEL Classification}~~C87
+
 % classifications
 % 1.01080: Econometrics
 % 1.02570: Maximum Likelihood
