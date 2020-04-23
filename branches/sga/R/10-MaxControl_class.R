@@ -1,5 +1,5 @@
 
-### shoud move checkMaxControl to a separate file but how to do it?
+### should move checkMaxControl to a separate file but how to do it?
 
 setClassUnion("functionOrNULL", c("function", "NULL"))
 
@@ -7,7 +7,7 @@ checkMaxControl <- function(object) {
    ## check validity of MaxControl objects
    if(!inherits(object, "MaxControl")) {
       stop("'MaxControl' object required.  Currently '",
-           class(object), "'")
+           paste(class(object), sep=", "), "'")
    }
    ##
    errors <- character(0)
@@ -91,6 +91,11 @@ checkMaxControl <- function(object) {
                                 "'tmax' ",
                                 "must be positive, not", slot(object, "sann_tmax")))
    }
+   ## SGA
+   if(slot(object, "SGA_learningRate") < 0) {
+      errors <- c(errors, paste("learning rate for SGA must be non-negative, not",
+                                slot(object, "SGA_learningRate")))
+   }
    ##
    if(slot(object, "iterlim") < 0) {
       errors <- c(errors, paste("'iterlim' must be non-negative, not",
@@ -125,6 +130,8 @@ setClass("MaxControl",
          sann_temp="numeric",
          sann_tmax="integer",
          sann_randomSeed="integer",
+         ## SGA
+         SGA_learningRate="numeric",
          ##
              iterlim="integer",
              ##
@@ -152,6 +159,8 @@ setClass("MaxControl",
          sann_temp=10,
          sann_tmax=10L,
          sann_randomSeed=123L,
+         ## SGA
+         SGA_learningRate=0.1,
          ##
          iterlim=150L,
          printLevel=0L),
