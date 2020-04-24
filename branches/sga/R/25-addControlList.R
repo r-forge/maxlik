@@ -4,7 +4,10 @@
 ## We do not make it to a method: the signature would be indistinguishable
 ## from add(maxControl, ...) where ... is a single list
 addControlList <- function(x, y, check=TRUE) {
-   ## add list y to the control
+   ## add list y to the control x
+   ##
+   ## x: a maxcontrol object
+   ## y: a named list of additional maxControl parameters
    ## 
    ## check    only accept known control options.
    ##          useful if attaching known control list
@@ -64,8 +67,12 @@ addControlList <- function(x, y, check=TRUE) {
    ## SANN
    setSlot(c("sann_cand", "SANN_cand", "cand"))
    setSlot(c("sann_temp", "SANN_temp", "temp"))
-   setSlot(c("sann_tmax", "SANN_tmax", "tmax"), convert=as.integer)
+   setSlot(c("SANN_tmax", "sann_tmax", "tmax"), convert=as.integer)
    setSlot(c("sann_randomSeed", "SANN_randomSeed", "random.seed"),
+           convert=as.integer)
+   ## SGA
+   setSlot(c("SGA_learningRate", "SGA_learningrate", "sga_learningrate"))
+   setSlot(c("SGA_batchSize", "SGA_batchsize", "sga_batchsize"),
            convert=as.integer)
    ##
    setSlot("iterlim", convert=as.integer)

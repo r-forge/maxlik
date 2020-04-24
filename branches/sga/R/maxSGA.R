@@ -1,4 +1,5 @@
-maxSGA <- function(fn, grad=NULL, hess=NULL, start, 
+maxSGA <- function(fn, grad=NULL, hess=NULL, start,
+                   nObs,
                    constraints=NULL,
                    finalHessian=TRUE,
                    bhhhHessian=FALSE,
@@ -95,6 +96,7 @@ maxSGA <- function(fn, grad=NULL, hess=NULL, start,
       cl <- c(quote(maxSGACompute),
               fn=logLikAttr,
               fnOrig = fn, gradOrig = grad, hessOrig = hess,
+              nObs=nObs,
               cl)
       result <- eval(as.call(cl))
    } else {

@@ -1,6 +1,7 @@
 maxSGACompute <- function(fn,
                          start, 
                            # maximum lambda for Marquardt (1963)
+                         nObs,
                          finalHessian=FALSE,
                          bhhhHessian = FALSE,
                          fixed=NULL,
@@ -82,7 +83,19 @@ maxSGACompute <- function(fn,
    learningRate <- slot(control, "SGA_learningRate")
    iter <- 0
    returnHessian <- ifelse( bhhhHessian, "BHHH", TRUE )
-   f1 <- fn(start1, fixed = fixed, sumObs = TRUE, ...)
+   ## ---------- How many batches
+   batchSize <- slot(control, "SGA_batchSize")
+   if(is.null(batchSize)) {
+      nBatches <- 1
+      index <- seq(from=1, to=nObs, by=nBatches)
+   } else {
+      nBatches <- max(1L, nObs %/% batchSize)
+                           # ensure that we get at least one batch if batchSize set too large
+      shuffledIndex <- sample(nObs, nObs)
+      index <- suffledIndex[seq(from=1, to=nObs, by=nBatches)]
+   }
+   ##
+   f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
                            # have to compute fn as we cannot get gradient otherwise
    if(slot(control, "printLevel") > 0) {
       cat("Initial function value:", f1, "\n")
@@ -123,43 +136,50 @@ maxSGACompute <- function(fn,
    ## we do not need to compute the function itself here, except for
    ## printing
    repeat {
+                           # repeat over epochs
       ## break here if iterlim == 0
       if( iter >= slot(control, "iterlim")) {
          code <- 4; break
       }
-      iter <- iter + 1
-      start0 <- start1
-      f0 <- f1
-      G0 <- G1
-      if(any(is.na(G0[!fixed]))) {
-         stop("NA in gradient")
-      }
-      start1 <- start0 + learningRate*G0
-      if( slot(control, "printLevel") > 1) {
-        cat( "-----Iteration", iter, "-----\n")
-      }
-      if( iter >= slot(control, "iterlim")) {
-         code <- 4; break
-      }
-      ## break here to avoid potentially costly gradient computation
-      if( iter >= slot(control, "iterlim")) {
-         code <- 4; break
-      }
-      ## still iterations to go, hence compute gradient
-      f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
-               returnHessian = returnHessian, ...)
+      for(iBatch in 1:nBatches) {
+                           # repeat over minibatches
+         if(!is.null(batchSize)) {
+            index <- suffledIndex[seq(from=1, to=nObs, by=nBatches)]
+         }
+         iter <- iter + 1
+         start0 <- start1
+         f0 <- f1
+         G0 <- G1
+         if(any(is.na(G0[!fixed]))) {
+            stop("NA in gradient")
+         }
+         start1 <- start0 + learningRate*G0
+         if( slot(control, "printLevel") > 1) {
+            cat( "-----Iteration", iter, "-----\n")
+         }
+         if( iter >= slot(control, "iterlim")) {
+            code <- 4; break
+         }
+         ## break here to avoid potentially costly gradient computation
+         if( iter >= slot(control, "iterlim")) {
+            code <- 4; break
+         }
+         ## still iterations to go, hence compute gradient
+         f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
+                  returnHessian = returnHessian, index=index, ...)
                            # The call calculates new function,
                            # gradient, and Hessian values
-      G1 <- attr( f1, "gradient" )
-      if(any(is.na(G1[!fixed]))) {
-         cat("Iteration", iter, "\n")
-         cat("Parameter:\n")
-         print(start1)
-         print(head(G1, n=30))
-         stop("NA in gradient")
-      }
-      if(any(is.infinite(G1))) {
-         code <- 6; break;
+         G1 <- attr( f1, "gradient" )
+         if(any(is.na(G1[!fixed]))) {
+            cat("Iteration", iter, "\n")
+            cat("Parameter:\n")
+            print(start1)
+            print(head(G1, n=30))
+            stop("NA in gradient")
+         }
+         if(any(is.infinite(G1))) {
+            code <- 6; break;
+         }
       }
       if(slot(control, "printLevel") > 2) {
          cat(" learning rate", learningRate, " fcn value:",

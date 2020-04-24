@@ -2,6 +2,7 @@
 ### should move checkMaxControl to a separate file but how to do it?
 
 setClassUnion("functionOrNULL", c("function", "NULL"))
+setClassUnion("integerOrNULL", c("integer", "NULL"))
 
 checkMaxControl <- function(object) {
    ## check validity of MaxControl objects
@@ -18,6 +19,14 @@ checkMaxControl <- function(object) {
             errors <- c(errors,
                         paste("'", s, "' must be either 'NULL' or ",
                               "a function of length 1, not of length ",
+                              length(slot(object, s)), sep=""))
+         }
+      }
+      else if(s == "SGA_batchSize") {
+         if(length(slot(object, s)) > 1) {
+            errors <- c(errors,
+                        paste("'", s, "' must be either 'NULL' or ",
+                              "of length 1, not of length ",
                               length(slot(object, s)), sep=""))
          }
       }
@@ -92,8 +101,12 @@ checkMaxControl <- function(object) {
                                 "must be positive, not", slot(object, "sann_tmax")))
    }
    ## SGA
-   if(slot(object, "SGA_learningRate") < 0) {
-      errors <- c(errors, paste("learning rate for SGA must be non-negative, not",
+   if(slot(object, "SGA_learningRate") <= 0) {
+      errors <- c(errors, paste("learning rate for SGA must be positive, not",
+                                slot(object, "SGA_learningRate")))
+   }
+   if(!is.null(slot(object, "SGA_batchSize")) && slot(object, "SGA_batchSize") <= 0L) {
+      errors <- c(errors, paste("SGA batch size must be positive, not",
                                 slot(object, "SGA_learningRate")))
    }
    ##
@@ -132,6 +145,7 @@ setClass("MaxControl",
          sann_randomSeed="integer",
          ## SGA
          SGA_learningRate="numeric",
+         SGA_batchSize = "integerOrNULL",  # NULL: full batch
          ##
              iterlim="integer",
              ##
@@ -147,7 +161,7 @@ setClass("MaxControl",
                            #
              qac="stephalving",
              qrtol=1e-10,
-         marquardt_lambda0=1e-2,
+            marquardt_lambda0=1e-2,
          marquardt_lambdaStep=2,
          marquardt_maxLambda=1e12,
          ## Optim Nelder-Mead
@@ -161,8 +175,10 @@ setClass("MaxControl",
          sann_randomSeed=123L,
          ## SGA
          SGA_learningRate=0.1,
+         SGA_batchSize=NULL,
          ##
          iterlim=150L,
          printLevel=0L),
          ##
-         validity=checkMaxControl)
+         validity=checkMaxControl
+         )
