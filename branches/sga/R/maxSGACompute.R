@@ -5,6 +5,7 @@ maxSGACompute <- function(fn,
                          finalHessian=FALSE,
                          bhhhHessian = FALSE,
                          fixed=NULL,
+                         storeValue=FALSE,
                          control=maxControl(),
                          ...) {
    ## Stochastic Gradient Ascent
@@ -22,13 +23,6 @@ maxSGACompute <- function(fn,
    ##     lambdaStep    how much Hessian corrector lambda is changed between
    ##                   two lambda trials
    ##                  (nu in Marquardt (1963, p 438)
-   ##     maxLambda     largest possible lambda (if exceeded will give step error)
-   ##     lambdatol   - max lowest eigenvalue when forcing pos. definite H
-   ##     qrtol       - tolerance for qr decomposition
-   ##     qac           How to handle the case where new function value is
-   ##               smaller than the original one:
-   ##                  "stephalving"   smaller step in the same direction
-   ##                  "marquardt"     Marquardt (1963) approach
    ##     The stopping criteria
    ##     tol         - maximum allowed absolute difference between sequential values
    ##     reltol      - maximum allowed reltive difference (stops if < reltol*(abs(fn) + reltol)
@@ -70,10 +64,6 @@ maxSGACompute <- function(fn,
    ## fixed       logical vector, which parameters were treated as constant (fixed, inactive, non-free)
    ## iterations  number of iterations
    ## type        "Newton-Raphson maximisation"
-   ##
-   ## References:
-   ## Marquardt (1963), "An algorithm for least-squares estimation of nonlinear
-   ##      parameters", J. Soc. Indust. Appl. Math 11(2), 431-441
    ##      
    ## -------------------------------------------------
    maximType <- "Stochastic Gradient Ascent"
@@ -81,8 +71,7 @@ maxSGACompute <- function(fn,
    start1 <- start
    nParam <- length(start1)
    learningRate <- slot(control, "SGA_learningRate")
-   iter <- 0
-   returnHessian <- ifelse( bhhhHessian, "BHHH", TRUE )
+   printLevel <- slot(control, "printLevel")
    ## ---------- How many batches
    batchSize <- slot(control, "SGA_batchSize")
    if(is.null(batchSize)) {
@@ -92,12 +81,13 @@ maxSGACompute <- function(fn,
       nBatches <- max(1L, nObs %/% batchSize)
                            # ensure that we get at least one batch if batchSize set too large
       shuffledIndex <- sample(nObs, nObs)
-      index <- suffledIndex[seq(from=1, to=nObs, by=nBatches)]
+      index <- shuffledIndex[seq(from=1, to=nObs, by=nBatches)]
    }
    ##
-   f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
+   f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index,
+            returnHessian=FALSE, ...)
                            # have to compute fn as we cannot get gradient otherwise
-   if(slot(control, "printLevel") > 0) {
+   if(printLevel > 0) {
       cat("Initial function value:", f1, "\n")
       if( isTRUE( attr( f1, "gradBoth" ) ) ) {
          warning( "the gradient is provided both as attribute 'gradient' and",
@@ -109,10 +99,6 @@ maxSGACompute <- function(fn,
       }
    }
    G1 <- attr( f1, "gradient" )
-   if(slot(control, "printLevel") > 2) {
-      cat("Initial gradient value:\n")
-      print(G1)
-   }
    if(any(is.na(G1[!fixed]))) {
       stop("NA in the initial gradient")
    }
@@ -123,7 +109,7 @@ maxSGACompute <- function(fn,
       stop( "length of gradient (", length(G1),
          ") not equal to the no. of parameters (", nParam, ")" )
    }
-   if( slot(control, "printLevel") > 1) {
+   if(printLevel > 1) {
       cat( "----- Initial parameters: -----\n")
       cat( "fcn value:",
       as.vector(f1), "\n")
@@ -133,6 +119,7 @@ maxSGACompute <- function(fn,
       print(a)
    }
    ## ---------------- Main interation loop ------------------------
+   iter <- 0
    ## we do not need to compute the function itself here, except for
    ## printing
    repeat {
@@ -141,12 +128,19 @@ maxSGACompute <- function(fn,
       if( iter >= slot(control, "iterlim")) {
          code <- 4; break
       }
+      ## break here to avoid potentially costly gradient computation
+      if( iter >= slot(control, "iterlim")) {
+         code <- 4; break
+      }
+      iter <- iter + 1
+      if(printLevel > 1) {
+         cat( "----- epoch", iter, "-----\n")
+      }
       for(iBatch in 1:nBatches) {
                            # repeat over minibatches
          if(!is.null(batchSize)) {
-            index <- suffledIndex[seq(from=1, to=nObs, by=nBatches)]
+            index <- shuffledIndex[seq(from=iBatch, to=nObs, by=nBatches)]
          }
-         iter <- iter + 1
          start0 <- start1
          f0 <- f1
          G0 <- G1
@@ -154,28 +148,18 @@ maxSGACompute <- function(fn,
             stop("NA in gradient")
          }
          start1 <- start0 + learningRate*G0
-         if( slot(control, "printLevel") > 1) {
-            cat( "-----Iteration", iter, "-----\n")
-         }
-         if( iter >= slot(control, "iterlim")) {
-            code <- 4; break
-         }
-         ## break here to avoid potentially costly gradient computation
-         if( iter >= slot(control, "iterlim")) {
-            code <- 4; break
-         }
          ## still iterations to go, hence compute gradient
          f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
-                  returnHessian = returnHessian, index=index, ...)
+                  returnHessian = FALSE, index=index, ...)
                            # The call calculates new function,
-                           # gradient, and Hessian values
+                           # and gradient values
          G1 <- attr( f1, "gradient" )
-         if(any(is.na(G1[!fixed]))) {
+         if(any(is.na(G1[!fixed])) || any(is.infinite(G1[!fixed]))) {
             cat("Iteration", iter, "\n")
             cat("Parameter:\n")
             print(start1)
             print(head(G1, n=30))
-            stop("NA in gradient")
+            stop("NA/Inf in gradient")
          }
          if(any(is.infinite(G1))) {
             code <- 6; break;
@@ -193,7 +177,7 @@ maxSGACompute <- function(fn,
          code <-1; break
       }
    }  # main iteration loop
-   if( slot(control, "printLevel") > 0) {
+   if(printLevel > 0) {
       cat( "--------------\n")
       cat( maximMessage( code), "\n")
       cat( iter, " iterations\n")

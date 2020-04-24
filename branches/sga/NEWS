@@ -4,6 +4,12 @@ Please note that only the most significant changes are reported here.
 A full ChangeLog is available in the log messages of the SVN repository
 on R-Forge.
 
+      CHANGES IN VESION 1.4-0 (2020-04-24)
+
+* includes stochastig gradient ascent
+
+
+
       CHANGES IN VERSION 1.3-10 (2020-04-24)
 
 * fixed an issue where maxControl() silently ignored a number of
