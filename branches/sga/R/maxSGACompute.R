@@ -158,6 +158,15 @@ maxSGACompute <- function(fn,
                            # The call calculates new function,
                            # and gradient values
          G1 <- attr( f1, "gradient" )
+         ## print every batch if someone wants...
+         if(slot(control, "printLevel") > 4) {
+            cat(" - batch", iBatch, "index", index, "learning rate", learningRate, " fcn value:",
+                formatC(as.vector(f1), digits=8, format="f"),  "\n")
+            a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
+            dimnames(a) <- list(names(start0), c("amount", "param",
+                                                 "gradient", "active"))
+            print(a)
+         }
          if(any(is.na(G1[!fixed])) || any(is.infinite(G1[!fixed]))) {
             cat("Iteration", iter, "\n")
             cat("Parameter:\n")
@@ -165,20 +174,21 @@ maxSGACompute <- function(fn,
             print(head(G1, n=30))
             stop("NA/Inf in gradient")
          }
-         if(storeValues) {
-            valueStore[iter] <- c(f1)
-                           # c removes dimensions and attributes
-         }
          if(any(is.infinite(G1))) {
             code <- 6; break;
          }
+      }  # end of repeat over batches
+      if(storeValues) {
+                           # store last value of the epoch
+         valueStore[iter] <- c(f1)
+                           # c removes dimensions and attributes
       }
       if(slot(control, "printLevel") > 2) {
          cat(" learning rate", learningRate, " fcn value:",
             formatC(as.vector(f1), digits=8, format="f"),  "\n")
          a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
-         dimnames(a) <- list(names(start0), c("amount", "new param",
-                                             "new gradient", "active"))
+         dimnames(a) <- list(names(start0), c("amount", "param",
+                                             "gradient", "active"))
          print(a)
       }
       if( sqrt( crossprod( G1[!fixed] ) ) < slot(control, "gradtol") ) {
