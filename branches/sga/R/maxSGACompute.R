@@ -5,7 +5,6 @@ maxSGACompute <- function(fn,
                          finalHessian=FALSE,
                          bhhhHessian = FALSE,
                          fixed=NULL,
-                         storeValue=FALSE,
                          control=maxControl(),
                          ...) {
    ## Stochastic Gradient Ascent
@@ -67,9 +66,11 @@ maxSGACompute <- function(fn,
    ##      
    ## -------------------------------------------------
    maximType <- "Stochastic Gradient Ascent"
+   iterlim <- slot(control, "iterlim")
    nimed <- names(start)
+   nParam <- length(start)
    start1 <- start
-   nParam <- length(start1)
+   storeValues <- slot(control, "storeValues")
    learningRate <- slot(control, "SGA_learningRate")
    printLevel <- slot(control, "printLevel")
    ## ---------- How many batches
@@ -109,6 +110,9 @@ maxSGACompute <- function(fn,
       stop( "length of gradient (", length(G1),
          ") not equal to the no. of parameters (", nParam, ")" )
    }
+   if(storeValues) {
+      valueStore <- numeric(iterlim)
+   }
    if(printLevel > 1) {
       cat( "----- Initial parameters: -----\n")
       cat( "fcn value:",
@@ -125,7 +129,7 @@ maxSGACompute <- function(fn,
    repeat {
                            # repeat over epochs
       ## break here if iterlim == 0
-      if( iter >= slot(control, "iterlim")) {
+      if( iter >= iterlim) {
          code <- 4; break
       }
       ## break here to avoid potentially costly gradient computation
@@ -161,6 +165,10 @@ maxSGACompute <- function(fn,
             print(head(G1, n=30))
             stop("NA/Inf in gradient")
          }
+         if(storeValues) {
+            valueStore[iter] <- c(f1)
+                           # c removes dimensions and attributes
+         }
          if(any(is.infinite(G1))) {
             code <- 6; break;
          }
@@ -187,7 +195,7 @@ maxSGACompute <- function(fn,
    names(start1) <- nimed
    if(finalHessian & !bhhhHessian) {
       F1 <- fn( start1, fixed = fixed, sumObs = FALSE,
-               returnHessian = TRUE, ... )
+               returnHessian = TRUE, index=index, ... )
       G1 <- attr( F1, "gradient" )
    }
    if(observationGradient(G1, length(start1))) {
@@ -232,7 +240,9 @@ maxSGACompute <- function(fn,
        message=maximMessage( code),
       fixed=fixed,
        iterations=iter,
-                  type=maximType)
+      type=maximType,
+      valueStore = if(storeValues) valueStore else NULL
+   )
    if( exists( "gradientObs" ) ) {
       result$gradientObs <- gradientObs
    }

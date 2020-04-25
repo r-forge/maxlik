@@ -1,7 +1,7 @@
 maxSGA <- function(fn, grad=NULL, hess=NULL, start,
                    nObs,
                    constraints=NULL,
-                   finalHessian=TRUE,
+                   finalHessian=FALSE,
                    bhhhHessian=FALSE,
                    fixed=NULL,
                    activePar=NULL,

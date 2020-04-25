@@ -148,8 +148,9 @@ setClass("MaxControl",
          SGA_batchSize = "integerOrNULL",  # NULL: full batch
          ##
              iterlim="integer",
-             ##
-             printLevel="integer"),
+         printLevel="integer",
+         storeValues="logical"
+         ),
          ##
          prototype=prototype(
              tol=1e-8,
@@ -178,7 +179,8 @@ setClass("MaxControl",
          SGA_batchSize=NULL,
          ##
          iterlim=150L,
-         printLevel=0L),
+         printLevel=0L,
+         storeValues=FALSE),
          ##
          validity=checkMaxControl
          )

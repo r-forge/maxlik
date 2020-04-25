@@ -76,6 +76,7 @@ addControlList <- function(x, y, check=TRUE) {
    ##
    setSlot("iterlim", convert=as.integer)
    setSlot(c("printLevel", "print.level"), convert=as.integer)
+   setSlot("storeValues", convert=as.logical)
    ##
    validObject(x)
    return(x)

@@ -1,37 +1,39 @@
-\name{nIter}
-\alias{nIter}
-\alias{nIter.default}
-\title{Return number of iterations for iterative models} 
+\name{storedValues}
+\alias{storedValues}
+\alias{storedValues.maxim}
+\title{Return the stored values of optimization} 
 \description{
-  Returns the number of iterations for iterative models.  The default
-  method assumes presence of a component \code{iterations} in \code{x}.
+  Retrieve the objective function value for each iteration if stored
+  during the optimization.
 }
 \usage{
-nIter(x, \dots)
-\method{nIter}{default}(x, \dots)
+storedValues(x, \dots)
+\method{storedValues}{maxim}(x, \dots)
 }
 \arguments{
-  \item{x}{a statistical model, or a result of maximisation, created
+  \item{x}{a result of maximization, created
     by \code{\link{maxLik}}, \code{\link{maxNR}} or another optimizer.}
-  \item{\dots}{further arguments for methods}
+  \item{\dots}{further arguments for other methods}
 }
 \details{
-  This is a generic function.  The default method returns the component
-  \code{x$iterations}.
+  This is a generic method.
+  If asked by control parameter \code{storeValues=TRUE}, certain
+  optimization methods store the objective function value.  This method
+  retrieves the stored values.
 }
 \value{
-  numeric, number of iterations.  Note that \sQuote{iteration} may mean
-  different things for different optimizers.
+  a numeric vector, one value for each iteration.
 }
 \author{Ott Toomet}
-\seealso{\code{\link{maxLik}}, \code{\link{maxNR}}
+\seealso{\code{\link{maxNR}},
+  \code{\link{maxControl}}
   }
 \examples{
 ## Estimate the exponential distribution parameter:
 t <- rexp(100, 2)
 loglik <- function(theta) sum(log(theta) - theta*t)
 ## Estimate with numeric gradient and numeric Hessian
-a <- maxNR(loglik, start=1)
-nIter(a)
+a <- maxSGA(loglik, start=1, control=list(storeValues=TRUE))
+storedValues(a)
 }
 \keyword{methods}
