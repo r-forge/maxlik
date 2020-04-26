@@ -111,7 +111,7 @@ maxSGACompute <- function(fn,
          ") not equal to the no. of parameters (", nParam, ")" )
    }
    if(storeValues) {
-      valueStore <- numeric(iterlim)
+      valueStore <- rep(NA_real_, iterlim)
    }
    if(printLevel > 1) {
       cat( "----- Initial parameters: -----\n")
