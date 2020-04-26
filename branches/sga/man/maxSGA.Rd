@@ -82,6 +82,14 @@ maxSGA(fn, grad = NULL, hess = NULL, start,
   \item{control}{list of control parameters.  The control parameters
     used by these optimizers are
     \describe{
+      \item{gradtol}{stopping condition.  Stop if norm of the gradient is
+	less than \code{gradtol}.  Default 0, i.e. do not use this
+	condition.  Return code 1.  This condition is useful if the
+	objective is to drive full batch gradient to zero on training data.
+	However, it is not a good objective in case of the stochastic
+	gradient, and if the objective is to optimize the objective on
+	validation data.
+      }
       \item{SGA_learningRate}{step size the SGA algorithm takes in the
 	gradient direction.  If 1, it steps by the gradient value.  A
 	good value is typically 0.01--0.3}
@@ -121,16 +129,17 @@ maxSGA(fn, grad = NULL, hess = NULL, start,
     than when using all observation in certain circumstances (see
     \cite{Bottou et al, 2018}).
 
-The functions \code{maxNR}, \code{maxBFGSR}, and \code{maxBHHH}
-can work with constant parameters, useful if a parameter value
-converges to the boundary of support, or for testing.  
-One way is to put
-\code{fixed} to non-NULL, specifying which parameters should be treated as
-constants.  The
-parameters can also be fixed in runtime (only for \code{maxNR} and \code{maxBHHH}) by
-signaling it with the 
-\code{fn} return value.  See Henningsen & Toomet (2011) for details.
-}
+    The function \code{fn} is not directly used for optimization, only
+    for printing or eventually as a stopping condition.  In this sense
+    it is up to the user to decide what (if anything the function
+    returns).  Normally it is useful for \code{fn} to compute the
+    objective function on either full training data, or validation data,
+    and just ignore the \code{index} argument.  However, one may also
+    choose to select the observations determined byt the index to
+    compute the objective function on the current data batch.
+
+    Does it support contraints?
+  }
 
 \value{
   object of class "maxim".  Data can be extracted through the following
@@ -168,6 +177,7 @@ signaling it with the
     \item{100}{ Initial value out of range.}
     }
   }
+  \item{\code{\link{storedValues}}}{return values stored at each epoch}
   \item{returnMessage}{ a short message, describing the return code.}
   \item{activePar}{logical vector, which parameters are optimized over.
     Contains only \code{TRUE}-s if no parameters are fixed.}

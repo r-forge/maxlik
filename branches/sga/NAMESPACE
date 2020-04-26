@@ -21,6 +21,7 @@ export( "numericNHessian" )
 export( "objectiveFn" )
 export( "returnCode" )
 export( "returnMessage" )
+export( "storedValues")
 export("sumt")
 
 importFrom("methods", "new", "show", "slot", "slot<-", "slotNames",

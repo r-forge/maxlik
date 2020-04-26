@@ -54,7 +54,7 @@ maxSGA <- function(fn, grad=NULL, hess=NULL, start,
    ## ------------------------------
    ## Add parameters from ... to control
    if(!inherits(control, "MaxControl")) {
-      mControl <- addControlList(maxControl(), control)
+      mControl <- addControlList(maxControl(gradtol=0), control)
    }
    else {
       mControl <- control
