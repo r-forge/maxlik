@@ -98,13 +98,21 @@
       options like \code{SANN_randomSeed=Sys.time()} or
       \code{SANN_randomeSeed=sample(1000,1)} if you want stochastic results.
     }
+    % Stochastic Gradient Ascent
+    \item{SGA_learningRate}{0.1, learning rate, numeric}
+    \item{SGA_batchSize}{\code{NULL}, batch size for Stochastic Gradient Ascent.  A
+      positive integer, or \code{NULL} for full-batch gradent ascent.}
     % General
     \item{iterlim}{150, stopping condition.  Stop if more than \code{iterlim}
       iterations performed.  Note that \sQuote{iteration} may mean
       different things for different optimzers.}
     \item{printLevel}{0, the level of verbosity.  Larger values print
       more information.  Result depends on the optimizer.  Form
-      \code{print.level} is also accepted by the methods for compatibility.}
+      \code{print.level} is also accepted by the methods for
+      compatibility.}
+    \item{storeValues}{\code{FALSE}, whether to store and return the objective
+      function values at each epoch.  If \code{TRUE}, the stored values
+      can be retrieved with \code{\link{storedValues}}-method.}
   }
 }
 \section{Methods}{

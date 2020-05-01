@@ -2,7 +2,6 @@ maxSGA <- function(fn, grad=NULL, hess=NULL, start,
                    nObs,
                    constraints=NULL,
                    finalHessian=FALSE,
-                   bhhhHessian=FALSE,
                    fixed=NULL,
                    activePar=NULL,
                    control=NULL,
@@ -84,7 +83,6 @@ maxSGA <- function(fn, grad=NULL, hess=NULL, start,
    dddot <- dddot[!(names(dddot) %in% openParam(mControl))]
    cl <- list(start=start,
               finalHessian=finalHessian,
-              bhhhHessian=bhhhHessian,
               fixed=fixed,
               control=mControl)
    if(length(dddot) > 0) {

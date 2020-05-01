@@ -6,6 +6,7 @@
 }
 \usage{
 maxSGA(fn, grad = NULL, hess = NULL, start,
+nObs,
       constraints = NULL, finalHessian = FALSE, 
       fixed = NULL, activePar = NULL, control=NULL, ... )
 }
@@ -16,9 +17,6 @@ maxSGA(fn, grad = NULL, hess = NULL, start,
     observations. 
     It must return either a single number, or a numeric vector (this is
     is summed internally).
-    If the BHHH method is used and argument \code{gradient} is not given,
-    \code{fn} must return a numeric vector of observation-specific
-    log-likelihood values.
     If the parameters are out of range, \code{fn} should
     return \code{NA}.  See details for constant parameters.
 
@@ -51,6 +49,10 @@ maxSGA(fn, grad = NULL, hess = NULL, start,
   }
   \item{start}{initial parameter values.  If start values
     are named, those names are also carried over to the results.}
+  \item{nObs}{number of observations.  This is used to select the
+    random individual batches of observations.  The resulting batch
+    indices are forwarded to the \code{grad} function through the
+    arument \code{index}.}
   \item{constraints}{either \code{NULL} for unconstrained optimization
     or a list with two components.  The components may be either
     \code{eqA} and \code{eqB} for equality-constrained optimization
