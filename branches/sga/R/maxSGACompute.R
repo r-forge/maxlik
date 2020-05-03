@@ -1,5 +1,5 @@
 maxSGACompute <- function(fn,
-                         start, 
+                          start, 
                            # maximum lambda for Marquardt (1963)
                          nObs,
                          finalHessian=FALSE,
@@ -67,7 +67,6 @@ maxSGACompute <- function(fn,
    ## -------------------------------------------------
    maximType <- "Stochastic Gradient Ascent"
    iterlim <- slot(control, "iterlim")
-   nimed <- names(start)
    nParam <- length(start)
    start1 <- start
    storeValues <- slot(control, "storeValues")
@@ -118,8 +117,8 @@ maxSGACompute <- function(fn,
       cat( "fcn value:",
       as.vector(f1), "\n")
       a <- cbind(start1, G1, as.integer(!fixed))
-      dimnames(a) <- list(nimed, c("parameter", "initial gradient",
-                                          "free"))
+      dimnames(a) <- list(names(start1), c("parameter", "initial gradient",
+                                           "free"))
       print(a)
    }
    ## ---------------- Main interation loop ------------------------
@@ -202,7 +201,6 @@ maxSGACompute <- function(fn,
       cat( "estimate:", start1, "\n")
       cat( "Function value:", f1, "\n")
    }
-   names(start1) <- nimed
    if(finalHessian & !bhhhHessian) {
       F1 <- fn( start1, fixed = fixed, sumObs = FALSE,
                returnHessian = TRUE, index=index, ... )
@@ -210,13 +208,13 @@ maxSGACompute <- function(fn,
    }
    if(observationGradient(G1, length(start1))) {
       gradientObs <- G1
-      colnames( gradientObs ) <- nimed 
+      colnames( gradientObs ) <- names(start1)
       G1 <- colSums(as.matrix(G1 ))
    }
    else {
       gradientObs <- NULL
    }
-   names( G1 ) <- nimed
+   names( G1 ) <- names(start1)
    ## calculate (final) Hessian
    if(tolower(finalHessian) == "bhhh") {
       if(!is.null(gradientObs)) {
@@ -232,7 +230,7 @@ maxSGACompute <- function(fn,
        hessian <- NULL
    }
    if( !is.null( hessian ) ) {
-      rownames( hessian ) <- colnames( hessian ) <- nimed
+      rownames( hessian ) <- colnames( hessian ) <- names(start1)
    }
 
    ## remove attributes from final value of objective (likelihood) function
