@@ -16,8 +16,13 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 Type 'q()' to quit R.
 
 > ### Does maxControl stuff behave?
+> ### no need to test it on CRAN, hence private test
+> ### 
 > ### test for:
 > ### 1. create maxControl object
+> ### 2. SGA_batchSize NULL
+> ### 3. negative batch size
+> ### 4. more than 1 batch size
 > 
 > library(maxLik)
 Loading required package: miscTools
@@ -59,6 +64,37 @@ iterlim = 10
 printLevel = 3 
 storeValues = FALSE 
 > 
+> maxControl(SGA_batchSize=NULL)
+A 'MaxControl' object with slots:
+tol = 1e-08 
+reltol = 1.490116e-08 
+gradtol = 1e-06 
+steptol = 1e-10 
+lambdatol = 1e-06 
+qrtol = 1e-10 
+qac = stephalving 
+marquardt_lambda0 = 0.01 
+marquardt_lambdaStep = 2 
+marquardt_maxLambda = 1e+12 
+nm_alpha = 1 
+nm_beta = 0.5 
+nm_gamma = 2 
+sann_cand = <default Gaussian Markov kernel>
+sann_temp = 10 
+sann_tmax = 10 
+sann_randomSeed = 123 
+SGA_learningRate = 0.1 
+SGA_batchSize =  
+iterlim = 150 
+printLevel = 0 
+storeValues = FALSE 
+> try(maxControl(SGA_batchSize=-1))
+Error in validObject(x) : 
+  invalid class "MaxControl" object: SGA batch size must be positive, not -1
+> try(maxControl(SGA_batchSize=2:3))
+Error in validObject(x) : 
+  invalid class "MaxControl" object: 'SGA_batchSize' must be either 'NULL' or of length 1, not of length 2
+> 
 > proc.time()
    user  system elapsed 
-  0.381   0.263   0.277 
+  0.375   0.174   0.280 

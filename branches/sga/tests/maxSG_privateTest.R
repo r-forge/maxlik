@@ -36,10 +36,19 @@ b0 <- drop(solve(crossprod(XTrain)) %*% crossprod(XTrain, yTrain))
 names(b0) <- names(start)
 tol <- 1e-1  # coefficient tolerance
 
+## Test a working example
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
                          SGA_batchSize=100, SGA_learningRate=0.1,
                          storeValues=TRUE),
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
-## SGA usually ends with gradient not equal to 0
+                           # SGA usually ends with gradient not equal to 0 so we don't test that
+
+## Test full batch
+res <- maxSGA(loglik, gradlik, start=start,
+            control=list(printLevel=0, iterlim=200,
+                         SGA_batchSize=NULL, SGA_learningRate=0.1,
+                         storeValues=TRUE),
+            nObs=length(yTrain))
+expect_equal(coef(res), b0, tolerance=tol)

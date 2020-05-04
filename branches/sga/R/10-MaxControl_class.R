@@ -105,9 +105,9 @@ checkMaxControl <- function(object) {
       errors <- c(errors, paste("learning rate for SGA must be positive, not",
                                 slot(object, "SGA_learningRate")))
    }
-   if(!is.null(slot(object, "SGA_batchSize")) && slot(object, "SGA_batchSize") <= 0L) {
+   if(length(slot(object, "SGA_batchSize")) > 0 && slot(object, "SGA_batchSize") <= 0L) {
       errors <- c(errors, paste("SGA batch size must be positive, not",
-                                slot(object, "SGA_learningRate")))
+                                slot(object, "SGA_batchSize")))
    }
    ##
    if(slot(object, "iterlim") < 0) {
