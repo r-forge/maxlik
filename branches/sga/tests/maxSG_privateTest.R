@@ -1,4 +1,9 @@
 ### tests for stochastic gradient ascent
+### Test the following things:
+###
+### 1. basic SGA
+### 2. SGA full batch
+### 3. SGA, no gradient supplied
 
 library(maxLik)
 library(testthat)
@@ -36,7 +41,7 @@ b0 <- drop(solve(crossprod(XTrain)) %*% crossprod(XTrain, yTrain))
 names(b0) <- names(start)
 tol <- 1e-1  # coefficient tolerance
 
-## Test a working example
+## ---------- 1. working example
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
                          SGA_batchSize=100, SGA_learningRate=0.1,
@@ -45,10 +50,15 @@ res <- maxSGA(loglik, gradlik, start=start,
 expect_equal(coef(res), b0, tolerance=tol)
                            # SGA usually ends with gradient not equal to 0 so we don't test that
 
-## Test full batch
+## ---------- 2. full batch
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
                          SGA_batchSize=NULL, SGA_learningRate=0.1,
                          storeValues=TRUE),
             nObs=length(yTrain))
+expect_equal(coef(res), b0, tolerance=tol)
+
+## ---------- 3. no gradient
+res <- maxSGA(loglik, start=start,
+              control=list(iterlim=1000, SGA_learningRate=0.02), nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)

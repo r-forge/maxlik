@@ -1,12 +1,13 @@
-maxSGACompute <- function(fn,
+maxSGACompute <- function(fn, grad, hess,
                           start, 
                            # maximum lambda for Marquardt (1963)
-                         nObs,
-                         finalHessian=FALSE,
-                         bhhhHessian = FALSE,
-                         fixed=NULL,
-                         control=maxControl(),
-                         ...) {
+                          nObs,
+                          finalHessian=FALSE,
+                          bhhhHessian = FALSE,
+                          fixed=NULL,
+                          control=maxControl(),
+                          
+                          ...) {
    ## Stochastic Gradient Ascent
    ## Parameters:
    ## fn          - the function to be maximized.  Returns either scalar or
@@ -84,10 +85,10 @@ maxSGACompute <- function(fn,
       index <- shuffledIndex[seq(from=1, to=nObs, by=nBatches)]
    }
    ##
-   f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index,
-            returnHessian=FALSE, ...)
-                           # have to compute fn as we cannot get gradient otherwise
+   f1 <- NULL
+                           # mark that we haven't computed the fcn value
    if(printLevel > 0) {
+      f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index, ...)
       cat("Initial function value:", f1, "\n")
       if( isTRUE( attr( f1, "gradBoth" ) ) ) {
          warning( "the gradient is provided both as attribute 'gradient' and",
@@ -98,7 +99,8 @@ maxSGACompute <- function(fn,
                  " as argument 'hess': ignoring argument 'hess'" )
       }
    }
-   G1 <- attr( f1, "gradient" )
+   G1 <- grad(start, fixed = fixed, sumObs = TRUE, index=index, ...)
+                           # have to compute fn as we cannot get gradient otherwise
    if(any(is.na(G1[!fixed]))) {
       stop("NA in the initial gradient")
    }
@@ -145,20 +147,20 @@ maxSGACompute <- function(fn,
             index <- shuffledIndex[seq(from=iBatch, to=nObs, by=nBatches)]
          }
          start0 <- start1
-         f0 <- f1
          G0 <- G1
          if(any(is.na(G0[!fixed]))) {
             stop("NA in gradient")
          }
          start1 <- start0 + learningRate*G0
+         f1 <- NULL
+                           # we are at a new location, mark that we haven't computed the f1 values
          ## still iterations to go, hence compute gradient
-         f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
-                  returnHessian = FALSE, index=index, ...)
+         G1 <- grad(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
                            # The call calculates new function,
                            # and gradient values
-         G1 <- attr( f1, "gradient" )
          ## print every batch if someone wants...
-         if(slot(control, "printLevel") > 4) {
+         if(printLevel > 4) {
+            f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
             cat(" - batch", iBatch, "index", index, "learning rate", learningRate, " fcn value:",
                 formatC(as.vector(f1), digits=8, format="f"),  "\n")
             a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
@@ -178,11 +180,17 @@ maxSGACompute <- function(fn,
          }
       }  # end of repeat over batches
       if(storeValues) {
-                           # store last value of the epoch
+         ## store last value of the epoch
+         if(is.null(f1)) {
+            f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
+         }
          valueStore[iter] <- c(f1)
                            # c removes dimensions and attributes
       }
       if(slot(control, "printLevel") > 2) {
+         if(is.null(f1)) {
+            f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
+         }
          cat(" learning rate", learningRate, " fcn value:",
             formatC(as.vector(f1), digits=8, format="f"),  "\n")
          a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
@@ -202,9 +210,7 @@ maxSGACompute <- function(fn,
       cat( "Function value:", f1, "\n")
    }
    if(finalHessian & !bhhhHessian) {
-      F1 <- fn( start1, fixed = fixed, sumObs = FALSE,
-               returnHessian = TRUE, index=index, ... )
-      G1 <- attr( F1, "gradient" )
+      G1 <- grad( start1, fixed = fixed, sumObs = FALSE, index=index, ... )
    }
    if(observationGradient(G1, length(start1))) {
       gradientObs <- G1
@@ -225,7 +231,7 @@ maxSGACompute <- function(fn,
          warning("For computing the final Hessian by 'BHHH' method, the log-likelihood or gradient must be supplied by observations")
       }
    } else if( finalHessian != FALSE ) {
-      hessian <- attr( F1, "hessian" )
+      hessian <- attr( f1, "hessian" )
    } else {
        hessian <- NULL
    }
@@ -260,6 +266,3 @@ maxSGACompute <- function(fn,
    class(result) <- c("maxim", class(result))
    invisible(result)
 }
-
-returnCode.maxim <- function(x, ...)
-    x$code

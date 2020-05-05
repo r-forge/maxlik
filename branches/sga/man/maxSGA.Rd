@@ -38,6 +38,11 @@ nObs,
     observations and the columns to the individual parameters.
     If \code{fn} returns an object with attribute \code{gradient},
     this argument is ignored.
+
+    If \code{grad} is not supplied, it is derived by finite-difference
+    method from \code{fn}.  However, this is only adiseable for
+    small-scale tests, not for any production run.  Obviously, \code{fn}
+    must be correctly defined in that case.
   }
   \item{hess}{Hessian matrix of the function.  Mainly for compatibility
     reasons, only used for computing the final Hessian if asked to do
