@@ -2,8 +2,9 @@
 ### Test the following things:
 ###
 ### 1. basic SGA
-### 2. SGA full batch
-### 3. SGA, no gradient supplied
+### 2. SGA w/momentum
+### 3. SGA full batch
+### 4. SGA, no gradient supplied
 
 library(maxLik)
 library(testthat)
@@ -50,7 +51,15 @@ res <- maxSGA(loglik, gradlik, start=start,
 expect_equal(coef(res), b0, tolerance=tol)
                            # SGA usually ends with gradient not equal to 0 so we don't test that
 
-## ---------- 2. full batch
+## ---------- 2. SGA with momentum
+res <- maxSGA(loglik, gradlik, start=start,
+            control=list(printLevel=0, iterlim=200,
+                         SGA_batchSize=100, SGA_learningRate=0.1, SGA_momentum=0.9,
+                         storeValues=TRUE),
+            nObs=length(yTrain))
+expect_equal(coef(res), b0, tolerance=tol)
+
+## ---------- 3. full batch
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
                          SGA_batchSize=NULL, SGA_learningRate=0.1,
@@ -58,7 +67,7 @@ res <- maxSGA(loglik, gradlik, start=start,
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
 
-## ---------- 3. no gradient
+## ---------- 4. no gradient
 res <- maxSGA(loglik, start=start,
               control=list(iterlim=1000, SGA_learningRate=0.02), nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)

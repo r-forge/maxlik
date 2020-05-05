@@ -595,6 +595,7 @@ sann_tmax = 10
 sann_randomSeed = 123 
 SGA_learningRate = 0.1 
 SGA_batchSize = 
+SGA_momentum = 0 
 iterlim = 1 
 printLevel = 0 
 storeValues = FALSE 
@@ -630,6 +631,7 @@ sann_tmax = 10
 sann_randomSeed = 123 
 SGA_learningRate = 0.1 
 SGA_batchSize = 
+SGA_momentum = 0 
 iterlim = 100 
 printLevel = 1 
 storeValues = FALSE 
@@ -657,6 +659,7 @@ sann_tmax = 10
 sann_randomSeed = 123 
 SGA_learningRate = 0.1 
 SGA_batchSize = 
+SGA_momentum = 0 
 iterlim = 100 
 printLevel = 0 
 storeValues = FALSE 
@@ -669,4 +672,4 @@ storeValues = FALSE
 > 
 > proc.time()
    user  system elapsed 
-  1.218   0.772   0.696 
+  1.228   0.804   0.714 

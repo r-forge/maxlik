@@ -102,6 +102,9 @@
     \item{SGA_learningRate}{0.1, learning rate, numeric}
     \item{SGA_batchSize}{\code{NULL}, batch size for Stochastic Gradient Ascent.  A
       positive integer, or \code{NULL} for full-batch gradent ascent.}
+    \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
+      in interval \eqn{[0,1]}{[0,1]}.
+    }
     % General
     \item{iterlim}{150, stopping condition.  Stop if more than \code{iterlim}
       iterations performed.  Note that \sQuote{iteration} may mean

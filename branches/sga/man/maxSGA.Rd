@@ -102,6 +102,9 @@ nObs,
 	good value is typically 0.01--0.3}
       \item{SGA_batchSize}{SGA batch size, a positive
 	integer.  If \code{NULL}, full batch is taken.}
+      \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
+	in interval \eqn{[0,1]}{[0,1]}.  See details.
+      }
       \item{iterlim}{stopping condition.  Stop if more than \code{iterlim}
 	iterations, return \code{code=4}.
 	Epoch is a set of iterations that cycles through all
@@ -136,6 +139,16 @@ nObs,
     than when using all observation in certain circumstances (see
     \cite{Bottou et al, 2018}).
 
+    If \code{SGA_momentum} is positive, the algorithm updates the parameters
+    \eqn{\theta}{theta} in two steps.  First, the momentum is used to update
+    the \dQuote{velocity} \eqn{v}{v} as
+    \eqn{v \leftarrow \mathrm{momentum}\cdot v + \mathrm{learning
+	rate}\cdot \nabla f(\theta)}{v <- momentum*v + learning
+      rate* gradient f(theta)}, and thereafter the parameter
+    \eqn{\theta}{theta} is updates as
+    \eqn{\theta \leftarrow \theta + v}{theta <- theta + v}.  Initial
+    velocity is set to 0.
+    
     The function \code{fn} is not directly used for optimization, only
     for printing or eventually as a stopping condition.  In this sense
     it is up to the user to decide what (if anything the function
@@ -153,7 +166,7 @@ nObs,
   methods: 
   \item{\code{\link{maxValue}}}{\code{fn} value at maximum (the last calculated value
     if not converged.)}
-  \item{coef}{estimated parameter value.}
+  \item{\code{\link{coef}}}{estimated parameter value.}
   \item{gradient}{vector, last calculated gradient value.  Should be
     close to 0 in case of normal convergence.}
   \item{estfun}{matrix of gradients at parameter value \code{estimate}
@@ -212,23 +225,7 @@ nObs,
   }
 }
 
-\section{Warning}{
-    No attempt is made to ensure that user-provided analytic
-    gradient/Hessian is correct.  The users are
-    encouraged to use \code{\link{compareDerivatives}} function,
-    designed for this purpose.  If analytic gradient/Hessian are wrong,
-    the algorithm may not converge, or may converge to a wrong point.
-
-    As the BHHH method
-    uses the likelihood-specific information equality,
-    it is only suitable for maximizing log-likelihood functions!
-
-    Quasi-Newton methods, including those mentioned above, do not work
-    well in non-concave regions.  This is especially the case with the
-    implementation in \code{maxBFGSR}.  The user is advised to
-    experiment with various tolerance options to achieve convergence.
-  }
-  \references{
+\references{
     Bottou, L.; Curtis, F. & Nocedal, J.:
     Optimization Methods for
     Large-Scale Machine Learning \emph{SIAM Review}, 2018, \bold{60}, 223--311.
@@ -239,18 +236,19 @@ nObs,
 
 \author{Ott Toomet, Arne Henningsen,
    function \code{maxBFGSR} was originally developed by Yves Croissant
-   (and placed in 'mlogit' package)}
+   (and placed in 'mlogit' package)
+ }
 
-\seealso{\code{\link{maxLik}} for a general framework for maximum likelihood
-   estimation (MLE);
-   \code{\link{maxBHHH}} for maximizations using the Berndt, Hall, Hall,
-   Hausman (1974) algorithm (which is a wrapper function to \code{maxNR});
+ \seealso{
+   \code{\link{maxNR}} for Newton-Raphson, a popular Hessian-based maximization;
    \code{\link{maxBFGS}} for maximization using the BFGS, Nelder-Mead (NM),
    and Simulated Annealing (SANN) method (based on \code{\link{optim}}),
    also supporting inequality constraints;
-   \code{\link{nlm}} for Newton-Raphson optimization; and
-  \code{\link{optim}} for different gradient-based optimization
-  methods.}
+   \code{\link{maxLik}} for a general framework for maximum likelihood
+   estimation (MLE);
+   \code{\link{optim}} for different gradient-based optimization
+   methods.
+ }
 
 \examples{
 ## estimate the exponential distribution parameter by ML

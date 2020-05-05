@@ -73,6 +73,7 @@ addControlList <- function(x, y, check=TRUE) {
    ## SGA
    setSlot("SGA_learningRate")
    setSlot("SGA_batchSize", convert=as.integer)
+   setSlot("SGA_momentum")
    ##
    setSlot("iterlim", convert=as.integer)
    setSlot(c("printLevel", "print.level"), convert=as.integer)

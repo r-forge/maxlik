@@ -109,6 +109,10 @@ checkMaxControl <- function(object) {
       errors <- c(errors, paste("SGA batch size must be positive, not",
                                 slot(object, "SGA_batchSize")))
    }
+   if(slot(object, "SGA_momentum") < 0 || slot(object, "SGA_momentum") > 1) {
+      errors <- c(errors, paste("SGA momentum parameter must be in [0,1], not",
+                                slot(object, "SGA_momentum")))
+   }
    ##
    if(slot(object, "iterlim") < 0) {
       errors <- c(errors, paste("'iterlim' must be non-negative, not",
@@ -146,6 +150,7 @@ setClass("MaxControl",
          ## SGA
          SGA_learningRate="numeric",
          SGA_batchSize = "integerOrNULL",  # NULL: full batch
+         SGA_momentum = "numeric",
          ##
              iterlim="integer",
          printLevel="integer",
@@ -177,6 +182,7 @@ setClass("MaxControl",
          ## SGA
          SGA_learningRate=0.1,
          SGA_batchSize=NULL,
+         SGA_momentum = 0,
          ##
          iterlim=150L,
          printLevel=0L,

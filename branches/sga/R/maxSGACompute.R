@@ -72,7 +72,9 @@ maxSGACompute <- function(fn, grad, hess,
    start1 <- start
    storeValues <- slot(control, "storeValues")
    learningRate <- slot(control, "SGA_learningRate")
+   momentum <- slot(control, "SGA_momentum")
    printLevel <- slot(control, "printLevel")
+   v <- 0  # velocity that retains the momentum
    ## ---------- How many batches
    batchSize <- slot(control, "SGA_batchSize")
    if(is.null(batchSize)) {
@@ -151,7 +153,8 @@ maxSGACompute <- function(fn, grad, hess,
          if(any(is.na(G0[!fixed]))) {
             stop("NA in gradient")
          }
-         start1 <- start0 + learningRate*G0
+         v <- momentum*v + learningRate*G0
+         start1 <- start0 + v
          f1 <- NULL
                            # we are at a new location, mark that we haven't computed the f1 values
          ## still iterations to go, hence compute gradient
@@ -164,7 +167,7 @@ maxSGACompute <- function(fn, grad, hess,
             cat(" - batch", iBatch, "index", index, "learning rate", learningRate, " fcn value:",
                 formatC(as.vector(f1), digits=8, format="f"),  "\n")
             a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
-            dimnames(a) <- list(names(start0), c("amount", "param",
+            dimnames(a) <- list(names(start0), c("delta-v", "param",
                                                  "gradient", "active"))
             print(a)
          }
