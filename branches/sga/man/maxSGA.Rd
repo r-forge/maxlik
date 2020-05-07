@@ -250,68 +250,64 @@ nObs,
    methods.
  }
 
-\examples{
+ \examples{
 ## estimate the exponential distribution parameter by ML
+set.seed(1)
 t <- rexp(100, 2)
-loglik <- function(theta) sum(log(theta) - theta*t)
+loglik <- function(theta, index) sum(log(theta) - theta*t[index])
 ## Note the log-likelihood and gradient are summed over observations
-gradlik <- function(theta) sum(1/theta - t)
-hesslik <- function(theta) -100/theta^2
+gradlik <- function(theta, index) sum(1/theta - t[index])
 ## Estimate with finite-difference gradient and Hessian
-a <- maxNR(loglik, start=1, control=list(printLevel=2))
+a <- maxSGA(loglik, gradlik, start=1, control=list(iterlim=1000,
+            SGA_batchSize=10), nObs=100)
+            # note that loglik is not really needed, and is not used
+            # here, unless more print verbosity is asked
 summary(a)
-## You would probably prefer 1/mean(t) instead ;-)
-## Estimate with analytic gradient and Hessian
-a <- maxNR(loglik, gradlik, hesslik, start=1)
-summary(a)
-
-## BFGS estimation with finite-difference gradient
-a <- maxBFGSR( loglik, start=1 )
-summary(a)
-
-## For the BHHH method we need likelihood values and gradients
-## of individual observations
-loglikInd <- function(theta) log(theta) - theta*t
-gradlikInd <- function(theta) 1/theta - t
-## Estimate with analytic gradient
-a <- maxBHHH(loglikInd, gradlikInd, start=1)
-summary(a)
-
 ##
-## Example with a vector argument:  Estimate the mean and
-## variance of a random normal sample by maximum likelihood
-## Note: you might want to use maxLik instead
+## demonstrate the usage of index, and using
+## fn for computing the objective function on validation data.
+## create a linear model where variables are very unequally scaled
 ##
-loglik <- function(param) {
-  mu <- param[1]
-  sigma <- param[2]
-  ll <- -0.5*N*log(2*pi) - N*log(sigma) - sum(0.5*(x - mu)^2/sigma^2)
-  ll
+## OLS loglik function: compute the function value on validation data only
+loglik <- function(beta, index) {
+   e <- yValid - XValid \%*\% beta
+   -crossprod(e)/length(y)
 }
-x <- rnorm(100, 1, 2) # use mean=1, stdd=2
-N <- length(x)
-res <- maxNR(loglik, start=c(0,1)) # use 'wrong' start values
-summary(res)
-##
-## The previous example with named parameters and fixed values
-##
-resFix <- maxNR(loglik, start=c(mu=0, sigma=1), fixed="sigma")
-summary(resFix)  # 'sigma' is exactly 1.000 now.
-###
-### Constrained optimization
-###
-## We maximize exp(-x^2 - y^2) where x+y = 1
-hatf <- function(theta) {
-  x <- theta[1]
-  y <- theta[2]
-  exp(-(x^2 + y^2))
-  ## Note: you may prefer exp(- theta \%*\% theta) instead
+## OLS gradient: compute it on training data only
+gradlik <- function(beta, index)  {
+   e <- yTrain[index] - XTrain[index,,drop=FALSE] \%*\% beta
+   l <- crossprod(e)
+   g <- t(-2*t(XTrain[index,,drop=FALSE]) \%*\% e)
+   -g/length(index)
 }
-## use constraints: x + y = 1
-A <- matrix(c(1, 1), 1, 2)
-B <- -1
-res <- maxNR(hatf, start=c(0,0), constraints=list(eqA=A, eqB=B),
-             control=list(printLevel=1))
-print(summary(res))
+N <- 1000
+## two random variables: one with scale 1, the other with 100
+X <- cbind(rnorm(N), rnorm(N, sd=100))
+beta <- c(1, 1)  # true parameter values
+y <- X \%*\% beta + rnorm(N, sd=0.2)
+## training-validation split
+iTrain <- sample(N, 0.8*N)
+XTrain <- X[iTrain,,drop=FALSE]
+XValid <- X[-iTrain,,drop=FALSE]
+yTrain <- y[iTrain]
+yValid <- y[-iTrain]
+##
+cat("Analytic training solution:\n")
+print(solve(crossprod(XTrain)) \%*\% crossprod(XTrain, yTrain))
+## do this without momentum: learning rate must stay small for the gradient not to explode
+cat("  No momentum:\n")
+a <- maxSGA(loglik, gradlik, start=c(10,10),
+           control=list(printLevel=1, iterlim=1000,
+                        SGA_batchSize=NULL, SGA_learningRate=0.0001, SGA_momentum=0,
+                        storeValues=TRUE), nObs=length(yTrain))
+print(summary(a))  # the first component is off, the second close to the true value
+## do with momentum 0.99
+cat("  Momentum 0.99:\n")
+a <- maxSGA(loglik, gradlik, start=c(10,10),
+           control=list(printLevel=1, iterlim=1000,
+                        SGA_batchSize=NULL, SGA_learningRate=0.0001, SGA_momentum=0.99,
+                        # no momentum
+                        storeValues=TRUE), nObs=length(yTrain))
+print(summary(a))  # close to true value
 }
 \keyword{optimize}

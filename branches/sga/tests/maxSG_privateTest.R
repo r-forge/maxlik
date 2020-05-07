@@ -1,7 +1,8 @@
 ### tests for stochastic gradient ascent
 ### Test the following things:
 ###
-### 1. basic SGA
+### 1. basic 2-D SGA
+###    1-D case
 ### 2. SGA w/momentum
 ### 3. SGA full batch
 ### 4. SGA, no gradient supplied
@@ -50,6 +51,14 @@ res <- maxSGA(loglik, gradlik, start=start,
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
                            # SGA usually ends with gradient not equal to 0 so we don't test that
+
+## ---------- 1D case
+t <- rexp(100, 2)
+loglik1 <- function(theta, index) sum(log(theta) - theta*t[index])
+gradlik1 <- function(theta, index) sum(1/theta - t[index])
+res <- maxSGA(loglik1, gradlik1, start=1,
+              control=list(iterlim=1000, SGA_batchSize=20), nObs=100)
+expect_equal(coef(res), 1/mean(t), tolerance=tol)
 
 ## ---------- 2. SGA with momentum
 res <- maxSGA(loglik, gradlik, start=start,

@@ -41,29 +41,7 @@ maxSGACompute <- function(fn, grad, hess,
    ##               'maxNR'.
    ##
    ## RESULTS:
-   ## a list of class "maxim":
-   ## maximum     function value at maximum
-   ## estimate    the parameter value at maximum
-   ## gradient        gradient
-   ## hessian         Hessian
-   ## code        integer code of success:
-   ##             1 - gradient close to zero
-   ##             2 - successive values within tolerance limit
-   ##             3 - could not find a higher point (step error)
-   ##             4 - iteration limit exceeded
-   ##             5 - infinite function value
-   ##             6  infinite gradient
-   ##             7  infinite Hessian
-   ##             100 - initial value out of range
-   ## message     character message describing the code
-   ## last.step   only present if code == 3 (step error).  A list with following components:
-   ##             theta0    - parameter value which led to the error
-   ##             f0        - function value at these parameter values
-   ##             climb     - the difference between theta0 and the new approximated parameter value (theta1)
-   ##             fixed     - logical vector, which parameters are constant (fixed, inactive, non-free)
-   ## fixed       logical vector, which parameters were treated as constant (fixed, inactive, non-free)
-   ## iterations  number of iterations
-   ## type        "Newton-Raphson maximisation"
+   ## an object of class 'maxim'
    ##      
    ## -------------------------------------------------
    maximType <- "Stochastic Gradient Ascent"
