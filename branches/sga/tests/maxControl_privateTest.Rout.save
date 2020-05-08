@@ -38,7 +38,7 @@ https://r-forge.r-project.org/projects/maxlik/
 +            marquardt_lambda0=0.1, marquardt_lambdaStep=3, marquardt_maxLambda=1e10,
 +            nm_alpha=2, nm_beta=1, nm_gamma=4,
 +            sann_temp=5, sann_tmax=100, sann_randomSeed=1,
-+            SGA_learningRate=0.5, SGA_batchSize=10, SGA_momentum=0.9,
++            SGA_learningRate=0.5, SGA_batchSize=10, SGA_clip=1000, SGA_momentum=0.9,
 +            iterlim=10, printLevel=3)
 A 'MaxControl' object with slots:
 tol = 1e-04 
@@ -60,6 +60,7 @@ sann_tmax = 100
 sann_randomSeed = 1 
 SGA_learningRate = 0.5 
 SGA_batchSize = 10 
+SGA_clip = 1000 
 SGA_momentum = 0.9 
 iterlim = 10 
 printLevel = 3 
@@ -86,6 +87,7 @@ sann_tmax = 10
 sann_randomSeed = 123 
 SGA_learningRate = 0.1 
 SGA_batchSize =  
+SGA_clip = 
 SGA_momentum = 0 
 iterlim = 150 
 printLevel = 0 
@@ -97,6 +99,39 @@ Error in validObject(x) :
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'SGA_batchSize' must be either 'NULL' or of length 1, not of length 2
 > 
+> maxControl(SGA_clip=NULL)
+A 'MaxControl' object with slots:
+tol = 1e-08 
+reltol = 1.490116e-08 
+gradtol = 1e-06 
+steptol = 1e-10 
+lambdatol = 1e-06 
+qrtol = 1e-10 
+qac = stephalving 
+marquardt_lambda0 = 0.01 
+marquardt_lambdaStep = 2 
+marquardt_maxLambda = 1e+12 
+nm_alpha = 1 
+nm_beta = 0.5 
+nm_gamma = 2 
+sann_cand = <default Gaussian Markov kernel>
+sann_temp = 10 
+sann_tmax = 10 
+sann_randomSeed = 123 
+SGA_learningRate = 0.1 
+SGA_batchSize = 
+SGA_clip =  
+SGA_momentum = 0 
+iterlim = 150 
+printLevel = 0 
+storeValues = FALSE 
+> try(maxControl(SGA_clip=-1))
+Error in validObject(x) : 
+  invalid class "MaxControl" object: SGA gradient clip norm threshold must be positive, not -1
+> try(maxControl(SGA_clip=2:3))
+Error in validObject(x) : 
+  invalid class "MaxControl" object: 'SGA_clip' must be either 'NULL' or of length 1, not of length 2
+> 
 > proc.time()
    user  system elapsed 
-  0.361   0.172   0.264 
+  0.391   0.248   0.280 

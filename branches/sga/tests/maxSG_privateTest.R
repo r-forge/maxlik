@@ -99,3 +99,24 @@ res <- maxSGA(loglik, start=start,
               finalHessian=TRUE)
 expect_equal(coef(res), b0, tolerance=tol)
 expect_equal(dim(hessian(res)), c(2,2))
+
+### -------------------- create unequally scaled data
+set.seed(1)
+N <- 1000
+x <- rnorm(N, sd=100)
+XTrain <- cbind(1, x)
+yTrain <- 1 + x + rnorm(N)
+start <- c(const=10, x=10)
+
+## ---------- no gradient clipping: should fail
+try(res <- maxSGA(loglik, gradlik, start=start,
+                  control=list(iterlim=100, SGA_learningRate=0.5),
+                  nObs=length(yTrain))
+    )
+
+## ---------- gradient clipping: should not fail
+res <- maxSGA(loglik, gradlik, start=start,
+              control=list(iterlim=100, SGA_learningRate=0.5,
+                           SGA_clip=1e6),
+              nObs=length(yTrain)
+              )

@@ -102,6 +102,12 @@
     \item{SGA_learningRate}{0.1, learning rate, numeric}
     \item{SGA_batchSize}{\code{NULL}, batch size for Stochastic Gradient Ascent.  A
       positive integer, or \code{NULL} for full-batch gradent ascent.}
+    \item{SGA_clip}{\code{NULL}, gradient clipping threshold.  This is
+      the max allowed squared Euclidean norm of the gradient.  If the
+      actual norm of the gradient exceeds (square root of) this
+      threshold, the gradient will be scaled back accordingly while
+      preserving its direction.  \code{NULL} means no clipping.
+    }
     \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
       in interval \eqn{[0,1]}{[0,1]}.
     }

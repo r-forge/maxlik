@@ -3,6 +3,7 @@
 
 setClassUnion("functionOrNULL", c("function", "NULL"))
 setClassUnion("integerOrNULL", c("integer", "NULL"))
+setClassUnion("numericOrNULL", c("numeric", "NULL"))
 
 checkMaxControl <- function(object) {
    ## check validity of MaxControl objects
@@ -23,6 +24,14 @@ checkMaxControl <- function(object) {
          }
       }
       else if(s == "SGA_batchSize") {
+         if(length(slot(object, s)) > 1) {
+            errors <- c(errors,
+                        paste("'", s, "' must be either 'NULL' or ",
+                              "of length 1, not of length ",
+                              length(slot(object, s)), sep=""))
+         }
+      }
+      else if(s == "SGA_clip") {
          if(length(slot(object, s)) > 1) {
             errors <- c(errors,
                         paste("'", s, "' must be either 'NULL' or ",
@@ -109,6 +118,10 @@ checkMaxControl <- function(object) {
       errors <- c(errors, paste("SGA batch size must be positive, not",
                                 slot(object, "SGA_batchSize")))
    }
+   if(length(slot(object, "SGA_clip")) > 0 && slot(object, "SGA_clip") <= 0L) {
+      errors <- c(errors, paste("SGA gradient clip norm threshold must be positive, not",
+                                slot(object, "SGA_clip")))
+   }
    if(slot(object, "SGA_momentum") < 0 || slot(object, "SGA_momentum") > 1) {
       errors <- c(errors, paste("SGA momentum parameter must be in [0,1], not",
                                 slot(object, "SGA_momentum")))
@@ -150,6 +163,7 @@ setClass("MaxControl",
          ## SGA
          SGA_learningRate="numeric",
          SGA_batchSize = "integerOrNULL",  # NULL: full batch
+         SGA_clip="numericOrNULL",  # NULL: do not clip
          SGA_momentum = "numeric",
          ##
              iterlim="integer",
@@ -182,6 +196,7 @@ setClass("MaxControl",
          ## SGA
          SGA_learningRate=0.1,
          SGA_batchSize=NULL,
+         SGA_clip=NULL,
          SGA_momentum = 0,
          ##
          iterlim=150L,

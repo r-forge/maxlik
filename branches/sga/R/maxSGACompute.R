@@ -50,6 +50,7 @@ maxSGACompute <- function(fn, grad, hess,
    start1 <- start
    storeValues <- slot(control, "storeValues")
    learningRate <- slot(control, "SGA_learningRate")
+   clip <- slot(control, "SGA_clip")
    momentum <- slot(control, "SGA_momentum")
    printLevel <- slot(control, "printLevel")
    v <- 0  # velocity that retains the momentum
@@ -90,6 +91,10 @@ maxSGACompute <- function(fn, grad, hess,
    if(length(G1) != nParam) {
       stop( "length of gradient (", length(G1),
          ") not equal to the no. of parameters (", nParam, ")" )
+   }
+   if(length(clip) > 0) {
+      if((norm2 <- sum(G1*G1)) > clip)
+         G1 <- G1/sqrt(norm2*clip)
    }
    if(storeValues) {
       valueStore <- rep(NA_real_, iterlim)
@@ -139,6 +144,10 @@ maxSGACompute <- function(fn, grad, hess,
          G1 <- grad(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
                            # The call calculates new function,
                            # and gradient values
+         if(length(clip) > 0) {
+            if((norm2 <- sum(G1*G1)) > clip)
+               G1 <- G1/sqrt(norm2*clip)
+         }
          ## print every batch if someone wants...
          if(printLevel > 4) {
             f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)

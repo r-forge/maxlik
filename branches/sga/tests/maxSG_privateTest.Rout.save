@@ -125,6 +125,34 @@ Analytic solution (training data):
 > expect_equal(coef(res), b0, tolerance=tol)
 > expect_equal(dim(hessian(res)), c(2,2))
 > 
+> ### -------------------- create unequally scaled data
+> set.seed(1)
+> N <- 1000
+> x <- rnorm(N, sd=100)
+> XTrain <- cbind(1, x)
+> yTrain <- 1 + x + rnorm(N)
+> start <- c(const=10, x=10)
+> 
+> ## ---------- no gradient clipping: should fail
+> try(res <- maxSGA(loglik, gradlik, start=start,
++                   control=list(iterlim=100, SGA_learningRate=0.5),
++                   nObs=length(yTrain))
++     )
+Iteration 75 
+Parameter:
+         const              x 
+ 1.567877e+299 -1.440274e+303 
+[1] -3.355618e+303            Inf
+Error in maxSGACompute(fn = function (theta, fnOrig, gradOrig, hessOrig,  : 
+  NA/Inf in gradient
+> 
+> ## ---------- gradient clipping: should not fail
+> res <- maxSGA(loglik, gradlik, start=start,
++               control=list(iterlim=100, SGA_learningRate=0.5,
++                            SGA_clip=1e6),
++               nObs=length(yTrain)
++               )
+> 
 > proc.time()
    user  system elapsed 
-  1.891   0.515   1.636 
+  1.803   0.514   1.504 

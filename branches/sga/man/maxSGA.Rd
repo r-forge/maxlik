@@ -106,6 +106,12 @@ nObs,
 	good value is typically 0.01--0.3}
       \item{SGA_batchSize}{SGA batch size, a positive
 	integer.  If \code{NULL}, full batch is taken.}
+      \item{SGA_clip}{\code{NULL}, gradient clipping threshold.  This is
+	the max allowed squared Euclidean norm of the gradient.  If the
+	actual norm of the gradient exceeds (square root of) this
+	threshold, the gradient will be scaled back accordingly while
+	preserving its direction.  \code{NULL} means no clipping.
+      }
       \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
 	in interval \eqn{[0,1]}{[0,1]}.  See details.
       }
