@@ -1,3 +1,5 @@
+library(magrittr)
+
 maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
                    nObs,
                    constraints=NULL,

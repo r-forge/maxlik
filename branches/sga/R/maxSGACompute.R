@@ -48,6 +48,7 @@ maxSGACompute <- function(fn, grad, hess,
    iterlim <- slot(control, "iterlim")
    nParam <- length(start)
    start1 <- start
+   storeParameters <- slot(control, "storeParameters")
    storeValues <- slot(control, "storeValues")
    learningRate <- slot(control, "SGA_learningRate")
    clip <- slot(control, "SGA_clip")
@@ -97,7 +98,16 @@ maxSGACompute <- function(fn, grad, hess,
          G1 <- G1/sqrt(norm2*clip)
    }
    if(storeValues) {
-      valueStore <- rep(NA_real_, iterlim)
+      valueStore <- rep(NA_real_, iterlim + 1)
+      if(is.null(f1)) {
+         f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index, ...)
+      }
+      valueStore[1] <- f1
+   }
+   if(storeParameters) {
+      parameterStore <- matrix(NA_real_, iterlim + 1, nParam)
+      dimnames(parameterStore) <- list(epoch=c("start", 1:iterlim), parameter=names(start))
+      parameterStore[1,] <- start
    }
    if(printLevel > 1) {
       cat( "----- Initial parameters: -----\n")
@@ -174,7 +184,12 @@ maxSGACompute <- function(fn, grad, hess,
          if(is.null(f1)) {
             f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
          }
-         valueStore[iter] <- c(f1)
+         valueStore[iter + 1] <- c(f1)
+                           # c removes dimensions and attributes
+      }
+      if(storeParameters) {
+         ## store last value of the epoch
+         parameterStore[iter + 1,] <- c(start1)
                            # c removes dimensions and attributes
       }
       if(slot(control, "printLevel") > 2) {
@@ -248,7 +263,8 @@ maxSGACompute <- function(fn, grad, hess,
       fixed=fixed,
        iterations=iter,
       type=maximType,
-      valueStore = if(storeValues) valueStore else NULL
+      valueStore = if(storeValues) valueStore else NULL,
+      parameterStore = if(storeParameters) parameterStore else NULL
    )
    if( exists( "gradientObs" ) ) {
       result$gradientObs <- gradientObs

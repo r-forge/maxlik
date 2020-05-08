@@ -65,6 +65,7 @@ SGA_momentum = 0.9
 iterlim = 10 
 printLevel = 3 
 storeValues = FALSE 
+storeParameters = FALSE 
 > 
 > maxControl(SGA_batchSize=NULL)
 A 'MaxControl' object with slots:
@@ -92,6 +93,7 @@ SGA_momentum = 0
 iterlim = 150 
 printLevel = 0 
 storeValues = FALSE 
+storeParameters = FALSE 
 > try(maxControl(SGA_batchSize=-1))
 Error in validObject(x) : 
   invalid class "MaxControl" object: SGA batch size must be positive, not -1
@@ -125,6 +127,7 @@ SGA_momentum = 0
 iterlim = 150 
 printLevel = 0 
 storeValues = FALSE 
+storeParameters = FALSE 
 > try(maxControl(SGA_clip=-1))
 Error in validObject(x) : 
   invalid class "MaxControl" object: SGA gradient clip norm threshold must be positive, not -1
@@ -134,4 +137,4 @@ Error in validObject(x) :
 > 
 > proc.time()
    user  system elapsed 
-  0.391   0.248   0.280 
+  0.369   0.203   0.270 

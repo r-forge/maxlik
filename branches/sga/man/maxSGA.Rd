@@ -5,13 +5,15 @@
   Stochastic Gradient Ascent and related methods
 }
 \usage{
-maxSGA(fn, grad = NULL, hess = NULL, start,
+maxSGA(fn = NULL, grad = NULL, hess = NULL, start,
 nObs,
       constraints = NULL, finalHessian = FALSE, 
       fixed = NULL, activePar = NULL, control=NULL, ... )
 }
 \arguments{
-  \item{fn}{the function to be maximized.
+  \item{fn}{the function to be maximized.  As the objective function
+    values are not directly used for optimization, this argument is
+    optional, given \code{grad} is provided.
     It must have the parameter vector as the first argument, and it must
     have an argument \code{index} to specify the set of selected
     observations. 
@@ -40,7 +42,7 @@ nObs,
     this argument is ignored.
 
     If \code{grad} is not supplied, it is derived by finite-difference
-    method from \code{fn}.  However, this is only adiseable for
+    method from \code{fn}.  However, this is only adviseable for
     small-scale tests, not for any production run.  Obviously, \code{fn}
     must be correctly defined in that case.
   }
@@ -50,7 +52,7 @@ nObs,
     It must have the parameter vector as the first argument and
     it must return the Hessian matrix of the objective function.
     If missing, finite-difference Hessian, based on \code{gradient},
-    is computed.
+    is computed if asked to do so.
   }
   \item{start}{initial parameter values.  If start values
     are named, those names are also carried over to the results.}
@@ -128,12 +130,20 @@ nObs,
 	main tracing information for every iteration.  Higher
 	values will result in even more output.
       }
+      \item{storeParameters}{\code{FALSE}, whether to store and return the
+	parameter
+	values at each epoch.  If \code{TRUE}, the stored values
+	can be retrieved with \code{\link{storedParameters}}-method.  The
+	parameters are stored as a matrix with rows corresponding to the
+	epochs and columns to the parameter components.
+      }
+      \item{storeValues}{\code{FALSE}, whether to store and return the objective
+	function values at each epoch.  If \code{TRUE}, the stored values
+	can be retrieved with \code{\link{storedValues}}-method.}
     }
   }
   \item{\dots}{further arguments to \code{fn}, \code{grad} and
     \code{hess}.
-    Further arguments to \code{maxBHHH} are also passed to
-    \code{maxNR}.
     To maintain compatibility with the earlier versions, \dots also passes a
     number of control options (\code{tol}, \code{reltol},
     \code{gradtol}, \code{steptol},
@@ -161,14 +171,14 @@ nObs,
     
     The function \code{fn} is not directly used for optimization, only
     for printing or eventually as a stopping condition.  In this sense
-    it is up to the user to decide what (if anything the function
-    returns).  Normally it is useful for \code{fn} to compute the
+    it is up to the user to decide what the function
+    returns, if anything.  For instance, it may be useful for \code{fn} to compute the
     objective function on either full training data, or validation data,
     and just ignore the \code{index} argument.  However, one may also
-    choose to select the observations determined byt the index to
+    choose to select the observations determined by the index to
     compute the objective function on the current data batch.
 
-    Does it support contraints?
+    % Does it support contraints?
   }
 
 \value{

@@ -600,6 +600,7 @@ SGA_momentum = 0
 iterlim = 1 
 printLevel = 0 
 storeValues = FALSE 
+storeParameters = FALSE 
 >                            # iterlim should be 1
 > print(coef(m))
 [1] 0.07158 1.00000
@@ -637,6 +638,7 @@ SGA_momentum = 0
 iterlim = 100 
 printLevel = 1 
 storeValues = FALSE 
+storeParameters = FALSE 
 > 
 > ## Does open parameters override everything?
 > m <- estimate(control=list(printLevel=2, print.level=1), print.level=0)
@@ -666,6 +668,7 @@ SGA_momentum = 0
 iterlim = 100 
 printLevel = 0 
 storeValues = FALSE 
+storeParameters = FALSE 
 > 
 > ### does both printLevel, print.level work for condiNumber?
 > condiNumber(hessian(m), print.level=0) # no output
@@ -675,4 +678,4 @@ storeValues = FALSE
 > 
 > proc.time()
    user  system elapsed 
-  1.233   0.763   0.722 
+  1.203   0.816   0.725 

@@ -60,6 +60,14 @@ res <- maxSGA(loglik, gradlik, start=start,
 expect_equal(coef(res), b0, tolerance=tol)
                            # SGA usually ends with gradient not equal to 0 so we don't test that
 
+## ---------- store parameters
+res <- maxSGA(loglik, gradlik, start=start,
+              control=list(printLevel=0, iterlim=20,
+                           SGA_batchSize=100, SGA_learningRate=0.1,
+                           storeParameters=TRUE),
+              nObs=length(yTrain))
+expect_equal(dim(storedParameters(res)), c(1 + nIter(res), 2))
+
 ## ---------- no function, only gradient
 res <- maxSGA(grad=gradlik, start=start,
             control=list(printLevel=0, iterlim=10, SGA_batchSize=100),
@@ -84,16 +92,14 @@ expect_null(hessian(res))
 ## ---------- 2. SGA with momentum
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
-                         SGA_batchSize=100, SGA_learningRate=0.1, SGA_momentum=0.9,
-                         storeValues=TRUE),
+                         SGA_batchSize=100, SGA_learningRate=0.1, SGA_momentum=0.9),
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
 
 ## ---------- 3. full batch
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
-                         SGA_batchSize=NULL, SGA_learningRate=0.1,
-                         storeValues=TRUE),
+                         SGA_batchSize=NULL, SGA_learningRate=0.1),
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
 

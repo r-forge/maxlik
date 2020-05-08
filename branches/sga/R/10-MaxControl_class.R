@@ -168,7 +168,7 @@ setClass("MaxControl",
          ##
              iterlim="integer",
          printLevel="integer",
-         storeValues="logical"
+         storeValues="logical", storeParameters="logical"
          ),
          ##
          prototype=prototype(
@@ -201,7 +201,7 @@ setClass("MaxControl",
          ##
          iterlim=150L,
          printLevel=0L,
-         storeValues=FALSE),
+         storeValues=FALSE, storeParameters=FALSE),
          ##
          validity=checkMaxControl
          )

@@ -119,6 +119,13 @@
       more information.  Result depends on the optimizer.  Form
       \code{print.level} is also accepted by the methods for
       compatibility.}
+    \item{storeParameters}{\code{FALSE}, whether to store and return the
+      parameter
+      values at each epoch.  If \code{TRUE}, the stored values
+      can be retrieved with \code{\link{storedParameters}}-method.  The
+      parameters are stored as a matrix with rows corresponding to the
+      epochs and columns to the parameter components.
+    }
     \item{storeValues}{\code{FALSE}, whether to store and return the objective
       function values at each epoch.  If \code{TRUE}, the stored values
       can be retrieved with \code{\link{storedValues}}-method.}
