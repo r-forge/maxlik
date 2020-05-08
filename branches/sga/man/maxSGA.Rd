@@ -76,11 +76,15 @@ nObs,
     \code{FALSE} (do not calculate), \code{TRUE} (use analytic/finite-difference
     Hessian) or \code{"bhhh"}/\code{"BHHH"} for the information equality
     approach.  The latter approach is only suitable for maximizing
-    log-likelihood functions.  It requires the gradient/log-likelihood to
+    log-likelihood functions and it requires the gradient/log-likelihood to
     be supplied by individual observations.
-    Note that computing the (actual, not BHHH) final Hessian
-    does not carry any extra penalty for the NR method,
-    but does for the other methods.}
+
+    Hessian matrix is not often used for optimization problems where one
+    applies SGA, but even if one is not interested in standard errors,
+    it may provide useful information about the model performance.  If
+    computed by finite-difference method, the Hessian computation may be
+    very slow.
+  }
   \item{fixed}{parameters to be treated as constants at their
     \code{start} values.  If present, it is treated as an index vector of
     \code{start} parameters.}

@@ -188,6 +188,9 @@ maxSGACompute <- function(fn, grad, hess,
       cat( maximMessage( code), "\n")
       cat( iter, " iterations\n")
       cat( "estimate:", start1, "\n")
+      if(is.null(f1)) {
+         f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
+      }
       cat( "Function value:", f1, "\n")
    }
    if(finalHessian & !bhhhHessian) {
@@ -212,7 +215,7 @@ maxSGACompute <- function(fn, grad, hess,
          warning("For computing the final Hessian by 'BHHH' method, the log-likelihood or gradient must be supplied by observations")
       }
    } else if( finalHessian != FALSE ) {
-      hessian <- attr( f1, "hessian" )
+      hessian <- hess( start1, fixed = fixed, index=index, ... )
    } else {
        hessian <- NULL
    }

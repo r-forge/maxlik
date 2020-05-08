@@ -6,6 +6,8 @@
 ### 2. SGA w/momentum
 ### 3. SGA full batch
 ### 4. SGA, no gradient supplied
+###    SGA, return numeric hessian, gradient provided
+###    SGA, return numeric hessian, no gradient provided
 
 library(maxLik)
 library(testthat)
@@ -59,6 +61,7 @@ gradlik1 <- function(theta, index) sum(1/theta - t[index])
 res <- maxSGA(loglik1, gradlik1, start=1,
               control=list(iterlim=1000, SGA_batchSize=20), nObs=100)
 expect_equal(coef(res), 1/mean(t), tolerance=tol)
+expect_null(hessian(res))
 
 ## ---------- 2. SGA with momentum
 res <- maxSGA(loglik, gradlik, start=start,
@@ -80,3 +83,19 @@ expect_equal(coef(res), b0, tolerance=tol)
 res <- maxSGA(loglik, start=start,
               control=list(iterlim=1000, SGA_learningRate=0.02), nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
+
+## ---------- return Hessian, gradient provided
+res <- maxSGA(loglik, gradlik, start=start,
+              control=list(iterlim=1000, SGA_learningRate=0.02),
+              nObs=length(yTrain),
+              finalHessian=TRUE)
+expect_equal(coef(res), b0, tolerance=tol)
+expect_equal(dim(hessian(res)), c(2,2))
+
+## ---------- return Hessian, no gradient
+res <- maxSGA(loglik, start=start,
+              control=list(iterlim=1000, SGA_learningRate=0.02),
+              nObs=length(yTrain),
+              finalHessian=TRUE)
+expect_equal(coef(res), b0, tolerance=tol)
+expect_equal(dim(hessian(res)), c(2,2))
