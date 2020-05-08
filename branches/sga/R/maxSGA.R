@@ -66,15 +66,20 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
                            # Here we allow to submit all parameters outside of the
                            # 'control' list.  May eventually include only a
                            # subset here
-   ## ensure that 'fn' does not take any arguments that maxSGA eats up
-   checkFuncArgs( fn, argNames, "fn", "maxSGA" )
+   ## ensure that 'fn', 'grad', and 'hess' do not take any arguments that maxSGA eats up
+   if(!is.null(fn)) {
+      checkFuncArgs( fn, argNames, "fn", "maxSGA" )
+   }
    if( !is.null( grad ) ) {
       checkFuncArgs( grad, argNames, "grad", "maxSGA" )
    }
    if( !is.null( hess ) ) {
       checkFuncArgs( hess, argNames, "hess", "maxSGA" )
    }
-
+   ## ensure that at least 'fn' or 'grad' are supplied
+   if(is.null(fn) & is.null(grad)) {
+      stop("maxSGA requires at least 'fn' or 'grad' to be supplied")
+   }
    ## establish the active parameters.  Internally, we just use 'activePar'
    fixed <- prepareFixed( start = start, activePar = activePar,
       fixed = fixed )

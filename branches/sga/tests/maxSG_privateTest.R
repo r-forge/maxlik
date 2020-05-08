@@ -2,12 +2,18 @@
 ### Test the following things:
 ###
 ### 1. basic 2-D SGA
-###    1-D case
+###    SGA without function, only gradient
+###    SGA neither function nor gradient
+###    SGA in 1-D case
 ### 2. SGA w/momentum
 ### 3. SGA full batch
 ### 4. SGA, no gradient supplied
 ###    SGA, return numeric hessian, gradient provided
 ###    SGA, return numeric hessian, no gradient provided
+###
+### using highly unequally scaled data
+###    SGA without gradient clipping (fails)
+###    SGA with gradient clipping (works, although does not converge)
 
 library(maxLik)
 library(testthat)
@@ -54,13 +60,25 @@ res <- maxSGA(loglik, gradlik, start=start,
 expect_equal(coef(res), b0, tolerance=tol)
                            # SGA usually ends with gradient not equal to 0 so we don't test that
 
+## ---------- no function, only gradient
+res <- maxSGA(grad=gradlik, start=start,
+            control=list(printLevel=0, iterlim=10, SGA_batchSize=100),
+            nObs=length(yTrain))
+
+## ---------- neither function nor gradient
+try(res <- maxSGA(start=start,
+                  control=list(printLevel=0, iterlim=10, SGA_batchSize=100),
+                  nObs=length(yTrain))
+    )
+
 ## ---------- 1D case
-t <- rexp(100, 2)
+N1 <- 1000
+t <- rexp(N1, 2)
 loglik1 <- function(theta, index) sum(log(theta) - theta*t[index])
 gradlik1 <- function(theta, index) sum(1/theta - t[index])
 res <- maxSGA(loglik1, gradlik1, start=1,
-              control=list(iterlim=1000, SGA_batchSize=20), nObs=100)
-expect_equal(coef(res), 1/mean(t), tolerance=tol)
+              control=list(iterlim=300, SGA_batchSize=20), nObs=length(t))
+expect_equal(coef(res), 1/mean(t), tolerance=0.2)
 expect_null(hessian(res))
 
 ## ---------- 2. SGA with momentum
