@@ -135,11 +135,17 @@ nObs,
 	values at each epoch.  If \code{TRUE}, the stored values
 	can be retrieved with \code{\link{storedParameters}}-method.  The
 	parameters are stored as a matrix with rows corresponding to the
-	epochs and columns to the parameter components.
+	epochs and columns to the parameter components.  There are
+	\code{iterlim} + 1 rows, where the first one corresponds to the
+	initial parameters.
       }
       \item{storeValues}{\code{FALSE}, whether to store and return the objective
 	function values at each epoch.  If \code{TRUE}, the stored values
-	can be retrieved with \code{\link{storedValues}}-method.}
+	can be retrieved with \code{\link{storedValues}}-method.  There are
+	\code{iterlim} + 1 values, where the first one corresponds to
+	the value at the
+	initial parameters.
+      }
     }
   }
   \item{\dots}{further arguments to \code{fn}, \code{grad} and
@@ -218,6 +224,7 @@ nObs,
     }
   }
   \item{\code{\link{storedValues}}}{return values stored at each epoch}
+  \item{\code{\link{storedParameters}}}{return parameters stored at each epoch}
   \item{returnMessage}{ a short message, describing the return code.}
   \item{activePar}{logical vector, which parameters are optimized over.
     Contains only \code{TRUE}-s if no parameters are fixed.}
@@ -317,17 +324,17 @@ print(solve(crossprod(XTrain)) \%*\% crossprod(XTrain, yTrain))
 ## do this without momentum: learning rate must stay small for the gradient not to explode
 cat("  No momentum:\n")
 a <- maxSGA(loglik, gradlik, start=c(10,10),
-           control=list(printLevel=1, iterlim=1000,
-                        SGA_batchSize=NULL, SGA_learningRate=0.0001, SGA_momentum=0,
-                        storeValues=TRUE), nObs=length(yTrain))
+           control=list(printLevel=1, iterlim=50,
+                        SGA_batchSize=30, SGA_learningRate=0.0001, SGA_momentum=0
+                        ), nObs=length(yTrain))
 print(summary(a))  # the first component is off, the second close to the true value
 ## do with momentum 0.99
 cat("  Momentum 0.99:\n")
 a <- maxSGA(loglik, gradlik, start=c(10,10),
-           control=list(printLevel=1, iterlim=1000,
-                        SGA_batchSize=NULL, SGA_learningRate=0.0001, SGA_momentum=0.99,
+           control=list(printLevel=1, iterlim=50,
+                        SGA_batchSize=30, SGA_learningRate=0.0001, SGA_momentum=0.99
                         # no momentum
-                        storeValues=TRUE), nObs=length(yTrain))
+                        ), nObs=length(yTrain))
 print(summary(a))  # close to true value
 }
 \keyword{optimize}
