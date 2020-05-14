@@ -77,6 +77,8 @@ addControlList <- function(x, y, check=TRUE) {
    setSlot("SGA_momentum")
    ##
    setSlot("iterlim", convert=as.integer)
+   setSlot("max.rows", convert=as.integer)
+   setSlot("max.cols", convert=as.integer)
    setSlot(c("printLevel", "print.level"), convert=as.integer)
    setSlot("storeValues", convert=as.logical)
    setSlot("storeParameters", convert=as.logical)

@@ -63,6 +63,8 @@ SGA_batchSize = 10
 SGA_clip = 1000 
 SGA_momentum = 0.9 
 iterlim = 10 
+max.rows = 20 
+max.cols = 7 
 printLevel = 3 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -91,6 +93,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 150 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -125,6 +129,8 @@ SGA_batchSize =
 SGA_clip =  
 SGA_momentum = 0 
 iterlim = 150 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -137,4 +143,4 @@ Error in validObject(x) :
 > 
 > proc.time()
    user  system elapsed 
-  0.369   0.203   0.270 
+  0.408   0.230   0.313 

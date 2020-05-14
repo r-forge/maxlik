@@ -600,6 +600,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 1 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -638,6 +640,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 100 
+max.rows = 20 
+max.cols = 7 
 printLevel = 1 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -668,6 +672,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 100 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -679,4 +685,4 @@ storeParameters = FALSE
 > 
 > proc.time()
    user  system elapsed 
-  0.981   0.039   1.014 
+  1.271   0.835   0.735 

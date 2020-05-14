@@ -115,6 +115,12 @@
     \item{iterlim}{150, stopping condition.  Stop if more than \code{iterlim}
       iterations performed.  Note that \sQuote{iteration} may mean
       different things for different optimzers.}
+    \item{max.rows}{20, maximum number of matrix rows to be printed when
+      requesting verbosity in the optimizers.
+    }
+    \item{max.cols}{7, maximum number of columns to be printed.  This
+      also applies to vectors that are printed horizontally.
+    }
     \item{printLevel}{0, the level of verbosity.  Larger values print
       more information.  Result depends on the optimizer.  Form
       \code{print.level} is also accepted by the methods for

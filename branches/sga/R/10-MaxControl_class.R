@@ -126,10 +126,18 @@ checkMaxControl <- function(object) {
       errors <- c(errors, paste("SGA momentum parameter must be in [0,1], not",
                                 slot(object, "SGA_momentum")))
    }
-   ##
+   ## general
    if(slot(object, "iterlim") < 0) {
       errors <- c(errors, paste("'iterlim' must be non-negative, not",
                                 slot(object, "iterlim")))
+   }
+   if(slot(object, "max.rows") < 0) {
+      errors <- c(errors, paste("'max.rows' must be non-negative, not",
+                                slot(object, "max.rows")))
+   }
+   if(slot(object, "max.cols") < 0) {
+      errors <- c(errors, paste("'max.cols' must be non-negative, not",
+                                slot(object, "max.cols")))
    }
    if(length(errors) > 0)
       return(errors)
@@ -166,7 +174,9 @@ setClass("MaxControl",
          SGA_clip="numericOrNULL",  # NULL: do not clip
          SGA_momentum = "numeric",
          ##
-             iterlim="integer",
+         iterlim="integer",
+         max.rows="integer",
+         max.cols="integer",
          printLevel="integer",
          storeValues="logical", storeParameters="logical"
          ),
@@ -200,6 +210,8 @@ setClass("MaxControl",
          SGA_momentum = 0,
          ##
          iterlim=150L,
+         max.rows=getOption("max.rows", 20L),
+         max.cols=getOption("max.cols", 7L),
          printLevel=0L,
          storeValues=FALSE, storeParameters=FALSE),
          ##

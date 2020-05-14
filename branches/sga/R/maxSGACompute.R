@@ -52,6 +52,8 @@ maxSGACompute <- function(fn, grad, hess,
    storeValues <- slot(control, "storeValues")
    learningRate <- slot(control, "SGA_learningRate")
    clip <- slot(control, "SGA_clip")
+   max.rows <- slot(control, "max.rows")
+   max.cols <- slot(control, "max.cols")
    momentum <- slot(control, "SGA_momentum")
    printLevel <- slot(control, "printLevel")
    v <- 0  # velocity that retains the momentum
@@ -116,7 +118,7 @@ maxSGACompute <- function(fn, grad, hess,
       a <- cbind(start1, G1, as.integer(!fixed))
       dimnames(a) <- list(names(start1), c("parameter", "initial gradient",
                                            "free"))
-      print(a)
+      printRowColLimits(a, max.rows, max.cols)
    }
    ## ---------------- Main interation loop ------------------------
    iter <- 0
@@ -166,7 +168,7 @@ maxSGACompute <- function(fn, grad, hess,
             a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
             dimnames(a) <- list(names(start0), c("delta-v", "param",
                                                  "gradient", "active"))
-            print(a)
+            printRowColLimits(a, max.rows, max.cols)
          }
          if(any(is.na(G1[!fixed])) || any(is.infinite(G1[!fixed]))) {
             cat("Iteration", iter, "\n")
@@ -201,7 +203,7 @@ maxSGACompute <- function(fn, grad, hess,
          a <- cbind(learningRate*G0, start1, G1, as.integer(!fixed))
          dimnames(a) <- list(names(start0), c("amount", "param",
                                              "gradient", "active"))
-         print(a)
+         printRowColLimits(a, max.rows, max.cols)
       }
       if( sqrt( crossprod( G1[!fixed] ) ) < slot(control, "gradtol") ) {
          code <-1; break
@@ -211,7 +213,7 @@ maxSGACompute <- function(fn, grad, hess,
       cat( "--------------\n")
       cat( maximMessage( code), "\n")
       cat( iter, " iterations\n")
-      cat( "estimate:", start1, "\n")
+      cat( "estimate:", head...(start1, max.cols), "\n")
       if(is.null(f1)) {
          f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
       }

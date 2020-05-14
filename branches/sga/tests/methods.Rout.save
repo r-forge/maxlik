@@ -86,6 +86,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 1 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -114,6 +116,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 1 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -142,6 +146,8 @@ SGA_batchSize =
 SGA_clip = 
 SGA_momentum = 0 
 iterlim = 1 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
@@ -202,7 +208,7 @@ Estimates:
 [2,]     0.95  4.8e-10
 [3,]     1.00  1.7e-09
 [4,]     1.05 -6.9e-10
-reached getOption("max.rows") -- omitted 11 rows
+ reached getOption("max.rows") -- omitted 11 rows
 Hessian:
       [,1]  [,2]
 [1,] -54.0  12.7
@@ -215,4 +221,4 @@ Hessian:
 > 
 > proc.time()
    user  system elapsed 
-  1.128   0.036   1.157 
+   0.99    0.52    0.68 
