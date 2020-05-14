@@ -17,6 +17,8 @@ Type 'q()' to quit R.
 
 > 
 > ### Test battery for various optimization parameters for different optimizers.
+> ###
+> ### ...
 > ### 
 > library(maxLik)
 Loading required package: miscTools
@@ -675,7 +677,6 @@ storeParameters = FALSE
 > condiNumber(hessian(m), printLevel=0)  # no output
 > condiNumber(hessian(m), printLevel=0, print.level=1) # no output
 > 
-> 
 > proc.time()
    user  system elapsed 
-  1.203   0.816   0.725 
+  0.981   0.039   1.014 
