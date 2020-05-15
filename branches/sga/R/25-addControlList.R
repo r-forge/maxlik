@@ -75,6 +75,9 @@ addControlList <- function(x, y, check=TRUE) {
    setSlot("SGA_batchSize", convert=as.integer)
    setSlot("SGA_clip", convert=as.numeric)
    setSlot("SGA_momentum")
+   ## SG general
+   setSlot("SG_patience", convert=as.integer)
+   setSlot("SG_patienceStep", convert=as.integer)
    ##
    setSlot("iterlim", convert=as.integer)
    setSlot("max.rows", convert=as.integer)

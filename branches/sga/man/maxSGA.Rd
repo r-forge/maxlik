@@ -117,6 +117,14 @@ nObs,
       \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
 	in interval \eqn{[0,1]}{[0,1]}.  See details.
       }
+      \item{SG_patience}{\code{NULL}, or integer.  Stopping condition: if
+	the objective function is worse than its largest value so far this
+	many times, the algorithm stops.
+      }
+      \item{SG_patienceStep}{1L, integer.  After how many epochs to check
+	the patience value.  1 means to check (and hence to compute the
+	objective function) at each epoch.
+      }
       \item{iterlim}{stopping condition.  Stop if more than \code{iterlim}
 	iterations, return \code{code=4}.
 	Epoch is a set of iterations that cycles through all

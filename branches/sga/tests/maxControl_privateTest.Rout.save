@@ -39,6 +39,7 @@ https://r-forge.r-project.org/projects/maxlik/
 +            nm_alpha=2, nm_beta=1, nm_gamma=4,
 +            sann_temp=5, sann_tmax=100, sann_randomSeed=1,
 +            SGA_learningRate=0.5, SGA_batchSize=10, SGA_clip=1000, SGA_momentum=0.9,
++            SG_patience=7, SG_patienceStep=10,
 +            iterlim=10, printLevel=3)
 A 'MaxControl' object with slots:
 tol = 1e-04 
@@ -62,6 +63,8 @@ SGA_learningRate = 0.5
 SGA_batchSize = 10 
 SGA_clip = 1000 
 SGA_momentum = 0.9 
+SG_patience = 7 
+SG_patienceStep = 10 
 iterlim = 10 
 max.rows = 20 
 max.cols = 7 
@@ -92,6 +95,8 @@ SGA_learningRate = 0.1
 SGA_batchSize =  
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 150 
 max.rows = 20 
 max.cols = 7 
@@ -128,6 +133,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip =  
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 150 
 max.rows = 20 
 max.cols = 7 
@@ -143,4 +150,4 @@ Error in validObject(x) :
 > 
 > proc.time()
    user  system elapsed 
-  0.408   0.230   0.313 
+  0.387   0.182   0.300 

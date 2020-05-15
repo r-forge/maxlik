@@ -181,4 +181,4 @@ Error in maxSGACompute(fn = function (theta, fnOrig, gradOrig, hessOrig,  :
 > 
 > proc.time()
    user  system elapsed 
-  2.148   0.505   1.823 
+  2.117   0.558   1.811 

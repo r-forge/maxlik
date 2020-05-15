@@ -55,6 +55,8 @@ maxSGACompute <- function(fn, grad, hess,
    max.rows <- slot(control, "max.rows")
    max.cols <- slot(control, "max.cols")
    momentum <- slot(control, "SGA_momentum")
+   patience <- slot(control, "SG_patience")
+   patienceStep <- slot(control, "SG_patienceStep")
    printLevel <- slot(control, "printLevel")
    v <- 0  # velocity that retains the momentum
    ## ---------- How many batches
@@ -82,6 +84,14 @@ maxSGACompute <- function(fn, grad, hess,
          warning( "the Hessian is provided both as attribute 'hessian' and",
                  " as argument 'hess': ignoring argument 'hess'" )
       }
+   }
+   if(!is.null(patience)) {
+      if(is.null(f1)) {
+         f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index, ...)
+         fBest <- f1  # remember the previous best value
+      }
+      patienceCount <- 0
+                           # how many times have we hit a worse outcome
    }
    G1 <- grad(start, fixed = fixed, sumObs = TRUE, index=index, ...)
                            # have to compute fn as we cannot get gradient otherwise
@@ -205,10 +215,28 @@ maxSGACompute <- function(fn, grad, hess,
                                              "gradient", "active"))
          printRowColLimits(a, max.rows, max.cols)
       }
+      ## stopping criteria
       if( sqrt( crossprod( G1[!fixed] ) ) < slot(control, "gradtol") ) {
          code <-1; break
       }
-   }  # main iteration loop
+      if(!is.null(patience) && (iter %% patienceStep == 0)) {
+         if(is.null(f1)) {
+            f1 <- fn(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
+         }
+         if(f1 < fBest) {
+            patienceCount <- patienceCount + 1
+         } else {
+            patienceCount <- 0
+            fBest <- f1
+            paramBest <- start1
+         }
+         if(patienceCount > patience) {
+            code <- 10
+            start1 <- paramBest
+            break
+         }
+      }
+   }  # main iteration loop over epochs
    if(printLevel > 0) {
       cat( "--------------\n")
       cat( maximMessage( code), "\n")

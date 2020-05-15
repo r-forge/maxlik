@@ -15,6 +15,7 @@ maxControl(tol=1e-4, lambdatol=1e-5, qrtol=1e-6, qac="marquardt",
            nm_alpha=2, nm_beta=1, nm_gamma=4,
            sann_temp=5, sann_tmax=100, sann_randomSeed=1,
            SGA_learningRate=0.5, SGA_batchSize=10, SGA_clip=1000, SGA_momentum=0.9,
+           SG_patience=7, SG_patienceStep=10,
            iterlim=10, printLevel=3)
 
 maxControl(SGA_batchSize=NULL)

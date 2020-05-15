@@ -23,15 +23,8 @@ checkMaxControl <- function(object) {
                               length(slot(object, s)), sep=""))
          }
       }
-      else if(s == "SGA_batchSize") {
-         if(length(slot(object, s)) > 1) {
-            errors <- c(errors,
-                        paste("'", s, "' must be either 'NULL' or ",
-                              "of length 1, not of length ",
-                              length(slot(object, s)), sep=""))
-         }
-      }
-      else if(s == "SGA_clip") {
+      else if(s %in% c("SGA_batchSize", "SGA_clip", "SG_patience")) {
+                           # integerOrNULL
          if(length(slot(object, s)) > 1) {
             errors <- c(errors,
                         paste("'", s, "' must be either 'NULL' or ",
@@ -40,6 +33,7 @@ checkMaxControl <- function(object) {
          }
       }
       else if(length(slot(object, s)) != 1) {
+                           # length 1
          errors <- c(errors,
                      paste("'", s, "' must be of length 1, not ",
                            length(slot(object, s)), sep=""))
@@ -126,6 +120,15 @@ checkMaxControl <- function(object) {
       errors <- c(errors, paste("SGA momentum parameter must be in [0,1], not",
                                 slot(object, "SGA_momentum")))
    }
+   ## SG general
+   if(length(slot(object, "SG_patience")) > 0 && slot(object, "SG_patience") <= 0L) {
+      errors <- c(errors, paste("SG patience must be positive (or NULL), not",
+                                slot(object, "SG_patience")))
+   }
+   if(slot(object, "SG_patienceStep") <= 0L) {
+      errors <- c(errors, paste("SG patience step must be positive, not",
+                                slot(object, "SG_patienceStep")))
+   }
    ## general
    if(slot(object, "iterlim") < 0) {
       errors <- c(errors, paste("'iterlim' must be non-negative, not",
@@ -173,6 +176,9 @@ setClass("MaxControl",
          SGA_batchSize = "integerOrNULL",  # NULL: full batch
          SGA_clip="numericOrNULL",  # NULL: do not clip
          SGA_momentum = "numeric",
+         ## SG general
+         SG_patience = "integerOrNULL",  # NULL: don't care about patience
+         SG_patienceStep = "integer",  # check patience at every epoch
          ##
          iterlim="integer",
          max.rows="integer",
@@ -209,9 +215,12 @@ setClass("MaxControl",
          SGA_clip=NULL,
          SGA_momentum = 0,
          ##
+         SG_patience = NULL,
+         SG_patienceStep = 1L,
+         ##
          iterlim=150L,
-         max.rows=getOption("max.rows", 20L),
-         max.cols=getOption("max.cols", 7L),
+         max.rows=as.integer(getOption("max.rows", 20L)),
+         max.cols=as.integer(getOption("max.cols", 7L)),
          printLevel=0L,
          storeValues=FALSE, storeParameters=FALSE),
          ##

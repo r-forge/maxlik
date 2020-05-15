@@ -599,6 +599,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -639,6 +641,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 100 
 max.rows = 20 
 max.cols = 7 
@@ -671,6 +675,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 100 
 max.rows = 20 
 max.cols = 7 
@@ -685,4 +691,4 @@ storeParameters = FALSE
 > 
 > proc.time()
    user  system elapsed 
-  1.271   0.835   0.735 
+  1.233   0.842   0.740 

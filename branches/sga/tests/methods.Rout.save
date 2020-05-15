@@ -85,6 +85,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -115,6 +117,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -145,6 +149,8 @@ SGA_learningRate = 0.1
 SGA_batchSize = 
 SGA_clip = 
 SGA_momentum = 0 
+SG_patience = 
+SG_patienceStep = 1 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -221,4 +227,4 @@ Hessian:
 > 
 > proc.time()
    user  system elapsed 
-   0.99    0.52    0.68 
+   1.07    0.63    0.78 
