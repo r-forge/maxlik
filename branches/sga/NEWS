@@ -4,9 +4,9 @@ Please note that only the most significant changes are reported here.
 A full ChangeLog is available in the log messages of the SVN repository
 on R-Forge.
 
-      CHANGES IN VERSION 1.4-0 (2020-04-24)
+      CHANGES IN VERSION 1.4-0 (2020-05-15)
 
-* includes stochastig gradient ascent
+* includes stochastig gradient ascent and Adam optimizer
 
       CHANGES IN VERSION 1.3-10 (2020-05-13)
 

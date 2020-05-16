@@ -71,11 +71,14 @@ addControlList <- function(x, y, check=TRUE) {
    setSlot(c("sann_randomSeed", "SANN_randomSeed", "random.seed"),
            convert=as.integer)
    ## SGA
-   setSlot("SGA_learningRate")
-   setSlot("SGA_batchSize", convert=as.integer)
-   setSlot("SGA_clip", convert=as.numeric)
    setSlot("SGA_momentum")
+   ## Adam
+   setSlot("Adam_momentum1", convert=as.numeric)
+   setSlot("Adam_momentum2", convert=as.numeric)
    ## SG general
+   setSlot("SG_learningRate")
+   setSlot("SG_batchSize", convert=as.integer)
+   setSlot("SG_clip", convert=as.numeric)
    setSlot("SG_patience", convert=as.integer)
    setSlot("SG_patienceStep", convert=as.integer)
    ##

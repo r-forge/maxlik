@@ -1,11 +1,16 @@
 \name{maxSGA}
 \alias{maxSGA}
+\alias{maxAdam}
 \title{Stochastic Gradient Ascent}
 \description{
   Stochastic Gradient Ascent and related methods
 }
 \usage{
 maxSGA(fn = NULL, grad = NULL, hess = NULL, start,
+nObs,
+      constraints = NULL, finalHessian = FALSE, 
+      fixed = NULL, activePar = NULL, control=NULL, ... )
+maxAdam(fn = NULL, grad = NULL, hess = NULL, start,
 nObs,
       constraints = NULL, finalHessian = FALSE, 
       fixed = NULL, activePar = NULL, control=NULL, ... )
@@ -103,26 +108,32 @@ nObs,
 	gradient, and if the objective is to optimize the objective on
 	validation data.
       }
-      \item{SGA_learningRate}{step size the SGA algorithm takes in the
+      SGA-specific parameters:
+      \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
+	in interval \eqn{[0,1]}{[0,1]}.  See details.
+      }
+      Adam-specific parameters
+      \item{Adam_momentum1}{0.9, numeric in \eqn{(0,1)}{(0,1)}, the first moment momentum}
+      \item{Adam_momentum2}{0.999, numeric in \eqn{(0,1)}{(0,1)}, the second moment momentum}
+      General stochastic gradient parameters:
+      \item{SG_learningRate}{step size the SGA algorithm takes in the
 	gradient direction.  If 1, it steps by the gradient value.  A
 	good value is typically 0.01--0.3}
-      \item{SGA_batchSize}{SGA batch size, a positive
+      \item{SG_batchSize}{SGA batch size, a positive
 	integer.  If \code{NULL}, full batch is taken.}
-      \item{SGA_clip}{\code{NULL}, gradient clipping threshold.  This is
+      \item{SG_clip}{\code{NULL}, gradient clipping threshold.  This is
 	the max allowed squared Euclidean norm of the gradient.  If the
 	actual norm of the gradient exceeds (square root of) this
 	threshold, the gradient will be scaled back accordingly while
 	preserving its direction.  \code{NULL} means no clipping.
       }
-      \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
-	in interval \eqn{[0,1]}{[0,1]}.  See details.
-      }
-      \item{SG_patience}{\code{NULL}, or integer.  Stopping condition: if
-	the objective function is worse than its largest value so far this
-	many times, the algorithm stops.
+      \item{SG_patience}{\code{NULL}, or integer.  Stopping condition:
+	the algorithm counts how many times
+	the objective function has beeb worse than its best value so
+	far, and if this exceeds \code{SG_patience}, the algorithm stops.
       }
       \item{SG_patienceStep}{1L, integer.  After how many epochs to check
-	the patience value.  1 means to check (and hence to compute the
+	the patience value.  \code{1} means to check (and hence to compute the
 	objective function) at each epoch.
       }
       \item{iterlim}{stopping condition.  Stop if more than \code{iterlim}
@@ -173,7 +184,7 @@ nObs,
     than when using all observation in certain circumstances (see
     \cite{Bottou et al, 2018}).
 
-    If \code{SGA_momentum} is positive, the algorithm updates the parameters
+    If \code{SGA_momentum} is positive, the SGA algorithm updates the parameters
     \eqn{\theta}{theta} in two steps.  First, the momentum is used to update
     the \dQuote{velocity} \eqn{v}{v} as
     \eqn{v \leftarrow \mathrm{momentum}\cdot v + \mathrm{learning
@@ -182,13 +193,19 @@ nObs,
     \eqn{\theta}{theta} is updates as
     \eqn{\theta \leftarrow \theta + v}{theta <- theta + v}.  Initial
     velocity is set to 0.
+
+    The Adam algorithm is more complex and uses first and second moments
+    of stochastic gradients to automatically adjust the learning rate.
+    See \cite{Goodfellow et al, 2016, page 301}.
     
     The function \code{fn} is not directly used for optimization, only
     for printing or eventually as a stopping condition.  In this sense
     it is up to the user to decide what the function
     returns, if anything.  For instance, it may be useful for \code{fn} to compute the
-    objective function on either full training data, or validation data,
-    and just ignore the \code{index} argument.  However, one may also
+    objective function on either full training data, or on validation data,
+    and just ignore the \code{index} argument.  The latter is useful if
+    using \emph{patience}-based stopping.
+    However, one may also
     choose to select the observations determined by the index to
     compute the objective function on the current data batch.
 
@@ -208,32 +225,12 @@ nObs,
       or \code{grad} is not specified and \code{fn} returns a vector).}
   \item{hessian}{Hessian at the maximum (the last calculated value if
     not converged).}
-  \item{returnCode}{return code:
-    \itemize{
-    \item{1}{ gradient close to zero (normal convergence).}
-    \item{2}{ successive function values within tolerance limit (normal
-      convergence).}
-    \item{3}{ last step could not find higher value (probably not
-      converged).  This is related to line search step getting too
-      small, usually because hitting the boundary of the parameter
-      space.  It may also be related to attempts to move to a wrong
-      direction because of numerical errors.  In some cases it can be
-      helped by changing \code{steptol}.}
-    \item{4}{ iteration limit exceeded.}
-    \item{5}{ Infinite value.}
-    \item{6}{ Infinite gradient.}
-    \item{7}{ Infinite Hessian.}
-    \item{8}{ Successive function values withing relative tolerance
-      limit (normal convergence).}
-    \item{9}{ (BFGS) Hessian approximation cannot be improved because of
-      gradient did not change.  May be related to numerical
-      approximation problems or wrong analytic gradient.}
-    \item{100}{ Initial value out of range.}
-    }
-  }
   \item{\code{\link{storedValues}}}{return values stored at each epoch}
   \item{\code{\link{storedParameters}}}{return parameters stored at each epoch}
-  \item{returnMessage}{ a short message, describing the return code.}
+  \item{\code{\link{returnCode}}}{
+    a numeric code that describes the convergence or error.
+  }
+  \item{\code{\link{returnMessage}}}{a short message, describing the return code.}
   \item{activePar}{logical vector, which parameters are optimized over.
     Contains only \code{TRUE}-s if no parameters are fixed.}
   \item{nIter}{number of iterations.}
@@ -263,7 +260,11 @@ nObs,
 \references{
     Bottou, L.; Curtis, F. & Nocedal, J.:
     Optimization Methods for
-    Large-Scale Machine Learning \emph{SIAM Review}, 2018, \bold{60}, 223--311.
+    Large-Scale Machine Learning \emph{SIAM Review}, 2018, \bold{60},
+    223--311.
+
+    Goodfellow, I.; Bengio, Y.; Courville, A. (2016): Deep Learning,
+    \emph{MIT Press}
 
     Henningsen, A. and Toomet, O. (2011): maxLik: A package for maximum likelihood
     estimation in R \emph{Computational Statistics} \bold{26}, 443--458
@@ -294,7 +295,7 @@ loglik <- function(theta, index) sum(log(theta) - theta*t[index])
 gradlik <- function(theta, index) sum(1/theta - t[index])
 ## Estimate with finite-difference gradient and Hessian
 a <- maxSGA(loglik, gradlik, start=1, control=list(iterlim=1000,
-            SGA_batchSize=10), nObs=100)
+            SG_batchSize=10), nObs=100)
             # note that loglik is not really needed, and is not used
             # here, unless more print verbosity is asked
 summary(a)
@@ -333,14 +334,14 @@ print(solve(crossprod(XTrain)) \%*\% crossprod(XTrain, yTrain))
 cat("  No momentum:\n")
 a <- maxSGA(loglik, gradlik, start=c(10,10),
            control=list(printLevel=1, iterlim=50,
-                        SGA_batchSize=30, SGA_learningRate=0.0001, SGA_momentum=0
+                        SG_batchSize=30, SG_learningRate=0.0001, SGA_momentum=0
                         ), nObs=length(yTrain))
 print(summary(a))  # the first component is off, the second close to the true value
 ## do with momentum 0.99
 cat("  Momentum 0.99:\n")
 a <- maxSGA(loglik, gradlik, start=c(10,10),
            control=list(printLevel=1, iterlim=50,
-                        SGA_batchSize=30, SGA_learningRate=0.0001, SGA_momentum=0.99
+                        SG_batchSize=30, SG_learningRate=0.0001, SGA_momentum=0.99
                         # no momentum
                         ), nObs=length(yTrain))
 print(summary(a))  # close to true value

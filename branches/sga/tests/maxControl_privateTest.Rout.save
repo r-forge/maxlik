@@ -38,7 +38,8 @@ https://r-forge.r-project.org/projects/maxlik/
 +            marquardt_lambda0=0.1, marquardt_lambdaStep=3, marquardt_maxLambda=1e10,
 +            nm_alpha=2, nm_beta=1, nm_gamma=4,
 +            sann_temp=5, sann_tmax=100, sann_randomSeed=1,
-+            SGA_learningRate=0.5, SGA_batchSize=10, SGA_clip=1000, SGA_momentum=0.9,
++            SGA_momentum=0.9, Adam_momentum1=0.5, Adam_momentum2=0.55,
++            SG_learningRate=0.5, SG_batchSize=10, SG_clip=1000, 
 +            SG_patience=7, SG_patienceStep=10,
 +            iterlim=10, printLevel=3)
 A 'MaxControl' object with slots:
@@ -59,12 +60,14 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 5 
 sann_tmax = 100 
 sann_randomSeed = 1 
-SGA_learningRate = 0.5 
-SGA_batchSize = 10 
-SGA_clip = 1000 
 SGA_momentum = 0.9 
+Adam_momentum1 = 0.5 
+Adam_momentum2 = 0.55 
 SG_patience = 7 
 SG_patienceStep = 10 
+SG_learningRate = 0.5 
+SG_batchSize = 10 
+SG_clip = 1000 
 iterlim = 10 
 max.rows = 20 
 max.cols = 7 
@@ -72,7 +75,7 @@ printLevel = 3
 storeValues = FALSE 
 storeParameters = FALSE 
 > 
-> maxControl(SGA_batchSize=NULL)
+> maxControl(SG_batchSize=NULL)
 A 'MaxControl' object with slots:
 tol = 1e-08 
 reltol = 1.490116e-08 
@@ -91,26 +94,28 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
-SGA_learningRate = 0.1 
-SGA_batchSize =  
-SGA_clip = 
 SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
 SG_patience = 
 SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize =  
+SG_clip = 
 iterlim = 150 
 max.rows = 20 
 max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
-> try(maxControl(SGA_batchSize=-1))
+> try(maxControl(SG_batchSize=-1))
 Error in validObject(x) : 
   invalid class "MaxControl" object: SGA batch size must be positive, not -1
-> try(maxControl(SGA_batchSize=2:3))
+> try(maxControl(SG_batchSize=2:3))
 Error in validObject(x) : 
-  invalid class "MaxControl" object: 'SGA_batchSize' must be either 'NULL' or of length 1, not of length 2
+  invalid class "MaxControl" object: 'SG_batchSize' must be either 'NULL' or of length 1, not of length 2
 > 
-> maxControl(SGA_clip=NULL)
+> maxControl(SG_clip=NULL)
 A 'MaxControl' object with slots:
 tol = 1e-08 
 reltol = 1.490116e-08 
@@ -129,25 +134,27 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
-SGA_learningRate = 0.1 
-SGA_batchSize = 
-SGA_clip =  
 SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
 SG_patience = 
 SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip =  
 iterlim = 150 
 max.rows = 20 
 max.cols = 7 
 printLevel = 0 
 storeValues = FALSE 
 storeParameters = FALSE 
-> try(maxControl(SGA_clip=-1))
+> try(maxControl(SG_clip=-1))
 Error in validObject(x) : 
   invalid class "MaxControl" object: SGA gradient clip norm threshold must be positive, not -1
-> try(maxControl(SGA_clip=2:3))
+> try(maxControl(SG_clip=2:3))
 Error in validObject(x) : 
-  invalid class "MaxControl" object: 'SGA_clip' must be either 'NULL' or of length 1, not of length 2
+  invalid class "MaxControl" object: 'SG_clip' must be either 'NULL' or of length 1, not of length 2
 > 
 > proc.time()
    user  system elapsed 
-  0.387   0.182   0.300 
+  0.396   0.201   0.272 

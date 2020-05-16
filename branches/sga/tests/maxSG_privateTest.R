@@ -54,7 +54,7 @@ tol <- 1e-1  # coefficient tolerance
 ## ---------- 1. working example
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
-                         SGA_batchSize=100, SGA_learningRate=0.1,
+                         SG_batchSize=100, SG_learningRate=0.1,
                          storeValues=TRUE),
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
@@ -63,19 +63,19 @@ expect_equal(coef(res), b0, tolerance=tol)
 ## ---------- store parameters
 res <- maxSGA(loglik, gradlik, start=start,
               control=list(printLevel=0, iterlim=20,
-                           SGA_batchSize=100, SGA_learningRate=0.1,
+                           SG_batchSize=100, SG_learningRate=0.1,
                            storeParameters=TRUE),
               nObs=length(yTrain))
 expect_equal(dim(storedParameters(res)), c(1 + nIter(res), 2))
 
 ## ---------- no function, only gradient
 res <- maxSGA(grad=gradlik, start=start,
-            control=list(printLevel=0, iterlim=10, SGA_batchSize=100),
+            control=list(printLevel=0, iterlim=10, SG_batchSize=100),
             nObs=length(yTrain))
 
 ## ---------- neither function nor gradient
 try(res <- maxSGA(start=start,
-                  control=list(printLevel=0, iterlim=10, SGA_batchSize=100),
+                  control=list(printLevel=0, iterlim=10, SG_batchSize=100),
                   nObs=length(yTrain))
     )
 
@@ -85,32 +85,32 @@ t <- rexp(N1, 2)
 loglik1 <- function(theta, index) sum(log(theta) - theta*t[index])
 gradlik1 <- function(theta, index) sum(1/theta - t[index])
 res <- maxSGA(loglik1, gradlik1, start=1,
-              control=list(iterlim=300, SGA_batchSize=20), nObs=length(t))
+              control=list(iterlim=300, SG_batchSize=20), nObs=length(t))
 expect_equal(coef(res), 1/mean(t), tolerance=0.2)
 expect_null(hessian(res))
 
 ## ---------- 2. SGA with momentum
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
-                         SGA_batchSize=100, SGA_learningRate=0.1, SGA_momentum=0.9),
+                         SG_batchSize=100, SG_learningRate=0.1, SGA_momentum=0.9),
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
 
 ## ---------- 3. full batch
 res <- maxSGA(loglik, gradlik, start=start,
             control=list(printLevel=0, iterlim=200,
-                         SGA_batchSize=NULL, SGA_learningRate=0.1),
+                         SG_batchSize=NULL, SG_learningRate=0.1),
             nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
 
 ## ---------- 4. no gradient
 res <- maxSGA(loglik, start=start,
-              control=list(iterlim=1000, SGA_learningRate=0.02), nObs=length(yTrain))
+              control=list(iterlim=1000, SG_learningRate=0.02), nObs=length(yTrain))
 expect_equal(coef(res), b0, tolerance=tol)
 
 ## ---------- return Hessian, gradient provided
 res <- maxSGA(loglik, gradlik, start=start,
-              control=list(iterlim=1000, SGA_learningRate=0.02),
+              control=list(iterlim=1000, SG_learningRate=0.02),
               nObs=length(yTrain),
               finalHessian=TRUE)
 expect_equal(coef(res), b0, tolerance=tol)
@@ -118,7 +118,7 @@ expect_equal(dim(hessian(res)), c(2,2))
 
 ## ---------- return Hessian, no gradient
 res <- maxSGA(loglik, start=start,
-              control=list(iterlim=1000, SGA_learningRate=0.02),
+              control=list(iterlim=1000, SG_learningRate=0.02),
               nObs=length(yTrain),
               finalHessian=TRUE)
 expect_equal(coef(res), b0, tolerance=tol)
@@ -134,13 +134,13 @@ start <- c(const=10, x=10)
 
 ## ---------- no gradient clipping: should fail
 try(res <- maxSGA(loglik, gradlik, start=start,
-                  control=list(iterlim=100, SGA_learningRate=0.5),
+                  control=list(iterlim=100, SG_learningRate=0.5),
                   nObs=length(yTrain))
     )
 
 ## ---------- gradient clipping: should not fail
 res <- maxSGA(loglik, gradlik, start=start,
-              control=list(iterlim=100, SGA_learningRate=0.5,
-                           SGA_clip=1e6),
+              control=list(iterlim=100, SG_learningRate=0.5,
+                           SG_clip=1e6),
               nObs=length(yTrain)
               )

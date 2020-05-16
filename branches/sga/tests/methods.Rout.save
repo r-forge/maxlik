@@ -81,12 +81,14 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
-SGA_learningRate = 0.1 
-SGA_batchSize = 
-SGA_clip = 
 SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
 SG_patience = 
 SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip = 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -113,12 +115,14 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
-SGA_learningRate = 0.1 
-SGA_batchSize = 
-SGA_clip = 
 SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
 SG_patience = 
 SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip = 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -145,12 +149,14 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
-SGA_learningRate = 0.1 
-SGA_batchSize = 
-SGA_clip = 
 SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
 SG_patience = 
 SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip = 
 iterlim = 1 
 max.rows = 20 
 max.cols = 7 
@@ -227,4 +233,4 @@ Hessian:
 > 
 > proc.time()
    user  system elapsed 
-   1.07    0.63    0.78 
+   0.97    0.57    0.67 

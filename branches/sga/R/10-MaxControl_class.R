@@ -23,7 +23,7 @@ checkMaxControl <- function(object) {
                               length(slot(object, s)), sep=""))
          }
       }
-      else if(s %in% c("SGA_batchSize", "SGA_clip", "SG_patience")) {
+      else if(s %in% c("SG_batchSize", "SG_clip", "SG_patience")) {
                            # integerOrNULL
          if(length(slot(object, s)) > 1) {
             errors <- c(errors,
@@ -104,23 +104,32 @@ checkMaxControl <- function(object) {
                                 "must be positive, not", slot(object, "sann_tmax")))
    }
    ## SGA
-   if(slot(object, "SGA_learningRate") <= 0) {
-      errors <- c(errors, paste("learning rate for SGA must be positive, not",
-                                slot(object, "SGA_learningRate")))
-   }
-   if(length(slot(object, "SGA_batchSize")) > 0 && slot(object, "SGA_batchSize") <= 0L) {
-      errors <- c(errors, paste("SGA batch size must be positive, not",
-                                slot(object, "SGA_batchSize")))
-   }
-   if(length(slot(object, "SGA_clip")) > 0 && slot(object, "SGA_clip") <= 0L) {
-      errors <- c(errors, paste("SGA gradient clip norm threshold must be positive, not",
-                                slot(object, "SGA_clip")))
-   }
    if(slot(object, "SGA_momentum") < 0 || slot(object, "SGA_momentum") > 1) {
       errors <- c(errors, paste("SGA momentum parameter must be in [0,1], not",
                                 slot(object, "SGA_momentum")))
    }
+   ## Adam
+   if(slot(object, "Adam_momentum1") < 0 || slot(object, "Adam_momentum1") > 1) {
+      errors <- c(errors, paste("Adam momentum1 parameter must be in [0,1], not",
+                                slot(object, "Adam_momentum1")))
+   }
+   if(slot(object, "Adam_momentum2") < 0 || slot(object, "Adam_momentum2") > 1) {
+      errors <- c(errors, paste("Adam momentum2 parameter must be in [0,1], not",
+                                slot(object, "Adam_momentum2")))
+   }
    ## SG general
+   if(slot(object, "SG_learningRate") <= 0) {
+      errors <- c(errors, paste("learning rate for SGA must be positive, not",
+                                slot(object, "SG_learningRate")))
+   }
+   if(length(slot(object, "SG_batchSize")) > 0 && slot(object, "SG_batchSize") <= 0L) {
+      errors <- c(errors, paste("SGA batch size must be positive, not",
+                                slot(object, "SG_batchSize")))
+   }
+   if(length(slot(object, "SG_clip")) > 0 && slot(object, "SG_clip") <= 0L) {
+      errors <- c(errors, paste("SGA gradient clip norm threshold must be positive, not",
+                                slot(object, "SG_clip")))
+   }
    if(length(slot(object, "SG_patience")) > 0 && slot(object, "SG_patience") <= 0L) {
       errors <- c(errors, paste("SG patience must be positive (or NULL), not",
                                 slot(object, "SG_patience")))
@@ -172,13 +181,16 @@ setClass("MaxControl",
          sann_tmax="integer",
          sann_randomSeed="integer",
          ## SGA
-         SGA_learningRate="numeric",
-         SGA_batchSize = "integerOrNULL",  # NULL: full batch
-         SGA_clip="numericOrNULL",  # NULL: do not clip
          SGA_momentum = "numeric",
+         ## Adam
+         Adam_momentum1 = "numeric",
+         Adam_momentum2 = "numeric",
          ## SG general
          SG_patience = "integerOrNULL",  # NULL: don't care about patience
          SG_patienceStep = "integer",  # check patience at every epoch
+         SG_learningRate="numeric",
+         SG_batchSize = "integerOrNULL",  # NULL: full batch
+         SG_clip="numericOrNULL",  # NULL: do not clip
          ##
          iterlim="integer",
          max.rows="integer",
@@ -210,11 +222,14 @@ setClass("MaxControl",
          sann_tmax=10L,
          sann_randomSeed=123L,
          ## SGA
-         SGA_learningRate=0.1,
-         SGA_batchSize=NULL,
-         SGA_clip=NULL,
          SGA_momentum = 0,
+         ## Adam
+         Adam_momentum1 = 0.9,
+         Adam_momentum2 = 0.999,
          ##
+         SG_learningRate=0.1,
+         SG_batchSize=NULL,
+         SG_clip=NULL,
          SG_patience = NULL,
          SG_patienceStep = 1L,
          ##

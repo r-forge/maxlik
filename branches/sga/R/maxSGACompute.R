@@ -1,28 +1,21 @@
 maxSGACompute <- function(fn, grad, hess,
-                          start, 
-                           # maximum lambda for Marquardt (1963)
-                          nObs,
-                          finalHessian=FALSE,
-                          bhhhHessian = FALSE,
-                          fixed=NULL,
-                          control=maxControl(),
-                          
-                          ...) {
-   ## Stochastic Gradient Ascent
+                           start, 
+                           nObs,
+                           finalHessian=FALSE,
+                           bhhhHessian = FALSE,
+                           fixed=NULL,
+                           control=maxControl(),
+                           optimizer="SGA",  # type of optimizer: SGA, Adam
+                           ...) {
+   ## Stochastic Gradient Ascent: implements
+   ## * SGA with momentum
+   ## * Adam 
    ## Parameters:
    ## fn          - the function to be maximized.  Returns either scalar or
    ##               vector value with possible attributes 
    ##               constPar and newVal
-   ##               fn must return the value with attributes 'gradient'
-   ##               and 'hessian'
-   ##               fn must have an argument sumObs
    ## start       - initial parameter vector (eventually w/names)
    ## control       MaxControl object:
-   ##     steptol     - minimum step size
-   ##     lambda0       initial Hessian corrector (see Marquardt, 1963, p 438)
-   ##     lambdaStep    how much Hessian corrector lambda is changed between
-   ##                   two lambda trials
-   ##                  (nu in Marquardt (1963, p 438)
    ##     The stopping criteria
    ##     tol         - maximum allowed absolute difference between sequential values
    ##     reltol      - maximum allowed reltive difference (stops if < reltol*(abs(fn) + reltol)
@@ -44,23 +37,32 @@ maxSGACompute <- function(fn, grad, hess,
    ## an object of class 'maxim'
    ##      
    ## -------------------------------------------------
-   maximType <- "Stochastic Gradient Ascent"
+   maximType <- "Stochastic Gradient Ascent/Adam"
    iterlim <- slot(control, "iterlim")
    nParam <- length(start)
    start1 <- start
    storeParameters <- slot(control, "storeParameters")
    storeValues <- slot(control, "storeValues")
-   learningRate <- slot(control, "SGA_learningRate")
-   clip <- slot(control, "SGA_clip")
+   learningRate <- slot(control, "SG_learningRate")
+   clip <- slot(control, "SG_clip")
    max.rows <- slot(control, "max.rows")
    max.cols <- slot(control, "max.cols")
-   momentum <- slot(control, "SGA_momentum")
    patience <- slot(control, "SG_patience")
    patienceStep <- slot(control, "SG_patienceStep")
    printLevel <- slot(control, "printLevel")
-   v <- 0  # velocity that retains the momentum
+   batchSize <- slot(control, "SG_batchSize")
+   if(optimizer == "Adam") {
+      Adam.momentum1 <- slot(control, "Adam_momentum1")
+      Adam.momentum2 <- slot(control, "Adam_momentum2")
+      Adam.delta <- 1e-8  # maybe make it a parameter in the future
+      Adam.s <- 0
+      Adam.r <- 0
+      Adam.time <- 0
+   } else if(optimizer == "SGA") {
+      momentum <- slot(control, "SGA_momentum")
+      v <- 0  # velocity that retains the momentum
+   }
    ## ---------- How many batches
-   batchSize <- slot(control, "SGA_batchSize")
    if(is.null(batchSize)) {
       nBatches <- 1
       index <- seq(from=1, to=nObs, by=nBatches)
@@ -89,6 +91,7 @@ maxSGACompute <- function(fn, grad, hess,
       if(is.null(f1)) {
          f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index, ...)
          fBest <- f1  # remember the previous best value
+         paramBest <- start
       }
       patienceCount <- 0
                            # how many times have we hit a worse outcome
@@ -158,16 +161,32 @@ maxSGACompute <- function(fn, grad, hess,
          if(any(is.na(G0[!fixed]))) {
             stop("NA in gradient")
          }
-         v <- momentum*v + learningRate*G0
-         start1 <- start0 + v
+         if(optimizer == "SGA") {
+            v <- momentum*v + learningRate*G0
+            start1 <- start0 + v
+         } else if(optimizer == "Adam") {
+            Adam.time <- Adam.time + 1
+            Adam.s <- Adam.momentum1*Adam.s + (1 - Adam.momentum1)*G0
+            Adam.r <- Adam.momentum2*Adam.r + (1 - Adam.momentum2)*G0*G0
+            Adam.shat <- Adam.s/(1 - Adam.momentum1^Adam.time)
+            Adam.rhat <- Adam.r/(1 - Adam.momentum2^Adam.time)
+            v <- learningRate*Adam.shat/(sqrt(Adam.rhat) + Adam.delta)
+            start1 <- start0 + v
+         }
          f1 <- NULL
                            # we are at a new location, mark that we haven't computed the f1 values
          ## still iterations to go, hence compute gradient
          G1 <- grad(start1, fixed = fixed, sumObs = TRUE, index=index, ...)
-                           # The call calculates new function,
-                           # and gradient values
+         if(any(is.na(G1[!fixed])) || any(is.infinite(G1[!fixed]))) {
+            cat("Iteration", iter, "\n")
+            cat("Parameter:\n")
+            print(head...(start1))
+            printRowColLimits(G1, max.rows, max.cols)
+            stop("NA/Inf in gradient")
+         }
          if(length(clip) > 0) {
             if((norm2 <- sum(G1*G1)) > clip)
+                           # compute norm w/o cross-product as grad may not be a vector
                G1 <- G1/sqrt(norm2*clip)
          }
          ## print every batch if someone wants...
@@ -179,13 +198,6 @@ maxSGACompute <- function(fn, grad, hess,
             dimnames(a) <- list(names(start0), c("delta-v", "param",
                                                  "gradient", "active"))
             printRowColLimits(a, max.rows, max.cols)
-         }
-         if(any(is.na(G1[!fixed])) || any(is.infinite(G1[!fixed]))) {
-            cat("Iteration", iter, "\n")
-            cat("Parameter:\n")
-            print(start1)
-            print(head(G1, n=30))
-            stop("NA/Inf in gradient")
          }
          if(any(is.infinite(G1))) {
             code <- 6; break;
@@ -232,6 +244,7 @@ maxSGACompute <- function(fn, grad, hess,
          }
          if(patienceCount > patience) {
             code <- 10
+            f1 <- fBest
             start1 <- paramBest
             break
          }
@@ -284,14 +297,14 @@ maxSGACompute <- function(fn, grad, hess,
    attributes( f1 )$hessBoth <- NULL
    ##
    result <- list(
-       maximum = unname( drop( f1 ) ),
-                  estimate=start1,
-                  gradient=drop(G1),
+      maximum = unname( drop( f1 ) ),
+      estimate=start1,
+      gradient=drop(G1),
       hessian=hessian,
-                  code=code,
-       message=maximMessage( code),
+      code=code,
+      message=maximMessage( code),
       fixed=fixed,
-       iterations=iter,
+      iterations=iter,
       type=maximType,
       valueStore = if(storeValues) valueStore else NULL,
       parameterStore = if(storeParameters) parameterStore else NULL

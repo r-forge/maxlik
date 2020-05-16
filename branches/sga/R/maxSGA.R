@@ -82,6 +82,9 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
    if(is.null(fn) & is.null(grad)) {
       stop("maxSGA requires at least 'fn' or 'grad' to be supplied")
    }
+   if(length(start) < 1) {
+      stop("'start' must be of positive length!")
+   }
    ## establish the active parameters.  Internally, we just use 'activePar'
    fixed <- prepareFixed( start = start, activePar = activePar,
       fixed = fixed )
@@ -91,7 +94,8 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
    cl <- list(start=start,
               finalHessian=finalHessian,
               fixed=fixed,
-              control=mControl)
+              control=mControl,
+              optimizer="SGA")
    if(length(dddot) > 0) {
       cl <- c(cl, dddot)
    }
@@ -111,7 +115,7 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
                            # equality constraints: A %*% beta + B = 0
          cl <- c(quote(sumt),
                  fn=fn, grad=grad, hess=hess,
-                 maxRoutine=maxNR,
+                 maxRoutine=maxSGA,
                  constraints=list(constraints),
                  cl)
          result <- eval(as.call(cl))
