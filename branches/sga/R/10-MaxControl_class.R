@@ -39,6 +39,18 @@ checkMaxControl <- function(object) {
                            length(slot(object, s)), sep=""))
       }
    }
+   ## check missings
+   for(s in slotNames(object)) {
+      if(is.vector(slot(object, s)) && any(is.na(slot(object, s)))) {
+                           # is.na only works for vectors
+         errors <- c(errors,
+                     paste0("NA in '", s, "'")
+                     )
+         return(errors)
+                           # return errors here as otherwise NA-s will interfere the
+                           # block of if-s below
+      }
+   }
    ##
    if(slot(object, "tol") < 0) {
       errors <- c(errors, paste("'tol' must be non-negative, not ",

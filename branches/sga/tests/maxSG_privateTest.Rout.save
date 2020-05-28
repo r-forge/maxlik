@@ -28,6 +28,7 @@ Type 'q()' to quit R.
 > ###    SGA, return numeric hessian, gradient provided
 > ###    SGA, return numeric hessian, no gradient provided
 > ###    SGA, printlevel 1, storeValues
+> ###    SGA, NA as iterlim: should give informative error
 > ###
 > ### using highly unequally scaled data
 > ###    SGA without gradient clipping (fails)
@@ -165,6 +166,15 @@ Iteration limit exceeded.
 estimate: 9.25956200428345, 9.23944221293937 
 Function value: -29.1249 
 > 
+> ### ---------- SGA, NA as iterlim ----------
+> ### should give informative error
+> try(res <- maxSGA(loglik, start=start,
++                   control=list(iterlim=NA),
++                   nObs=length(yTrain),
++                   finalHessian=TRUE)
++     )
+Error in validObject(x) : 
+  invalid class "MaxControl" object: NA in 'iterlim'
 > 
 > ### -------------------- create unequally scaled data
 > set.seed(1)
@@ -193,4 +203,4 @@ Error in head(x, max.cols) :
 > 
 > proc.time()
    user  system elapsed 
-  2.015   0.558   1.764 
+  2.085   0.522   1.788 

@@ -11,6 +11,7 @@
 ###    SGA, return numeric hessian, gradient provided
 ###    SGA, return numeric hessian, no gradient provided
 ###    SGA, printlevel 1, storeValues
+###    SGA, NA as iterlim: should give informative error
 ###
 ### using highly unequally scaled data
 ###    SGA without gradient clipping (fails)
@@ -132,6 +133,13 @@ res <- maxSGA(loglik, start=start,
               nObs=length(yTrain),
               finalHessian=TRUE)
 
+### ---------- SGA, NA as iterlim ----------
+### should give informative error
+try(res <- maxSGA(loglik, start=start,
+                  control=list(iterlim=NA),
+                  nObs=length(yTrain),
+                  finalHessian=TRUE)
+    )
 
 ### -------------------- create unequally scaled data
 set.seed(1)
