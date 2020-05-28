@@ -1,6 +1,6 @@
 
-R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
-Copyright (C) 2019 The R Foundation for Statistical Computing
+R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -27,6 +27,7 @@ Type 'q()' to quit R.
 > ### 4. SGA, no gradient supplied
 > ###    SGA, return numeric hessian, gradient provided
 > ###    SGA, return numeric hessian, no gradient provided
+> ###    SGA, printlevel 1, storeValues
 > ###
 > ### using highly unequally scaled data
 > ###    SGA without gradient clipping (fails)
@@ -151,6 +152,20 @@ Error in maxSGA(start = start, control = list(printLevel = 0, iterlim = 10,  :
 > expect_equal(coef(res), b0, tolerance=tol)
 > expect_equal(dim(hessian(res)), c(2,2))
 > 
+> ### ---------- SGA, printlevel 1, storeValues ----------
+> ### it should just work
+> res <- maxSGA(loglik, start=start,
++               control=list(iterlim=2, storeValues=TRUE, printLevel=1),
++               nObs=length(yTrain),
++               finalHessian=TRUE)
+Initial function value: -34.64061 
+--------------
+Iteration limit exceeded. 
+2  iterations
+estimate: 9.25956200428345, 9.23944221293937 
+Function value: -29.1249 
+> 
+> 
 > ### -------------------- create unequally scaled data
 > set.seed(1)
 > N <- 1000
@@ -178,4 +193,4 @@ Error in head(x, max.cols) :
 > 
 > proc.time()
    user  system elapsed 
-  2.050   0.582   1.777 
+  2.015   0.558   1.764 

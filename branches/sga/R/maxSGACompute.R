@@ -90,9 +90,9 @@ maxSGACompute <- function(fn, grad, hess,
    if(!is.null(patience)) {
       if(is.null(f1)) {
          f1 <- fn(start, fixed = fixed, sumObs = TRUE, index=index, ...)
-         fBest <- f1  # remember the previous best value
-         paramBest <- start
       }
+      fBest <- f1  # remember the previous best value
+      paramBest <- start
       patienceCount <- 0
                            # how many times have we hit a worse outcome
    }

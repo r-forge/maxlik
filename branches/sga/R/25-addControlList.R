@@ -22,7 +22,7 @@ addControlList <- function(x, y, check=TRUE) {
       ## openName    vector of accepted name forms
       ## slotName    corresponding actual slot name
       ## convert     how to convert the value
-      ## 
+      ##
       if(!any(openName %in% names(y))) {
          return(NULL)
       }

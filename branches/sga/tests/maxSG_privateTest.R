@@ -10,6 +10,7 @@
 ### 4. SGA, no gradient supplied
 ###    SGA, return numeric hessian, gradient provided
 ###    SGA, return numeric hessian, no gradient provided
+###    SGA, printlevel 1, storeValues
 ###
 ### using highly unequally scaled data
 ###    SGA without gradient clipping (fails)
@@ -123,6 +124,14 @@ res <- maxSGA(loglik, start=start,
               finalHessian=TRUE)
 expect_equal(coef(res), b0, tolerance=tol)
 expect_equal(dim(hessian(res)), c(2,2))
+
+### ---------- SGA, printlevel 1, storeValues ----------
+### it should just work
+res <- maxSGA(loglik, start=start,
+              control=list(iterlim=2, storeValues=TRUE, printLevel=1),
+              nObs=length(yTrain),
+              finalHessian=TRUE)
+
 
 ### -------------------- create unequally scaled data
 set.seed(1)
