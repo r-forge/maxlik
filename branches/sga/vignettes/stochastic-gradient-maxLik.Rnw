@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{natbib}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}
+
+% \VignetteIndexEntry{SGA Example}
+
+\begin{document}
+<<foo,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+foo <- packageDescription("maxLik")
+@
+
+\title{Stochastic Gradient Ascent in maxLik}
+\author{Ott Toomet}
+\maketitle
+
+\section{\texttt{maxLik} and Stochastic Gradient Ascent}
+
+\texttt{maxLik} is a package, primarily intended with Maximum
+Likelihood and related estimations.  Besides of its name, it also
+includes a number of tools geared for a typical Maximum Likelihood workflow.
+
+However, as predictive modeling and complex (deep) models have gained
+popularity in the recend decade, \texttt{maxLik} also includes a few
+popular algorithms for stochastic gradient ascent, the mirror image
+for the more widely known stochastic gradient descent.
+
+
+\section{Stochastic Gradient Ascent}
+\label{sec:stochastic-gradient-ascent}
+
+In Machine Learning literature, it is more common to describe the
+optimization problems as minimization and hence to talk about
+gradient descent.  As \texttt{maxLik} is primarily focused on
+\emph{maximizing} likelihood, it implements the maximization version
+of the method, stochastic gradient ascent (SGA).
+
+The basic method is very easy, essentially just slow climb in the
+gradient's direction.  Given and objective function
+$f(\vec{\theta})$, and the initial parameter vector
+$\vec{\theta}_{0}$, the algorithm will compute the gradient
+$\vec{g}(\vec{\theta}_{0}) = \nabla_{\vec{\theta}}
+f(\vec{\theta})\big|_{\vec{\theta} = \vec{\theta}_{0}}$, and update
+the parameter vector as $\vec{\theta}_{1} = \vec{\theta}_{0} + \rho
+\vec{g}(\vec{\theta}_{0})$.  Here $\rho$, the \emph{learning rate}, is
+a small positive constant to ensure we do not overshoot the optimum.
+Depending on the task it is typically of order $0.1 \dots 0.001$.
+
+
+<<frequentist>>=
+library(maxLik)
+a <- 1
+print(a)
+@
+
+\end{document}
