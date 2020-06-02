@@ -1,10 +1,13 @@
 \documentclass{article}
-\usepackage{natbib}
 \usepackage{graphics}
 \usepackage{amsmath}
 \usepackage{indentfirst}
 \usepackage[utf8]{inputenc}
+\usepackage{natbib}
+\usepackage{xspace}
 
+\newcommand*{\mat}[1]{\mathsf{#1}}
+\newcommand{\maxlik}{\texttt{maxLik}\xspace}
 \renewcommand*{\vec}[1]{\boldsymbol{#1}}
 
 % \VignetteIndexEntry{SGA Example}
@@ -50,6 +53,126 @@ the parameter vector as $\vec{\theta}_{1} = \vec{\theta}_{0} + \rho
 \vec{g}(\vec{\theta}_{0})$.  Here $\rho$, the \emph{learning rate}, is
 a small positive constant to ensure we do not overshoot the optimum.
 Depending on the task it is typically of order $0.1 \dots 0.001$.
+In typical tasks, the objective function $f(\vec{\theta})$ depends on
+data $\mat{X}$ in an additive form $f(\vec{\theta}; \mat{X}) =
+\sum_{i} f(\vec{\theta}; \vec{x}_{i})$ where $i$ denotes
+``observations'', typically rows of the design matrix $\mat{X}$ that
+are independent of each other.
+
+The above introduction did not specify how to compute the gradient
+$\vec{g}(\vec{\theta}_{0})$ in terms of which data vectors $\vec{x}$
+to include.  A natural approach is to include the complete data and compute
+\begin{equation}
+  \label{eq:full-batch-gradient}
+  \vec{g}_{N}(\vec{\theta}_{0}) = 
+  \frac{1}{N}\sum_{i=1}^{N}
+  \nabla_{\vec{\theta}}
+  f(\vec{\theta}; \vec{x}_{i})\big|_{\vec{\theta} = \vec{\theta}_{0}}.
+\end{equation}
+This approach is called ``full batch'' and it has a number of
+advantages.  In particular, it is deterministic (given data
+$\mat{X}$), and the sum in~\eqref{eq:full-batch-gradient} can be
+easily parallelized in typical applications.  However, there are also
+a number of reasons why full-batch approach may not be desirable
+\citep[see][]{bottou2018SIAM}:
+\begin{itemize}
+\item In practical applications, there is often a lot of redundancy in
+  different observations in data.  When always using all the
+  observations for the update means spending a substantial effort on
+  redundant calculations.
+\item Full-batch gradient lacks the stochastic noise.  While
+  advantageous in the latter steps of optimization, the noise helps
+  the optimizer to avoid local maxima and overcome flat areas in the
+  objective function early in the process.  
+\item SGA achieves much more rapid initial convergence compared to the
+  full batch method (although full-batch methods may achieve better
+  final result).
+\item The advantage of SGA grows in sample size $N$.  Cost of
+  computing the full-batch gradient grows with the sample size but
+  that of minibatch gradient does not grow.  
+\item It is empirically known that large-batch optimization tend to
+  find sharp optima \citep{keskar+2016ArXiv} that do not generalize well to validation
+  data.  Small batch approach leads to better validation performance. 
+\end{itemize}
+
+In what is usually referred to as ``stochastic gradient ascent'' in
+the literature, refers to the case where the gradient is computed on a
+single observation:
+\begin{equation}
+  \label{eq:stochastic-gradient}
+  \vec{g}_{1}(\vec{\theta}_{0}) = 
+  \nabla_{\vec{\theta}}
+  f(\vec{\theta}; \vec{x}_{i})\big|_{\vec{\theta} = \vec{\theta}_{0}}
+\end{equation}
+where $i$ is chosen randomly.  In applications, all the observations
+are usually walked through in a random order, to ensure that each
+observation is included once, and only once, in an \emph{epoch}, a
+full walk-through of the data.  In between the full-batch and
+stochastic gradient there is \emph{minibatch} gradient
+\begin{equation}
+  \label{eq:stochastic-gradient}
+  \vec{g}_{m}(\vec{\theta}_{0}) = 
+  \frac{1}{|\mathcal{B}|}\sum_{i\in\mathcal{B}}
+  \nabla_{\vec{\theta}}
+  f(\vec{\theta}; \vec{x}_{i})\big|_{\vec{\theta} = \vec{\theta}_{0}}
+\end{equation}
+where $\mathcal{B}$ is the batch, a set of observations' indices, that
+are included in the gradient computation.  In applications, one has to
+construct a series of minibatches that cover the complete data, and
+walk through those sequentially in one epoch.
+
+
+\section{SGA in \texttt{maxLik} package}
+\label{sec:sga-in-maxlik}
+
+\maxlik implements two different optimizers: \texttt{maxSGA} for
+simple SGA (including momentum), and \texttt{maxAdam} for the Adaptive
+Moments method \citep[see][p. 301]{goodfellow+2016DL}.  Both methods
+mostly follow that of the package's main workhorse, \texttt{maxNR} \citep[see][]{henningsen+toomet2011},
+but their API has some important differences due to the different
+nature and usage of SGA.
+
+\subsection{The objective function}
+
+Unlike in \texttt{maxNR} and related functions, SGA does not directly need the
+objective function values.  The function can still be provided (and
+probably will in most cases), but one can run the optimizer with only
+gradient.  If provided, the function can be used for printing the
+value at each epoch for following the process, and for stopping
+through
+\emph{patience}: normally, the new iteration has better (higher)
+value of the objective function.  However, in unfavorable situations
+it is often not the case.  In such a case the algorithm continues
+not more than \emph{patience} times before stopping (and returning
+the best parameters, not necessarily the last parameters).  
+
+If provided, the function should accept two (or more) arguments: the
+first is the numeric parameter vector, and the second, called
+\texttt{index}, is the list of indices in the current minibatch.
+
+As the function is not needed by the optimizer itself, it is up to the
+user to decide what it should do.  An obvious option is to compute the
+objective function value on the same minibatch as used for the
+gradient computation.  But one can also opt for something else, for
+instance to compute the value on the validation data instead (and
+ignore the provided \emph{index}).  The latter may be an useful option
+if one wants to employ the patience-based stopping criteria.
+
+\subsection{Gradient function}
+\label{sec:gradient-function}
+
+Gradient is the work-horse of the SGA methods.  Although \maxlik can
+also compute numeric gradient using the finite difference method, this
+is not advisable, and may be very slow in high-dimensional problems.
+The gradient should be a $1\times K$ matrix in numerator notation,
+i.e. each column corresponds to the corresponding component in the
+parameter vector $\vec{\theta}$.
+
+
+
+\section{Example usage cases}
+\label{sec:example-usage-cases}
+
 
 
 <<frequentist>>=
@@ -57,5 +180,8 @@ library(maxLik)
 a <- 1
 print(a)
 @
+
+\bibliographystyle{apecon}
+\bibliography{sga}
 
 \end{document}

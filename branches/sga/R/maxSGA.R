@@ -10,7 +10,7 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
                    ...) {
    ## Newton-Raphson maximisation
    ## Parameters:
-   ## fn          - the function to be minimized.  Returns either scalar or
+   ## fn          - the function to be maximized.  Returns either scalar or
    ##               vector value with possible attributes 
    ##               constPar and newVal
    ## grad        - gradient function (numeric used if missing).  Must return either
