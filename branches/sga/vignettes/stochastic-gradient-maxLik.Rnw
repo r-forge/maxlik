@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{graphics}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{indentfirst}
 \usepackage[utf8]{inputenc}
 \usepackage{natbib}
@@ -8,13 +9,17 @@
 
 \newcommand*{\mat}[1]{\mathsf{#1}}
 \newcommand{\maxlik}{\texttt{maxLik}\xspace}
+\newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
+%\newcommand{\transpose}{\intercal}
 \renewcommand*{\vec}[1]{\boldsymbol{#1}}
 
 % \VignetteIndexEntry{SGA Example}
 
 \begin{document}
 <<foo,include=FALSE,echo=FALSE>>=
-options(keep.source = TRUE, width = 60)
+options(keep.source = TRUE, width = 60,
+        try.outFile=stdout()  # make try to produce error messages
+        )
 foo <- packageDescription("maxLik")
 @
 
@@ -173,12 +178,182 @@ parameter vector $\vec{\theta}$.
 \section{Example usage cases}
 \label{sec:example-usage-cases}
 
+\subsection{Linear regression}
+\label{sec:linear-regression}
 
+We demonstrate linear regression (OLS) as the first example, mostly for
+illustrative purposes, as OLS is an easy-to understand model.  We use
+the Boston housing data, a popular dataset where one traditionally attempts to
+predict the median house price across 500 neighborhoods, using a
+number of variables, such as mean house size, age, and proximity to
+Charles river.  All variables in the dataset are numeric, and there
+are no missing values.  The data is provided in \emph{MASS} package.
 
-<<frequentist>>=
+First, we create the design matrix $\mat{X}$ and extract the house
+price $y$:
+<<>>=
+i <- which(names(MASS::Boston) == "medv")
+X <- as.matrix(MASS::Boston[,-i])
+X <- cbind(1, X)  # add constant
+y <- MASS::Boston[,i]
+eigenvals <- eigen(crossprod(X))$values
+@
+Although the model and data are simple, it is not an easy task for
+stock gradient ascent.  The problem lies in different scaling of
+variables, the means are
+<<>>=
+colMeans(X)
+@
+One can see that \emph{chas} has an average value
+\Sexpr{round(mean(X[,"chas"]), 3)} while that of \emph{tax} is
+\Sexpr{round(mean(X[,"tax"]), 3)}.  This leads to highly elliptical
+parabola of with the ratio of largest and smallest eigenvalues of
+$\mat{X}^{\transpose} \mat{X} =
+\Sexpr{round(eigenvals[1]/eigenvals[14], -5)}$.  Solely gradient-based
+methods as SGA
+have trouble working in
+resulting narrow valleys.
+
+For reference, let's also compute the analytic solution to this
+linear regression model (reminder: $\hat{\vec{\beta}} = (\mat{X}^{\transpose}\,\mat{X})^{-1}\,\mat{X}\,\vec{y}$):
+<<>>=
+betaX <- solve(crossprod(X)) %*% crossprod(X, y)
+betaX <- drop(betaX)
+betaX
+@ 
+
+Next, we provide the gradient function.  As a reminder, OLS gradient
+in numerator layout can be expressed as
+\begin{equation}
+  \label{eq:ols-gradient}
+  \vec{g}_{m}(\vec{\theta}) =
+  -\frac{2}{|\mathcal{B}|}
+  \sum_{i\in\mathcal{B}}
+  \left(y_{i} - \vec{x}_{i}^{\transpose} \cdot
+    \vec{\theta} \right) \vec{x}_{i}^{\transpose}
+  =
+  -\frac{2}{|\mathcal{B}|}
+  \left(y_{\mathcal{B}} -
+    \mat{X}_{\mathcal{B}} \cdot \vec{\theta} \right)^{\transpose}
+  \mat{X}_{\mathcal{B}}
+\end{equation}
+where $y_{\mathcal{B}}$ and $\mat{X}_{\mathcal{B}}$ denote the
+outcomes and rows of the design matrix that
+corresponds to the minibatch $\mathcal{B}$.
+We implement it as:
+<<>>=
+gradlik <- function(theta, index)  {
+   e <- y[index] - X[index,,drop=FALSE] %*% theta
+   g <- -2*t(e) %*% X[index,,drop=FALSE]
+   -g/length(index)
+}
+@
+The \texttt{gradlik} function has two arguments: \texttt{theta} is the
+parameter vector, and \texttt{index} tells which observations belong
+to the current minibatch.  The actual argument will be an integer vector, and hence
+we can use \texttt{length(index)} to find the size of the minibatch.
+Finally, we return the negative of~\eqref{eq:ols-gradient} as
+\texttt{maxSGA} performs maximization, not minimization.
+
+First, we demonstrate how the models works without the objective
+function.  We have to supply the gradient function, initial parameter
+values, and also \texttt{nObs}, number of observations to select the
+batches from.  The latter is needed as the optimizer itself does not
+have access to data but still has to partition it into batches.
+Finally, we may also provide various control parameters, such as
+number of iterations, stopping conditions, and batch size.  We start
+with only specifying the iteration limit, the only stopping condition
+we use here:
+<<gradonly, quiet=FALSE>>=
 library(maxLik)
-a <- 1
-print(a)
+start <- setNames(rnorm(ncol(X), sd=0.1), colnames(X))
+                           # add names for better reference
+res <- try(maxSGA(grad=gradlik,
+           start=start,
+           nObs=nrow(X),
+           control=list(iterlim=1000)
+           )
+    )
+@
+This run was a failure.  We encountered a run-away growth of the
+gradient and parameter values.  This is because the default learning
+rate $\rho=0.1$ is too big for such strongly curved objective
+function.  But before we repeat the exercise with a smaller learning
+rate, let's try gradient clipping.  The clipping, performed with
+\texttt{SG\_clip} control option, limits the squared $L_{2}$-norm of
+the gradient with the given value while keeping it's direction:
+<<>>=
+res <- maxSGA(grad=gradlik,
+              start=start,
+              nObs=nrow(X),
+              control=list(iterlim=1000,
+                           SG_clip=1e6)  # allow ||g|| <= 1000
+              )
+summary(res)
+@
+This time the gradient did not explode and we were able to get a
+result.  But the estimates are rather far from the analytic solution
+shown above, in particular the constant estimate
+\Sexpr{round(coef(res)[1], 3)} is very different from the
+corresponding analytic value \Sexpr{round(betaX[1], 3)}.  Let's
+analyze what is happening inside the optimizer.  We can ask for both
+the parameter values to be stored
+for each epoch:
+<<fig=TRUE>>=
+res <- maxSGA(grad=gradlik,
+              start=start,
+              nObs=nrow(X),
+              control=list(iterlim=100,
+                           SG_clip=1e6,  # allow ||g|| <= 1000
+                           storeParameters=TRUE
+                           )  
+              )
+par <- storedParameters(res)
+plot(par[,1], par[,2], type="b")
+@
+
+
+
+Let's try
+increasing the number of iterations first:
+<<>>=
+res <- maxSGA(grad=gradlik,
+              start=start,
+              nObs=nrow(X),
+              control=list(iterlim=100000,
+                           SG_clip=1e6)  # allow ||g|| <= 1000
+              )
+coef(res)
+@
+Now we moved closer but we are still far from the correct solution.  
+
+
+<<eval=FALSE>>=
+##
+## demonstrate the usage of index, and using
+## fn for computing the objective function on validation data.
+## create a linear model where variables are very unequally scaled
+##
+## OLS loglik function: compute the function value on validation data only
+loglik <- function(theta, index) {
+   e <- yValid - XValid %*% theta
+   -crossprod(e)/length(y)
+}
+N <- 1000
+## two random variables: one with scale 1, the other with 100
+X <- cbind(rnorm(N), rnorm(N, sd=100))
+theta <- c(1, 1)  # true parameter values
+y <- X %*% theta + rnorm(N, sd=0.2)
+## training-validation split
+iTrain <- sample(N, 0.8*N)
+XTrain <- X[iTrain,,drop=FALSE]
+XValid <- X[-iTrain,,drop=FALSE]
+yTrain <- y[iTrain]
+yValid <- y[-iTrain]
+##
+cat("Analytic training solution:\n")
+print(solve(crossprod(XTrain)) %*% crossprod(XTrain, yTrain))
+## do this without momentum: learning rate must stay small for the gradient not to explode
 @
 
 \bibliographystyle{apecon}

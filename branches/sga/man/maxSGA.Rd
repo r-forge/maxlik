@@ -20,8 +20,8 @@ nObs,
     values are not directly used for optimization, this argument is
     optional, given \code{grad} is provided.
     It must have the parameter vector as the first argument, and it must
-    have an argument \code{index} to specify the set of selected
-    observations. 
+    have an argument \code{index} to specify the integer index of the selected
+    observations.  
     It must return either a single number, or a numeric vector (this is
     is summed internally).
     If the parameters are out of range, \code{fn} should
@@ -34,7 +34,7 @@ nObs,
   }
   \item{grad}{gradient of the objective function.
     It must have the parameter vector as the first argument, and it must
-    have an argument \code{index} to specify the set of selected
+    have an argument \code{index} to specify the integer index of selected
     observations.
     It must return either a gradient vector of the objective function,
     or a matrix, where \emph{columns} correspond to individual parameters.
@@ -166,6 +166,7 @@ nObs,
 	initial parameters.
       }
     }
+    See \code{\link{maxControl}} for details.
   }
   \item{\dots}{further arguments to \code{fn}, \code{grad} and
     \code{hess}.
@@ -312,7 +313,6 @@ loglik <- function(beta, index) {
 ## OLS gradient: compute it on training data only
 gradlik <- function(beta, index)  {
    e <- yTrain[index] - XTrain[index,,drop=FALSE] \%*\% beta
-   l <- crossprod(e)
    g <- t(-2*t(XTrain[index,,drop=FALSE]) \%*\% e)
    -g/length(index)
 }

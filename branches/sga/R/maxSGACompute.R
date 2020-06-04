@@ -180,7 +180,8 @@ maxSGACompute <- function(fn, grad, hess,
          if(any(is.na(G1[!fixed])) || any(is.infinite(G1[!fixed]))) {
             cat("Iteration", iter, "\n")
             cat("Parameter:\n")
-            print(head...(start1))
+            print(head...(start1, max.cols), quote=FALSE)
+            cat("Gradient:\n")
             printRowColLimits(G1, max.rows, max.cols)
             stop("NA/Inf in gradient")
          }
