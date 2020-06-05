@@ -37,7 +37,7 @@ maxSGACompute <- function(fn, grad, hess,
    ## an object of class 'maxim'
    ##      
    ## -------------------------------------------------
-   maximType <- "Stochastic Gradient Ascent/Adam"
+   maximType <- "Stochastic Gradient Ascent"
    iterlim <- slot(control, "iterlim")
    nParam <- length(start)
    start1 <- start
@@ -52,6 +52,7 @@ maxSGACompute <- function(fn, grad, hess,
    printLevel <- slot(control, "printLevel")
    batchSize <- slot(control, "SG_batchSize")
    if(optimizer == "Adam") {
+      maximType <- "Stochastic Gradient Ascent/Adam"
       Adam.momentum1 <- slot(control, "Adam_momentum1")
       Adam.momentum2 <- slot(control, "Adam_momentum2")
       Adam.delta <- 1e-8  # maybe make it a parameter in the future
@@ -61,6 +62,8 @@ maxSGACompute <- function(fn, grad, hess,
    } else if(optimizer == "SGA") {
       momentum <- slot(control, "SGA_momentum")
       v <- 0  # velocity that retains the momentum
+   } else {
+      stop(paste("unknown optimizer", optimizer))
    }
    ## ---------- How many batches
    if(is.null(batchSize)) {
@@ -110,7 +113,7 @@ maxSGACompute <- function(fn, grad, hess,
    }
    if(length(clip) > 0) {
       if((norm2 <- sum(G1*G1)) > clip)
-         G1 <- G1/sqrt(norm2*clip)
+         G1 <- G1/sqrt(norm2)*sqrt(clip)
    }
    if(storeValues) {
       valueStore <- rep(NA_real_, iterlim + 1)

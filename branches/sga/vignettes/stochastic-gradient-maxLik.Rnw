@@ -7,6 +7,7 @@
 \usepackage{natbib}
 \usepackage{xspace}
 
+\newcommand{\elemProd}{\ensuremath{\odot}}  % elementwise product of matrices
 \newcommand*{\mat}[1]{\mathsf{#1}}
 \newcommand{\maxlik}{\texttt{maxLik}\xspace}
 \newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
@@ -169,7 +170,7 @@ if one wants to employ the patience-based stopping criteria.
 Gradient is the work-horse of the SGA methods.  Although \maxlik can
 also compute numeric gradient using the finite difference method, this
 is not advisable, and may be very slow in high-dimensional problems.
-The gradient should be a $1\times K$ matrix in numerator notation,
+The gradient should be a $1\times K$ matrix in numerator layout,
 i.e. each column corresponds to the corresponding component in the
 parameter vector $\vec{\theta}$.
 
@@ -194,7 +195,7 @@ price $y$:
 <<>>=
 i <- which(names(MASS::Boston) == "medv")
 X <- as.matrix(MASS::Boston[,-i])
-X <- cbind(1, X)  # add constant
+X <- cbind("const"=1, X)  # add constant
 y <- MASS::Boston[,i]
 eigenvals <- eigen(crossprod(X))$values
 @
@@ -242,13 +243,13 @@ outcomes and rows of the design matrix that
 corresponds to the minibatch $\mathcal{B}$.
 We implement it as:
 <<>>=
-gradlik <- function(theta, index)  {
+gradloss <- function(theta, index)  {
    e <- y[index] - X[index,,drop=FALSE] %*% theta
    g <- -2*t(e) %*% X[index,,drop=FALSE]
    -g/length(index)
 }
 @
-The \texttt{gradlik} function has two arguments: \texttt{theta} is the
+The \texttt{gradloss} function has two arguments: \texttt{theta} is the
 parameter vector, and \texttt{index} tells which observations belong
 to the current minibatch.  The actual argument will be an integer vector, and hence
 we can use \texttt{length(index)} to find the size of the minibatch.
@@ -266,9 +267,10 @@ with only specifying the iteration limit, the only stopping condition
 we use here:
 <<gradonly, quiet=FALSE>>=
 library(maxLik)
+set.seed(3)
 start <- setNames(rnorm(ncol(X), sd=0.1), colnames(X))
                            # add names for better reference
-res <- try(maxSGA(grad=gradlik,
+res <- try(maxSGA(grad=gradloss,
            start=start,
            nObs=nrow(X),
            control=list(iterlim=1000)
@@ -283,11 +285,11 @@ rate, let's try gradient clipping.  The clipping, performed with
 \texttt{SG\_clip} control option, limits the squared $L_{2}$-norm of
 the gradient with the given value while keeping it's direction:
 <<>>=
-res <- maxSGA(grad=gradlik,
+res <- maxSGA(grad=gradloss,
               start=start,
               nObs=nrow(X),
               control=list(iterlim=1000,
-                           SG_clip=1e6)  # allow ||g|| <= 1000
+                           SG_clip=1e4)  # allow ||g|| <= 100
               )
 summary(res)
 @
@@ -297,64 +299,289 @@ shown above, in particular the constant estimate
 \Sexpr{round(coef(res)[1], 3)} is very different from the
 corresponding analytic value \Sexpr{round(betaX[1], 3)}.  Let's
 analyze what is happening inside the optimizer.  We can ask for both
-the parameter values to be stored
-for each epoch:
-<<fig=TRUE>>=
-res <- maxSGA(grad=gradlik,
+the parameter values and the objective function value to be stored
+for each epoch.  But before we can store the objective function (MSE)
+value, we have to supply it.  We compute MSE on the same dataset as
+<<>>=
+loss <- function(theta, index) {
+   e <- y[index] - X[index,] %*% theta
+   -crossprod(e)/length(index)
+}
+@ 
+Now we can store the values with the control options
+\texttt{storeParameters} and \texttt{storeValues}.  The corresponding
+numbers can be retrieved with \texttt{storedParameters} and
+\texttt{storedValues} methods.  The former returns a $K\times R+1$
+matrix, one row for each epoch and one column for each parameter
+component, and the latter returns a numeric vector of length $R+1$
+where $R$ is the number of epochs.  The first value in both cases is
+the initial value, that's why we have $R+1$ values in total.  Let's
+retrieve the values and plot both.  We also decrease the learning rate
+to $0.001$ using the \texttt{SG\_learningRate} control:
+\setkeys{Gin}{width=\textwidth, height=80mm}
+<<fig=TRUE, height=4>>=
+res <- maxSGA(loss, gradloss,
               start=start,
               nObs=nrow(X),
-              control=list(iterlim=100,
-                           SG_clip=1e6,  # allow ||g|| <= 1000
-                           storeParameters=TRUE
+              control=list(iterlim=1580,
+                           # will misbehave with larger numbers
+                           SG_clip=1e4,  # allow ||g|| <= 100
+                           SG_learningRate=0.001,
+                           storeParameters=TRUE,
+                           storeValues=TRUE
                            )  
               )
 par <- storedParameters(res)
-plot(par[,1], par[,2], type="b")
+val <- storedValues(res)
+par(mfrow=c(1,2))
+plot(par[,1], par[,2], type="b", pch=".",
+     xlab=names(start)[1], ylab=names(start)[2], main="Parameters")
+iB <- c(40, nrow(par)/2, nrow(par))
+iA <- iB - 10
+arrows(par[iA,1], par[iA,2], par[iB,1], par[iB,2], length=0.1)
+plot(seq(length=length(val))-1, -val, type="l",
+     xlab="epoch", ylab="MSE", main="Loss",
+     log="y")
 @
+We can see how the parameters (first and second component here) evolve
+through the iterations while the loss is rapidly falling.  One can see
+an initial jump where the loss is falling very fast, followed but
+subsequent slow movement.  It is possible the initial jump is be limited by
+gradient clipping.
 
 
+\subsection{Training and Validation Sets}
+\label{sec:training-validation}
 
-Let's try
-increasing the number of iterations first:
+However, as we did not specify the batch size, \texttt{maxSGA} will
+automatically pick the full batch (equivalent to control option
+\texttt{SG\_batchSize = NULL}).  So there was nothing stochastic in
+what we did above.  Let us pick a small batch size, for instance
+1, a single observation at time.  However, as smaller batch sizes
+introduce more noise to the gradient, we also make the learning rate
+accordingly smaller and choose \texttt{SG\_learningRate = 2e-4}.
+
+But now the existing loss function, calculated just at the single
+observation, carries little meaning.  Instead, we split the data into
+training and validation sets, feed batches of training data to gradient but
+calculate the loss on the complete validation set.  This can be
+achieved with small modifications in the \texttt{gradloss} and
+\texttt{loss} function.  But first, let's split data:
 <<>>=
-res <- maxSGA(grad=gradlik,
-              start=start,
-              nObs=nrow(X),
-              control=list(iterlim=100000,
-                           SG_clip=1e6)  # allow ||g|| <= 1000
-              )
-coef(res)
-@
-Now we moved closer but we are still far from the correct solution.  
-
-
-<<eval=FALSE>>=
-##
-## demonstrate the usage of index, and using
-## fn for computing the objective function on validation data.
-## create a linear model where variables are very unequally scaled
-##
-## OLS loglik function: compute the function value on validation data only
-loglik <- function(theta, index) {
-   e <- yValid - XValid %*% theta
-   -crossprod(e)/length(y)
+i <- sample(nrow(X), 0.8*nrow(X))  # training indices
+Xt <- X[i,]
+yt <- y[i]
+Xv <- X[-i,]
+yv <- y[-i]
+@ 
+Thereafter we modify \texttt{gradloss} to only use the batches of
+training data while \texttt{loss} will use the validation data and
+just ignore \texttt{index}:
+<<>>=
+gradloss <- function(theta, index)  {
+   e <- yt[index] - Xt[index,,drop=FALSE] %*% theta
+   g <- -2*t(e) %*% Xt[index,,drop=FALSE]
+   -g/length(index)
 }
-N <- 1000
-## two random variables: one with scale 1, the other with 100
-X <- cbind(rnorm(N), rnorm(N, sd=100))
-theta <- c(1, 1)  # true parameter values
-y <- X %*% theta + rnorm(N, sd=0.2)
-## training-validation split
-iTrain <- sample(N, 0.8*N)
-XTrain <- X[iTrain,,drop=FALSE]
-XValid <- X[-iTrain,,drop=FALSE]
-yTrain <- y[iTrain]
-yValid <- y[-iTrain]
-##
-cat("Analytic training solution:\n")
-print(solve(crossprod(XTrain)) %*% crossprod(XTrain, yTrain))
-## do this without momentum: learning rate must stay small for the gradient not to explode
+loss <- function(theta, index) {
+   e <- yv - Xv %*% theta
+   -crossprod(e)/length(yv)
+}
 @
+
+Another thing to note is the speed.  \texttt{maxLik} implements SGA in
+a fairly complex loop that does printing, storing, stopping
+conditions, and complex function calls.  Hence smaller batch size
+means much more such auxiliary computations per epoch and the
+algorithm slows considerably down.
+How do the convergence properties
+look now with the updated approach?
+<<batch1, fig=TRUE, height=4>>=
+res <- maxSGA(loss, gradloss,
+              start=start,
+              nObs=nrow(Xt),  # note: only training data now
+              control=list(iterlim=1000,
+                           SG_batchSize=1,
+                           SG_learningRate=1e-5,
+                           # will misbehave with larger numbers
+                           SG_clip=1e4,  # allow ||g|| <= 100
+                           storeParameters=TRUE,
+                           storeValues=TRUE
+                           )  
+              )
+par <- storedParameters(res)
+val <- storedValues(res)
+par(mfrow=c(1,2))
+plot(par[,1], par[,2], type="b", pch=".",
+     xlab=names(start)[1], ylab=names(start)[2], main="Parameters")
+iB <- c(40, nrow(par)/2, nrow(par))
+iA <- iB - 1
+arrows(par[iA,1], par[iA,2], par[iB,1], par[iB,2], length=0.1)
+plot(seq(length=length(val))-1, -val, type="l",
+     xlab="epoch", ylab="MSE", main="Loss",
+     log="y")
+@
+We can see the parameters evolving and loss decreasing over epochs.
+The convergence seems to be smooth and not ruptured by gradient
+clipping. 
+
+Next, we try to improve the convergence by introducing momentum.  With
+momentum $\mu$, the gradient update is
+\begin{equation}
+  \label{eq:gradient-update-momentum}
+  \vec{\theta}_{t+1} =
+  \vec{\theta}_{t} + \vec{v}_{t}
+  \quad\text{where}\quad
+  \vec{v}_{t} = \mu \vec{v}_{t-1} + \rho \vec{g}(\vec{\theta}).
+\end{equation}
+See \citet[p. 288]{goodfellow+2016DL}.  The algorithm takes the initial ``velocity'' $\vec{v}_{0} = \vec{0}$. 
+
+Let's add momentum $\mu = 0.95$ to the gradient (and also decrease the
+learning rate):
+
+<<momentum, fig=TRUE, height=4>>=
+res <- maxSGA(loss, gradloss,
+              start=start,
+              nObs=nrow(Xt),
+              control=list(iterlim=1000,
+                           SG_batchSize=1,
+                           SG_learningRate=2e-7,
+                           SG_clip=1e4,
+                           SGA_momentum = 0.99,
+                           storeParameters=TRUE,
+                           storeValues=TRUE
+                           )  
+              )
+par <- storedParameters(res)
+val <- storedValues(res)
+par(mfrow=c(1,2))
+plot(par[,1], par[,2], type="b", pch=".",
+     xlab=names(start)[1], ylab=names(start)[2], main="Parameters")
+iB <- c(40, nrow(par)/2, nrow(par))
+iA <- iB - 1
+arrows(par[iA,1], par[iA,2], par[iB,1], par[iB,2], length=0.1)
+plot(seq(length=length(val))-1, -val, type="l",
+     xlab="epoch", ylab="MSE", main="Loss",
+     log="y")
+@
+We achieved a lower loss but we are still far from the correct solution.  
+
+As the next step, we use Adaptive Moment (Adam) optimizer
+\citep[p. 301]{goodfellow+2016DL}.  Adam adapts the learning rate by
+variance of the gradient--if gradient components are unstable, it
+slows down, and if they are stable it speeds up.  The adaptation is
+proportional to the moving average of the gradient divided by the
+square root of the moving average of the gradient squared, all
+operations done component-wise.  In this way a stable gradient
+component where
+moving average is similar to the gradient value will have higher
+speed than a fluctuating gradient where the components frequently
+shift the sign and the average is much smaller.  More specifically,
+the algorithm is as follows:
+\begin{enumerate}
+\item Initialize first and second moment averages $\vec{s} = \vec{0}$
+  and $\vec{r} = \vec{0}$.
+\item Compute the gradient $\vec{g} = \vec{g}(\vec{\theta}_{t})$.
+\item Update the moving average for the first moment: $\vec{s}_{t+1} =
+  \mu_{1} \vec{s}_{t} + (1 - \mu_{1}) \vec{g}$.  $\mu_{1}$ is the
+  decay parameter, the larger it is, the longer memory does the method
+  have.  It can be adjusted with the control parameter
+  \texttt{Adam\_momentum1} with the default value 0.9.
+\item \dots and the second moment: $\vec{r}_{t+1} =
+  \mu_{1} \vec{r}_{t} + (1 - \mu_{1}) \vec{g} \elemProd \vec{g}$
+  where $\elemProd$ denotes element-wise multiplication.  The control
+  parameter for the $\mu_{2}$ is \texttt{Adam\_momentum2} with the default value 0.999.
+\item As the algorithm starts with the moving averages equal to zero,
+  we also correct the resulting bias: $\hat{\vec{s}} = \vec{s}/(1 -
+  \mu_{1}^{t})$ and $\hat{r} = \vec{s}/(1 - \mu_{1}^{t})$.
+\item Finally, update the estimate: $\vec{\theta}_{t+1} =
+  \vec{\theta}_{t} + \rho \hat{\vec{s}}/(\delta +
+  \sqrt{\hat{\vec{r}}})$ where division and square root are done
+  element-wise and $\delta=10^{-8}$ takes care of numerical stabilization.
+\end{enumerate}
+
+<<Adam, fig=TRUE, height=4>>=
+res <- maxAdam(loss, gradloss,
+              start=start,
+              nObs=nrow(Xt),
+              control=list(iterlim=1000,
+                           SG_batchSize=1,
+                           SG_learningRate=2e-7,
+                           SG_clip=1e4,
+                           storeParameters=TRUE,
+                           storeValues=TRUE
+                           )  
+              )
+par <- storedParameters(res)
+val <- storedValues(res)
+par(mfrow=c(1,2))
+plot(par[,1], par[,2], type="b", pch=".",
+     xlab=names(start)[1], ylab=names(start)[2], main="Parameters")
+iB <- c(40, nrow(par)/2, nrow(par))
+iA <- iB - 1
+arrows(par[iA,1], par[iA,2], par[iB,1], par[iB,2], length=0.1)
+plot(seq(length=length(val))-1, -val, type="l",
+     xlab="epoch", ylab="MSE", main="Loss",
+     log="y")
+@
+As visible from the figure, we achieved a lower loss (approximately
+500) but run into stability problems at the end.
+
+\subsection{Sequence of Batch Sizes }
+\label{sec:sequence-batch-sizes}
+
+The OLS' loss function is globally convex and hence there is no danger
+to get stuck in a local optimum.  However, when the objective function
+is more complex, the noise, generated by the stochastic sampling helps
+the algorithm to leave local maxima.  A suggested strategy is to
+increase the batch size over time to achieve good exploratory
+properties early in the process and stable convergence later
+\citep[see][for more information]{smith+2018arXiv}.  This approach is
+in many ways similar to Simulated Annealing.
+
+Here we introduce such an approach by using batch sizes $B=1$, $B=10$
+and $B=100$ in succession.  We also introduce patience stopping
+condition, if the objective function value is worse than the best
+value so far more than \emph{patience} times, the algorithm stops.
+Here we use patience value 5.  We also
+store the loss values from all the batch sizes into a single vector \texttt{val}.
+
+\setkeys{Gin}{width=\textwidth, height=110mm}
+<<SANN, fig=TRUE, heigh=6, width=7>>=
+val <- NULL
+for(B in c(1,10,100)) {
+   res <- maxAdam(loss, gradloss,
+                  start=start,
+                  nObs=nrow(Xt),
+                  control=list(iterlim=3000,
+                               SG_batchSize=1,
+                               SG_learningRate=2e-7,
+                               SG_clip=1e4,
+                               SG_patience=5,  # worse value allowed only 5 times
+                               storeValues=TRUE
+                               )  
+                  )
+   cat("Batch size", B, ",", nIter(res), "epochs, function value", maxValue(res), "\n")
+   val <- c(val, na.omit(storedValues(res)))
+   start <- coef(res)
+}
+plot(seq(length=length(val))-1, -val, type="l",
+     xlab="epoch", ylab="MSE", main="Loss",
+     log="y")
+summary(res)
+@ 
+
+One can see that both first loops ($B=1$ and $B=10$) run over all 3000
+epochs, but the last one only iterated 7 times--apparently it almost
+immediately overshot the maximum.  A solution might be to decrease the
+learning rate.  But we stop here as we believe every \emph{R}-savy user can adapt the
+method to their need.
+
+As explained above, this dataset is not an easy task for methods that are
+solely gradient-based.
+However, our task here is to demonstrate the usage of
+the package, not to solve a linear regression exercise.
+
 
 \bibliographystyle{apecon}
 \bibliography{sga}

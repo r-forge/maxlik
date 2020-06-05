@@ -66,4 +66,16 @@ Show both using graphs and computing sharpness that small batches lead to flat m
   url         = {http://dx.doi.org/10.1007/s00180-010-0217-1},
 }
 
+@Article{smith+2018arXiv,
+  author    = {Samuel L. Smith and Pieter-Jan Kindermans and Quoc V. Le},
+  title     = {Don't Decay the Learning Rate, Increase the Batch Size},
+  journal   = {ArXiv},
+  year      = {2018},
+  volume    = {abs/1711.00489},
+  abstract  = {It is common practice to decay the learning rate. Here we show one can usually obtain the same learning curve on both training and test sets by instead increasing the batch size during training. This procedure is successful for stochastic gradient descent (SGD), SGD with momentum, Nesterov momentum, and Adam. It reaches equivalent test accuracies after the same number of training epochs, but with fewer parameter updates, leading to greater parallelism and shorter training times. We can further reduce the number of parameter updates by increasing the learning rate ϵ and scaling the batch size B∝ϵ. Finally, one can increase the momentum coefficient m and scale B∝1/(1−m), although this tends to slightly reduce the test accuracy. Crucially, our techniques allow us to repurpose existing training schedules for large batch training with no hyper-parameter tuning. We train ResNet-50 on ImageNet to 76.1% validation accuracy in under 30 minutes.},
+  owner     = {siim},
+  review    = {Employ Smith and Le (2017) scaling result that noise scale ~ B/n(1-m).  Instead of decreasing the learning rate, they propose to increase the batch size.  Show that this works well, mostly in SGD with momentum framework.},
+  timestamp = {2020.05.04},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
