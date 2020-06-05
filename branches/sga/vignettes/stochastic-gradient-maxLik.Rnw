@@ -175,6 +175,15 @@ i.e. each column corresponds to the corresponding component in the
 parameter vector $\vec{\theta}$.
 
 
+\subsection{Optimizers}
+\label{sec:optimizers}
+
+
+
+\subsection{Control Options}
+\label{sec:control-options}
+
+
 
 \section{Example usage cases}
 \label{sec:example-usage-cases}
@@ -557,11 +566,13 @@ for(B in c(1,10,100)) {
                                SG_batchSize=1,
                                SG_learningRate=2e-7,
                                SG_clip=1e4,
-                               SG_patience=5,  # worse value allowed only 5 times
+                               SG_patience=5,
+                           # worse value allowed only 5 times
                                storeValues=TRUE
                                )  
                   )
-   cat("Batch size", B, ",", nIter(res), "epochs, function value", maxValue(res), "\n")
+   cat("Batch size", B, ",", nIter(res),
+       "epochs, function value", maxValue(res), "\n")
    val <- c(val, na.omit(storedValues(res)))
    start <- coef(res)
 }
