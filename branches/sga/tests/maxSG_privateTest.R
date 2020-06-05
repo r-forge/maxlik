@@ -149,7 +149,8 @@ XTrain <- cbind(1, x)
 yTrain <- 1 + x + rnorm(N)
 start <- c(const=10, x=10)
 
-## ---------- no gradient clipping: should fail
+## ---------- no gradient clipping:
+## should fail with informative "NA/Inf in gradient" message
 try(res <- maxSGA(loglik, gradlik, start=start,
                   control=list(iterlim=100, SG_learningRate=0.5),
                   nObs=length(yTrain))
