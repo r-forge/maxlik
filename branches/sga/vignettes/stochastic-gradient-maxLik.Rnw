@@ -178,11 +178,83 @@ parameter vector $\vec{\theta}$.
 \subsection{Optimizers}
 \label{sec:optimizers}
 
+\texttt{maxLik} currently implements two optimizers: \emph{SGA}, the
+stock gradient ascent (including momentum), and \emph{Adam}.
+\emph{Adam}, the basic gradient-only based optimization technique was
+explained in Section~\ref{sec:stochastic-gradient-ascent}.
 
+It is easy and intuitive to extend this method with momentum.  As
+implemented in \texttt{maxSGA}, the momentum $\mu$ is incorporated
+into the the gradient update as
+\begin{equation}
+  \label{eq:gradient-update-momentum}
+  \vec{\theta}_{t+1} =
+  \vec{\theta}_{t} + \vec{v}_{t}
+  \quad\text{where}\quad
+  \vec{v}_{t} = \mu \vec{v}_{t-1} + \rho \vec{g}(\vec{\theta}).
+\end{equation}
+See \citet[p. 288]{goodfellow+2016DL}.  
+The algorithm takes the initial ``velocity'' $\vec{v}_{0} = \vec{0}$.
+It is easy to see that $\mu=0$ is equivalent to no-momentum case, and
+if $\vec{g}(\vec{\theta})$ is constant, $\vec{v}_{t} \to \rho
+\vec{g}(\vec{\theta})/(1 - \mu)$.  So the movement speeds up in a
+region with stable gradient.  As a downside, it may overshoot a
+minimum.  But this behavior makes
+momentum-equipped SGA less prone of getting stuck in a local optimum.
+
+\emph{SGA} optimizer can be invoked with \texttt{maxSGA}.
+
+Adaptive Moment or \emph{Adam} \citep[p. 301]{goodfellow+2016DL} adapts the learning rate by
+variance of the gradient--if gradient components are unstable, it
+slows down, and if they are stable it speeds up.  The adaptation is
+proportional to the moving average of the gradient divided by the
+square root of the moving average of the gradient squared, all
+operations done component-wise.  In this way a stable gradient
+component where
+moving average is similar to the gradient value will have higher
+speed than a fluctuating gradient where the components frequently
+shift the sign and the average is much smaller.  More specifically,
+the algorithm is as follows:
+\begin{enumerate}
+\item Initialize first and second moment averages $\vec{s} = \vec{0}$
+  and $\vec{r} = \vec{0}$.
+\item Compute the gradient $\vec{g} = \vec{g}(\vec{\theta}_{t})$.
+\item Update the moving average for the first moment: $\vec{s}_{t+1} =
+  \mu_{1} \vec{s}_{t} + (1 - \mu_{1}) \vec{g}$.  $\mu_{1}$ is the
+  decay parameter, the larger it is, the longer memory does the method
+  have.  It can be adjusted with the control parameter
+  \texttt{Adam\_momentum1} with the default value 0.9.
+\item \dots and the second moment: $\vec{r}_{t+1} =
+  \mu_{1} \vec{r}_{t} + (1 - \mu_{1}) \vec{g} \elemProd \vec{g}$
+  where $\elemProd$ denotes element-wise multiplication.  The control
+  parameter for the $\mu_{2}$ is \texttt{Adam\_momentum2} with the default value 0.999.
+\item As the algorithm starts with the moving averages equal to zero,
+  we also correct the resulting bias: $\hat{\vec{s}} = \vec{s}/(1 -
+  \mu_{1}^{t})$ and $\hat{r} = \vec{s}/(1 - \mu_{1}^{t})$.
+\item Finally, update the estimate: $\vec{\theta}_{t+1} =
+  \vec{\theta}_{t} + \rho \hat{\vec{s}}/(\delta +
+  \sqrt{\hat{\vec{r}}})$ where division and square root are done
+  element-wise and $\delta=10^{-8}$ takes care of numerical stabilization.
+\end{enumerate}
+
+Adam optimizer can be used with \texttt{maxAdam}.
 
 \subsection{Control Options}
 \label{sec:control-options}
 
+Both \texttt{maxSGA} and \texttt{maxAdam} are designed similar to
+\texttt{maxNR}, and expect the objective function \texttt{fn},
+gradient \texttt{grad}, and
+Hessian function \texttt{hess}, and parameter start values \texttt{start}.  As these optimizers
+only need gradient, one can leave out both \texttt{fn} and
+\texttt{hess}.  The Hessian is only used to compute final Hessian, if
+requested by the user.  As SGA methods are typically used in contexts
+where Hessian is not needed, or even infeasibly slow and large, by
+defalt the algorithms do not return Hessian matrix and hence do not
+use the \texttt{hess} function even if provided.
+Finally, unlike the traditional opitmizers, stochastic optimzers need
+to know the size of data (argument \texttt{nObs}) in order to
+calculate the batches.
 
 
 \section{Example usage cases}
@@ -434,16 +506,7 @@ We can see the parameters evolving and loss decreasing over epochs.
 The convergence seems to be smooth and not ruptured by gradient
 clipping. 
 
-Next, we try to improve the convergence by introducing momentum.  With
-momentum $\mu$, the gradient update is
-\begin{equation}
-  \label{eq:gradient-update-momentum}
-  \vec{\theta}_{t+1} =
-  \vec{\theta}_{t} + \vec{v}_{t}
-  \quad\text{where}\quad
-  \vec{v}_{t} = \mu \vec{v}_{t-1} + \rho \vec{g}(\vec{\theta}).
-\end{equation}
-See \citet[p. 288]{goodfellow+2016DL}.  The algorithm takes the initial ``velocity'' $\vec{v}_{0} = \vec{0}$. 
+Next, we try to improve the convergence by introducing momentum.
 
 Let's add momentum $\mu = 0.95$ to the gradient (and also decrease the
 learning rate):
@@ -475,40 +538,7 @@ plot(seq(length=length(val))-1, -val, type="l",
 @
 We achieved a lower loss but we are still far from the correct solution.  
 
-As the next step, we use Adaptive Moment (Adam) optimizer
-\citep[p. 301]{goodfellow+2016DL}.  Adam adapts the learning rate by
-variance of the gradient--if gradient components are unstable, it
-slows down, and if they are stable it speeds up.  The adaptation is
-proportional to the moving average of the gradient divided by the
-square root of the moving average of the gradient squared, all
-operations done component-wise.  In this way a stable gradient
-component where
-moving average is similar to the gradient value will have higher
-speed than a fluctuating gradient where the components frequently
-shift the sign and the average is much smaller.  More specifically,
-the algorithm is as follows:
-\begin{enumerate}
-\item Initialize first and second moment averages $\vec{s} = \vec{0}$
-  and $\vec{r} = \vec{0}$.
-\item Compute the gradient $\vec{g} = \vec{g}(\vec{\theta}_{t})$.
-\item Update the moving average for the first moment: $\vec{s}_{t+1} =
-  \mu_{1} \vec{s}_{t} + (1 - \mu_{1}) \vec{g}$.  $\mu_{1}$ is the
-  decay parameter, the larger it is, the longer memory does the method
-  have.  It can be adjusted with the control parameter
-  \texttt{Adam\_momentum1} with the default value 0.9.
-\item \dots and the second moment: $\vec{r}_{t+1} =
-  \mu_{1} \vec{r}_{t} + (1 - \mu_{1}) \vec{g} \elemProd \vec{g}$
-  where $\elemProd$ denotes element-wise multiplication.  The control
-  parameter for the $\mu_{2}$ is \texttt{Adam\_momentum2} with the default value 0.999.
-\item As the algorithm starts with the moving averages equal to zero,
-  we also correct the resulting bias: $\hat{\vec{s}} = \vec{s}/(1 -
-  \mu_{1}^{t})$ and $\hat{r} = \vec{s}/(1 - \mu_{1}^{t})$.
-\item Finally, update the estimate: $\vec{\theta}_{t+1} =
-  \vec{\theta}_{t} + \rho \hat{\vec{s}}/(\delta +
-  \sqrt{\hat{\vec{r}}})$ where division and square root are done
-  element-wise and $\delta=10^{-8}$ takes care of numerical stabilization.
-\end{enumerate}
-
+As the next step, we use Adam optimizer:
 <<Adam, fig=TRUE, height=4>>=
 res <- maxAdam(loss, gradloss,
               start=start,
