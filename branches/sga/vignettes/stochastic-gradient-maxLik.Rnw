@@ -364,7 +364,9 @@ rate $\rho=0.1$ is too big for such strongly curved objective
 function.  But before we repeat the exercise with a smaller learning
 rate, let's try gradient clipping.  The clipping, performed with
 \texttt{SG\_clip} control option, limits the squared $L_{2}$-norm of
-the gradient with the given value while keeping it's direction:
+the gradient with the given value while keeping it's direction.  Clip
+the squared norm at 10,000, i.e. the gradient norm won't grow above
+100: 
 <<>>=
 res <- maxSGA(grad=gradloss,
               start=start,
@@ -382,7 +384,7 @@ corresponding analytic value \Sexpr{round(betaX[1], 3)}.  Let's
 analyze what is happening inside the optimizer.  We can ask for both
 the parameter values and the objective function value to be stored
 for each epoch.  But before we can store the objective function (MSE)
-value, we have to supply it.  We compute MSE on the same dataset as
+value, we have to supply an objective function to maxSGA.  We compute MSE on the same dataset as
 <<>>=
 loss <- function(theta, index) {
    e <- y[index] - X[index,] %*% theta

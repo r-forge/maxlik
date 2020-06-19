@@ -80,7 +80,7 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
    }
    ## ensure that at least 'fn' or 'grad' are supplied
    if(is.null(fn) & is.null(grad)) {
-      stop("maxSGA requires at least 'fn' or 'grad' to be supplied")
+      stop("maxSGA/maxAdam requires at least 'fn' or 'grad' to be supplied")
    }
    if(length(start) < 1) {
       stop("'start' must be of positive length!")

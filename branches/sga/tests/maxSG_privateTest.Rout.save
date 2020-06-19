@@ -29,6 +29,7 @@ Type 'q()' to quit R.
 > ###    SGA, return numeric hessian, no gradient provided
 > ###    SGA, printlevel 1, storeValues
 > ###    SGA, NA as iterlim: should give informative error
+> ###    SGA, storeValues but no fn (should fail)
 > ###
 > ### using highly unequally scaled data
 > ###    SGA without gradient clipping (fails)
@@ -106,7 +107,7 @@ Analytic solution (training data):
 +                   nObs=length(yTrain))
 +     )
 Error in maxSGA(start = start, control = list(printLevel = 0, iterlim = 10,  : 
-  maxSGA requires at least 'fn' or 'grad' to be supplied
+  maxSGA/maxAdam requires at least 'fn' or 'grad' to be supplied
 > 
 > ## ---------- 1D case
 > N1 <- 1000
@@ -155,7 +156,7 @@ Error in maxSGA(start = start, control = list(printLevel = 0, iterlim = 10,  :
 > 
 > ### ---------- SGA, printlevel 1, storeValues ----------
 > ### it should just work
-> res <- maxSGA(loglik, start=start,
+> res <- maxSGA(loglik, gradlik, start=start,
 +               control=list(iterlim=2, storeValues=TRUE, printLevel=1),
 +               nObs=length(yTrain),
 +               finalHessian=TRUE)
@@ -163,18 +164,28 @@ Initial function value: -34.64061
 --------------
 Iteration limit exceeded. 
 2  iterations
-estimate: 9.25956200428345, 9.23944221293937 
-Function value: -29.1249 
+estimate: 6.83044305069514, 6.61130329662377 
+Function value: -14.086 
 > 
 > ### ---------- SGA, NA as iterlim ----------
 > ### should give informative error
-> try(res <- maxSGA(loglik, start=start,
+> try(res <- maxSGA(loglik, gradlik, start=start,
 +                   control=list(iterlim=NA),
 +                   nObs=length(yTrain),
 +                   finalHessian=TRUE)
 +     )
 Error in validObject(x) : 
   invalid class "MaxControl" object: NA in 'iterlim'
+> 
+> ### ---------- SGA, fn missing but storeValues=TRUE
+> ### should give informative error
+> try(res <- maxSGA(grad=gradlik, start=start,
++                   control=list(iterlim=10, storeValues=TRUE),
++                   nObs=length(yTrain))
++                   )
+Error in fn(start, fixed = fixed, sumObs = TRUE, index = index, ...) : 
+  Cannot compute the objective function value: no objective function supplied
+> 
 > 
 > ### -------------------- create unequally scaled data
 > set.seed(1)
@@ -208,4 +219,4 @@ Error in maxSGACompute(fn = function (theta, fnOrig, gradOrig, hessOrig,  :
 > 
 > proc.time()
    user  system elapsed 
-  2.055   0.538   1.753 
+  2.227   0.465   1.990 
