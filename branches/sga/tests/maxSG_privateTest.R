@@ -31,7 +31,6 @@ loglik <- function(beta, index) {
 ## gradlik: work on training data
 gradlik <- function(beta, index) {
    e <- yTrain[index] - XTrain[index,,drop=FALSE] %*% beta
-   l <- crossprod(e)
    g <- t(-2*t(XTrain[index,,drop=FALSE]) %*% e)
    -g/length(index)
 }
@@ -148,6 +147,18 @@ try(res <- maxSGA(grad=gradlik, start=start,
                   control=list(iterlim=10, storeValues=TRUE),
                   nObs=length(yTrain))
                   )
+
+## ---------- gradient by observations
+gradlikO <- function(beta, index) {
+   e <- yTrain[index] - XTrain[index,,drop=FALSE] %*% beta
+   g <- -2*drop(e)*XTrain[index,,drop=FALSE]
+   -g/length(index)
+}
+res <- maxSGA(grad=gradlikO, start=start,
+              control=list(printLevel=0, iterlim=100,
+                           SG_batchSize=100),
+              nObs=length(yTrain))
+expect_equal(coef(res), b0, tolerance=tol)
 
 
 ### -------------------- create unequally scaled data

@@ -55,7 +55,6 @@ https://r-forge.r-project.org/projects/maxlik/
 > ## gradlik: work on training data
 > gradlik <- function(beta, index) {
 +    e <- yTrain[index] - XTrain[index,,drop=FALSE] %*% beta
-+    l <- crossprod(e)
 +    g <- t(-2*t(XTrain[index,,drop=FALSE]) %*% e)
 +    -g/length(index)
 + }
@@ -186,6 +185,18 @@ Error in validObject(x) :
 Error in fn(start, fixed = fixed, sumObs = TRUE, index = index, ...) : 
   Cannot compute the objective function value: no objective function supplied
 > 
+> ## ---------- gradient by observations
+> gradlikO <- function(beta, index) {
++    e <- yTrain[index] - XTrain[index,,drop=FALSE] %*% beta
++    g <- -2*drop(e)*XTrain[index,,drop=FALSE]
++    -g/length(index)
++ }
+> res <- maxSGA(grad=gradlikO, start=start,
++               control=list(printLevel=0, iterlim=100,
++                            SG_batchSize=100),
++               nObs=length(yTrain))
+> expect_equal(coef(res), b0, tolerance=tol)
+> 
 > 
 > ### -------------------- create unequally scaled data
 > set.seed(1)
@@ -219,4 +230,4 @@ Error in maxSGACompute(fn = function (theta, fnOrig, gradOrig, hessOrig,  :
 > 
 > proc.time()
    user  system elapsed 
-  2.227   0.465   1.990 
+  2.394   0.430   2.103 
