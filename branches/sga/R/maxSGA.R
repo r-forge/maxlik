@@ -5,7 +5,6 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
                    constraints=NULL,
                    finalHessian=FALSE,
                    fixed=NULL,
-                   activePar=NULL,
                    control=NULL,
                    ...) {
    ## Newton-Raphson maximisation
@@ -25,9 +24,6 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
    ##               mostly for compatibility reasons with other maxXXX functions.
    ##               TRUE/something else  include
    ##               FALSE                do not include
-   ## activePar   - an index vector -- which parameters are taken as
-   ##               variable (free).  Other paramters are treated as
-   ##               fixed constants
    ## fixed         index vector, which parameters to keep fixed
    ##
    ## RESULTS:
@@ -43,12 +39,6 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
    ##             4 - iteration limit exceeded
    ##             100 - initial value out of range
    ## message     character message describing the code
-   ## last.step   only present if code == 3 (step error).  A list with following components:
-   ##             theta0    - parameter value which led to the error
-   ##             f0        - function value at these parameter values
-   ##             climb     - the difference between theta0 and the new approximated parameter value (theta1)
-   ##             activePar - logical vector, which parameters are active (not constant)
-   ## activePar   logical vector, which parameters were treated as free (resp fixed)
    ## iterations  number of iterations
    ## type        "Newton-Raphson maximisation"
    ##
@@ -63,7 +53,7 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
    mControl <- addControlList(mControl, list(...), check=FALSE)
    ##
    argNames <- c(c("fn", "grad", "hess", "start",
-                   "activePar", "fixed", "control"),
+                   "fixed", "control"),
                  openParam(mControl))
                            # Here we allow to submit all parameters outside of the
                            # 'control' list.  May eventually include only a
@@ -86,7 +76,7 @@ maxSGA <- function(fn=NULL, grad=NULL, hess=NULL, start,
       stop("'start' must be of positive length!")
    }
    ## establish the active parameters.  Internally, we just use 'activePar'
-   fixed <- prepareFixed( start = start, activePar = activePar,
+   fixed <- prepareFixed( start = start, activePar = NULL,
       fixed = fixed )
    ## chop off the control args from ... and forward the new ...
    dddot <- list(...)

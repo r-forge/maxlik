@@ -5,7 +5,6 @@ maxAdam <- function(fn=NULL, grad=NULL, hess=NULL, start,
                     constraints=NULL,
                     finalHessian=FALSE,
                     fixed=NULL,
-                    activePar=NULL,
                     control=NULL,
                     ...) {
    ## Adam stochastic gradient ascent
@@ -25,9 +24,6 @@ maxAdam <- function(fn=NULL, grad=NULL, hess=NULL, start,
    ##               mostly for compatibility reasons with other maxXXX functions.
    ##               TRUE/something else  include
    ##               FALSE                do not include
-   ## activePar   - an index vector -- which parameters are taken as
-   ##               variable (free).  Other paramters are treated as
-   ##               fixed constants
    ## fixed         index vector, which parameters to keep fixed
    ##
    ## RESULTS:
@@ -43,7 +39,7 @@ maxAdam <- function(fn=NULL, grad=NULL, hess=NULL, start,
    mControl <- addControlList(mControl, list(...), check=FALSE)
    ##
    argNames <- c(c("fn", "grad", "hess", "start",
-                   "activePar", "fixed", "control"),
+                   "fixed", "control"),
                  openParam(mControl))
                            # Here we allow to submit all parameters outside of the
                            # 'control' list.  May eventually include only a
@@ -66,7 +62,7 @@ maxAdam <- function(fn=NULL, grad=NULL, hess=NULL, start,
       stop("'start' must be of positive length!")
    }
    ## establish the active parameters.  Internally, we just use 'activePar'
-   fixed <- prepareFixed( start = start, activePar = activePar,
+   fixed <- prepareFixed( start = start, activePar = NULL,
       fixed = fixed )
    ## chop off the control args from ... and forward the new ...
    dddot <- list(...)

@@ -3,17 +3,17 @@
 \alias{maxAdam}
 \title{Stochastic Gradient Ascent}
 \description{
-  Stochastic Gradient Ascent and related methods
+  Stochastic Gradient Ascent--based optimizers
 }
 \usage{
 maxSGA(fn = NULL, grad = NULL, hess = NULL, start,
-nObs,
-      constraints = NULL, finalHessian = FALSE, 
-      fixed = NULL, activePar = NULL, control=NULL, ... )
+       nObs,
+       constraints = NULL, finalHessian = FALSE, 
+       fixed = NULL, control=NULL, ... )
 maxAdam(fn = NULL, grad = NULL, hess = NULL, start,
-nObs,
-      constraints = NULL, finalHessian = FALSE, 
-      fixed = NULL, activePar = NULL, control=NULL, ... )
+        nObs,
+        constraints = NULL, finalHessian = FALSE, 
+        fixed = NULL, control=NULL, ... )
 }
 \arguments{
   \item{fn}{the function to be maximized.  As the objective function
@@ -40,9 +40,6 @@ nObs,
     or a matrix, where \emph{columns} correspond to individual parameters.
     The column sums are treated as gradient components.
     If \code{NULL}, finite-difference gradients are computed.
-    If BHHH method is used, \code{grad} must return a matrix,
-    where rows corresponds to the gradient vectors for individual
-    observations and the columns to the individual parameters.
     If \code{fn} returns an object with attribute \code{gradient},
     this argument is ignored.
 
@@ -56,13 +53,14 @@ nObs,
     so by setting \code{finalHessian} to \code{TRUE}. 
     It must have the parameter vector as the first argument and
     it must return the Hessian matrix of the objective function.
-    If missing, finite-difference Hessian, based on \code{gradient},
+    If missing, either finite-difference Hessian, based on
+    \code{gradient} or BHHH approach
     is computed if asked to do so.
   }
   \item{start}{initial parameter values.  If start values
-    are named, those names are also carried over to the results.}
-  \item{nObs}{number of observations.  This is used to select the
-    random individual batches of observations.  The resulting batch
+    are named, those names are also used for results.}
+  \item{nObs}{number of observations.  This is used to partition the data
+    into individual batches.  The resulting batch
     indices are forwarded to the \code{grad} function through the
     arument \code{index}.}
   \item{constraints}{either \code{NULL} for unconstrained optimization
@@ -95,20 +93,9 @@ nObs,
   \item{fixed}{parameters to be treated as constants at their
     \code{start} values.  If present, it is treated as an index vector of
     \code{start} parameters.}
-  \item{activePar}{this argument is retained for backward compatibility only;
-    please use argument \code{fixed} instead.}
   \item{control}{list of control parameters.  The control parameters
     used by these optimizers are
     \describe{
-      \item{gradtol}{stopping condition.  Stop if norm of the gradient is
-	less than \code{gradtol}.  Default 0, i.e. do not use this
-	condition.  Return code 1.  This condition is useful if the
-	objective is to drive full batch gradient to zero on training data.
-	However, it is not a good objective in case of the stochastic
-	gradient, and if the objective is to optimize the objective on
-	validation data.
-      }
-      SGA-specific parameters:
       \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
 	in interval \eqn{[0,1]}{[0,1]}.  See details.
       }
@@ -122,10 +109,19 @@ nObs,
       \item{SG_batchSize}{SGA batch size, a positive
 	integer.  If \code{NULL}, full batch is taken.}
       \item{SG_clip}{\code{NULL}, gradient clipping threshold.  This is
-	the max allowed squared Euclidean norm of the gradient.  If the
+	the largest allowed squared Euclidean norm of the gradient.  If the
 	actual norm of the gradient exceeds (square root of) this
 	threshold, the gradient will be scaled back accordingly while
 	preserving its direction.  \code{NULL} means no clipping.
+      }
+      Stopping conditions:
+      \item{gradtol}{stopping condition.  Stop if norm of the gradient is
+	less than \code{gradtol}.  Default 0, i.e. do not use this
+	condition.  This condition is useful if the
+	objective is to drive full batch gradient to zero on training data.
+	It is not a good objective in case of the stochastic
+	gradient, and if the objective is to optimize the objective on
+	validation data.
       }
       \item{SG_patience}{\code{NULL}, or integer.  Stopping condition:
 	the algorithm counts how many times
@@ -166,7 +162,7 @@ nObs,
 	initial parameters.
       }
     }
-    See \code{\link{maxControl}} for details.
+    See \code{\link{maxControl}} for more information.
   }
   \item{\dots}{further arguments to \code{fn}, \code{grad} and
     \code{hess}.
@@ -180,7 +176,7 @@ nObs,
     Gradient Ascent (GA) is a optimization method where the algorithm
     repeatedly takes small steps in the gradient's direction.
     In case of Stochastic GA (SGA), the gradient is not computed on the
-    full set of observations but a random subset, \emph{batch},
+    full set of observations but on a random subset, \emph{batch},
     potentially a single observation only.  This converges much faster
     than when using all observation in certain circumstances (see
     \cite{Bottou et al, 2018}).
@@ -224,7 +220,7 @@ nObs,
   \item{estfun}{matrix of gradients at parameter value \code{estimate}
       evaluated at each observation (only if \code{grad} returns a matrix
       or \code{grad} is not specified and \code{fn} returns a vector).}
-  \item{hessian}{Hessian at the maximum (the last calculated value if
+  \item{\code{\link{hessian}}}{Hessian at the maximum (the last calculated value if
     not converged).}
   \item{\code{\link{storedValues}}}{return values stored at each epoch}
   \item{\code{\link{storedParameters}}}{return parameters stored at each epoch}
@@ -232,11 +228,11 @@ nObs,
     a numeric code that describes the convergence or error.
   }
   \item{\code{\link{returnMessage}}}{a short message, describing the return code.}
-  \item{activePar}{logical vector, which parameters are optimized over.
+  \item{\code{\link{activePar}}}{logical vector, which parameters are optimized over.
     Contains only \code{TRUE}-s if no parameters are fixed.}
-  \item{nIter}{number of iterations.}
+  \item{\code{\link{nIter}}}{number of iterations.}
   \item{maximType}{character string, type of maximization.}
-  \item{maxControl}{the optimization control parameters in the form of a
+  \item{\code{\link{maxControl}}}{the optimization control parameters in the form of a
     \code{\link[maxLik:MaxControl-class]{MaxControl}} object.}
 
   The following components can only be extracted directly (with \code{\$}):
