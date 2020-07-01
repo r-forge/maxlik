@@ -231,7 +231,7 @@ maxAdam(fn = NULL, grad = NULL, hess = NULL, start,
   \item{\code{\link{activePar}}}{logical vector, which parameters are optimized over.
     Contains only \code{TRUE}-s if no parameters are fixed.}
   \item{\code{\link{nIter}}}{number of iterations.}
-  \item{maximType}{character string, type of maximization.}
+  \item{\code{\link{maximType}}}{character string, type of maximization.}
   \item{\code{\link{maxControl}}}{the optimization control parameters in the form of a
     \code{\link[maxLik:MaxControl-class]{MaxControl}} object.}
 
@@ -267,12 +267,14 @@ maxAdam(fn = NULL, grad = NULL, hess = NULL, start,
     estimation in R \emph{Computational Statistics} \bold{26}, 443--458
 }
 
-\author{Ott Toomet, Arne Henningsen,
-   function \code{maxBFGSR} was originally developed by Yves Croissant
-   (and placed in 'mlogit' package)
- }
+\author{Ott Toomet, Arne Henningsen}
 
- \seealso{
+\seealso{
+  A good starting point to learn about the usage of stochastic gradient
+  ascent in \pkg{maxLik} package is the vignette \dQuote{Stochastic
+    Gradient Ascent in maxLik}.
+
+  The other related functions are
    \code{\link{maxNR}} for Newton-Raphson, a popular Hessian-based maximization;
    \code{\link{maxBFGS}} for maximization using the BFGS, Nelder-Mead (NM),
    and Simulated Annealing (SANN) method (based on \code{\link{optim}}),
@@ -290,7 +292,7 @@ t <- rexp(100, 2)
 loglik <- function(theta, index) sum(log(theta) - theta*t[index])
 ## Note the log-likelihood and gradient are summed over observations
 gradlik <- function(theta, index) sum(1/theta - t[index])
-## Estimate with finite-difference gradient and Hessian
+## Estimate with full-batch
 a <- maxSGA(loglik, gradlik, start=1, control=list(iterlim=1000,
             SG_batchSize=10), nObs=100)
             # note that loglik is not really needed, and is not used
@@ -324,8 +326,6 @@ XValid <- X[-iTrain,,drop=FALSE]
 yTrain <- y[iTrain]
 yValid <- y[-iTrain]
 ##
-cat("Analytic training solution:\n")
-print(solve(crossprod(XTrain)) \%*\% crossprod(XTrain, yTrain))
 ## do this without momentum: learning rate must stay small for the gradient not to explode
 cat("  No momentum:\n")
 a <- maxSGA(loglik, gradlik, start=c(10,10),

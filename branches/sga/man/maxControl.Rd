@@ -98,15 +98,8 @@
       options like \code{SANN_randomSeed=Sys.time()} or
       \code{SANN_randomeSeed=sample(1000,1)} if you want stochastic results.
     }
-    % Stochastic Gradient Ascent
-    \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
-      in interval \eqn{[0,1]}{[0,1]}.
-    }
-    % Adam
-    \item{Adam_momentum1}{0.9, numeric in \eqn{(0,1)}{(0,1)}, the first moment momentum}
-    \item{Adam_momentum2}{0.999, numeric in \eqn{(0,1)}{(0,1)}, the second moment momentum}
     % SG general
-    General options for stochastic gradient methods
+    General options for stochastic gradient methods:
     \item{SG_learningRate}{0.1, learning rate, numeric}
     \item{SG_batchSize}{\code{NULL}, batch size for Stochastic Gradient Ascent.  A
       positive integer, or \code{NULL} for full-batch gradent ascent.}
@@ -128,11 +121,21 @@
       the patience value.  1 means to check (and hence to compute the
       objective function) at each epoch.
     }
+    % Stochastic Gradient Ascent
+    Options for SGA:
+    \item{SGA_momentum}{0, numeric momentum parameter for SGA.  Must lie
+      in interval \eqn{[0,1]}{[0,1]}.
+    }
+    % Adam
+    Options for Adam:
+    \item{Adam_momentum1}{0.9, numeric in \eqn{[0,1]}{[0,1]}, the first moment momentum}
+    \item{Adam_momentum2}{0.999, numeric in \eqn{[0,1]}{[0,1]}, the second moment momentum}
     % general
-    General options
-    \item{iterlim}{150, stopping condition.  Stop if more than \code{iterlim}
+    General options:
+    \item{iterlim}{150, stopping condition (the default differs for
+      different methods).  Stop if more than \code{iterlim}
       iterations performed.  Note that \sQuote{iteration} may mean
-      different things for different optimzers.}
+      different things for different optimizers.}
     \item{max.rows}{20, maximum number of matrix rows to be printed when
       requesting verbosity in the optimizers.
     }

@@ -56,7 +56,8 @@ returnMessage(x, ...)
       approximation problems or wrong analytic gradient.
     }
     \item{10}{
-      Lost patience: 
+      Lost patience: the optimizer has hit an inferior value too many
+      times (see \code{\link{maxSGA}} for more information)
     }
     \item{100}{ Initial value out of range.}
     }

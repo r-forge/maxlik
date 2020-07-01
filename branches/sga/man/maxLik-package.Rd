@@ -5,16 +5,18 @@
 Maximum Likelihood Estimation
 }
 \description{
-  This is a set of functions and tools to perform Maximum Likelihood (ML)
+  This package contains a set of functions and tools for Maximum Likelihood (ML)
   estimation.  The focus of the package is on the non-linear
   optimization from the ML viewpoint, and it provides several convenience wrappers
   and tools, like BHHH algorithm and extraction of variance-covariance
   matrix.
 }
 \details{
-\dQuote{maxLik} package is a set of convenience tools and wrappers to perform
-Maximum Likelihood (ML) analysis and other optimization tasks.
-It includes a) wrappers for several
+\pkg{maxLik} package is a set of convenience tools and wrappers
+focusing on
+Maximum Likelihood (ML) analysis, but it also contains tools for
+other optimization tasks.
+The package includes a) wrappers for several
 existing optimizers (implemented by \code{\link{optim}}); b) original
 optimizers, including Newton-Raphson and Stochastic Gradient Ascent;
 and c) several convenience tools
@@ -23,6 +25,10 @@ optimization (\code{\link{maxBHHH}}) and utilities that extract
 standard errors from the estimates.  Other highlights include a unified
 interface for all included optimizers, tools to check the programmed analytic
 derivatives, and constrained optimization.
+
+A good starting point to learn about the usage of \pkg{maxLik} are
+Henningsen \& Toomet (2011), and the provided vignette
+\dQuote{Stochastic Gradient Ascent in maxLik}.
 
 From the user's perspective, the
 central function in the package is \code{\link{maxLik}}.  In the
@@ -55,9 +61,13 @@ with contributions from Spencer Graves and Yves Croissant
 
 Maintainer: Ott Toomet <otoomet@gmail.com>
 }
-%% \references{
-%% }
-\keyword{Basics|package }
+\references{
+  Henningsen A, Toomet O (2011). \dQuote{maxLik: A package for maximum
+    likelihood estimation in R.}
+  Computational Statistics, 26(3), 443-458. doi:
+  \href{http://dx.doi.org/10.1007/s00180-010-0217-1}{10.1007/s00180-010-0217-1}.
+}
+\keyword{Basics|package}
 \keyword{Mathematics|optimize}
 %% \seealso{
 %% ~~ Optional links to other man pages, e.g. ~~
