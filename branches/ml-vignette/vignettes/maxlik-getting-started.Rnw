@@ -1,0 +1,172 @@
+\documentclass{article}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage{natbib}
+\usepackage{xspace}
+
+\newcommand{\elemProd}{\ensuremath{\odot}}  % elementwise product of matrices
+\newcommand*{\mat}[1]{\mathsf{#1}}
+\newcommand{\maxlik}{\texttt{maxLik}\xspace}
+\newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
+%\newcommand{\transpose}{\intercal}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}
+
+% \VignetteIndexEntry{SGA introduction: the basic usage of maxSGA}
+
+\begin{document}
+<<foo,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60,
+        try.outFile=stdout()  # make try to produce error messages
+        )
+foo <- packageDescription("maxLik")
+library(ggplot2)
+library(magrittr)
+@
+
+\title{Getting started with maximum likelihood and \texttt{maxLik}}
+\author{Ott Toomet}
+\maketitle
+
+
+\section{Introduction}
+
+This vignette is intended for those who are rather new for both
+maximum likelihood (ML) estimation and the \texttt{maxLik} package.
+The potential target group contains advanced undergraduate students in
+technical fields, such as statistics or economics, graduate students
+in social sciences or engineering who have to devise their own
+estimators, and research stuff and practitioners who are just moving
+into ML tasks.  If you are familiar enough with the concept of ML, you
+may
+skip the theoretical introduction and go straight to the
+Section~\ref{sec:maxlik-usage} for \texttt{maxLik} usage.
+
+
+\section{What is maximum likelihood estimation?}
+\label{sec:what-is-ml}
+
+Maximum Likelihood (ML) is in essence of maximizing \emph{likelihood}
+over the parameters of interest.  This section explains what is
+likelihood and how is it related to probability.  We start by
+introducing two important concepts for probability distributions,
+probability mass function and probability density function.
+Thereafter we explain how one transforms probabilities to likelihood,
+and what are the parameters there.  Finally, we also incorporate data
+as most common ML applications are based on data.
+
+
+\subsection{Probability mass function and probability density
+  function}
+\label{sec:pmf-pdf}
+
+We start with a very simple example.  Imagine you are tossing a fair
+coin.  What are the possible outcomes and what are the related
+probabilities?  Obviously, in case of a coin there are only two
+outcomes, heads $H$ and tails $T$.  If the coin is fair, both of these
+will have probability exactly 0.5.  We can denote tails with 0, heads
+with 1, and make a plot of the result
+(Figure~\ref{fig:fair-coin-pmf}).
+
+\begin{figure}[ht]
+  \begin{center}
+<<fig=TRUE, echo=FALSE, height=3.2>>=
+N <- 1
+p <- 0.5
+data.frame(n=0:N, p=dbinom(0:N, N, p)) %>%
+   ggplot(aes(n, p)) +
+   geom_segment(aes(xend=n, yend=0), size=1) +
+   geom_point(size=2) +
+   labs(x = "# of heads", y = "Probability") +
+   scale_x_continuous(breaks=0:1, labels=0:1,
+                      limits=c(-0.2, 1.2))
+@   
+\end{center}
+\caption{Probability mass function for a fair coin toss}
+\label{fig:fair-coin-pmf}
+\end{figure}
+
+The plot shows the probabilities for all possible events for our coin
+toss example.  This is called \emph{probability mass function} (pmf).
+Pmf just gives the probability for all possible events.  Our coin toss
+only has two possible events, tails (0) and heads (1), and hence it
+only has two values.  Such process is called \emph{Bernoulli
+  process}.  More specifically, this is \emph{Bernoulli(0.5)} process
+as for the fair coin the probability of ``success'' (i.e. heads) is
+0.5.
+
+Note that pmf is about \emph{probabilities}, not about counts.  In
+practice you rarely find a dataset where we have exactly 50\% heads,
+even if we toss a fair coin.
+
+Use all examples with data
+
+Discrete data
+
+
+Example: Bernoulli distribution: toss a fair coin
+
+Example: Binomial distribution: toss two coins
+
+Example: Poisson distribution, counts.  Use boot::cloth data for number of defects in cloth
+rolls 
+
+
+Continuous data: normal distribution, cats' body weight using
+boot::catsM data.  pdf is not probability.  Stress it contains two parameters
+
+
+
+\subsection{From probability to likelihood}
+\label{sec:from-probability-likelihood}
+
+Kind-of-the same thing: devise likelihood for the previous examples
+
+Vector arguments: put the $\mu$, $\sigma$ into the same vector
+
+
+\subsection{Non-linear optimization}
+\label{sec:non-linear-optimization}
+
+Why do we need it, and why we do the stuff in vector form
+
+What are the issues in high dimensions
+
+Why gradients are needed
+
+
+
+\section{How to use maxLik}
+\label{sec:maxlik-usage}
+
+
+\subsection{Basic usage}
+\label{sec:basic-usage}
+
+maxLik function
+
+summary, coef, stdEr
+
+vector arguments
+
+select optimizers
+
+BHHH
+
+providing analytic derivatives
+
+\subsection{Advanced usage}
+\label{sec:advanced-usage}
+
+condiNumber, compareDerivatives
+
+fixed coefficients
+
+mention SGA
+
+\bibliographystyle{apecon}
+\bibliography{sga}
+
+\end{document}
