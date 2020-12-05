@@ -9,6 +9,8 @@
 
 \newcommand{\elemProd}{\ensuremath{\odot}}  % elementwise product of matrices
 \newcommand*{\mat}[1]{\mathsf{#1}}
+\newcommand{\likelihood}{\mathcal{L}}% likelihood
+\newcommand{\loglik}{\ell}% log likelihood
 \newcommand{\maxlik}{\texttt{maxLik}\xspace}
 \newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
 %\newcommand{\transpose}{\intercal}
@@ -79,7 +81,7 @@ data.frame(n=0:N, p=dbinom(0:N, N, p)) %>%
    ggplot(aes(n, p)) +
    geom_segment(aes(xend=n, yend=0), size=1) +
    geom_point(size=2) +
-   labs(x = "# of heads", y = "Probability") +
+   labs(x = "Number of heads", y = "Probability") +
    scale_x_continuous(breaks=0:1, labels=0:1,
                       limits=c(-0.2, 1.2))
 @   
@@ -90,16 +92,77 @@ data.frame(n=0:N, p=dbinom(0:N, N, p)) %>%
 
 The plot shows the probabilities for all possible events for our coin
 toss example.  This is called \emph{probability mass function} (pmf).
-Pmf just gives the probability for all possible events.  Our coin toss
-only has two possible events, tails (0) and heads (1), and hence it
-only has two values.  Such process is called \emph{Bernoulli
+Pmf just tells you the probability for every possible event.  Our coin toss
+has only two possible events, tails (0) and heads (1), and hence its pmf
+only has two points of support.  Such process is called \emph{Bernoulli
   process}.  More specifically, this is \emph{Bernoulli(0.5)} process
 as for the fair coin the probability of ``success'' (i.e. heads) is
-0.5.
+0.5.  If the coin is not fair, we denote the corresponding process
+Bernoulli($p$), where $p$ is the probability to get heads.
 
-Note that pmf is about \emph{probabilities}, not about counts.  In
-practice you rarely find a dataset where we have exactly 50\% heads,
-even if we toss a fair coin.
+Now lets toss the coin two times.  What is the probability that we end
+up with one heads and one tails?  First, as the coin tosses are
+independent,\footnote{Events are independent when outcome of one event
+  does not influence the outcome of the other event.  Here the result
+  of the second toss is not affected by the first toss.}
+we can just multiply the probabilities: $0.5$ for one heads and $0.5$
+for one tails, $0.25$ when multiplied.  However, this is not the whole
+story--we have two possibilities to get one heads and one tails,
+either $H$, $T$ or $T$, $H$.  Both of these events are equally likely,
+so the final answer will be 0.5.
+
+But now imagine we do not know if the coin is fair.  Maybe it is not a
+coin but and object of complex shape instead.  How can we tell if it
+is fair or not?  We can repeat the exercise what we did with two
+coins.  But as we don't know the true probability of heads, lets
+denote it with $p$.  The probability of tails will be $1-p$
+accordingly, and the probability of tossing the coin two times will be
+$2 p (1-p)$, $p$ for one heads, $1-p$ for one tails, and ``2'' takes
+into account the fact that we can get one tails, one heads in two
+possible orders.
+
+This probability is essentially the likelihood.  We usually denote the
+likelihood with $\likelihood(p)$, stressing that it depends on the
+model parameter $p$.  Hence in this example we have
+\begin{equation}
+  \label{eq:2-coin-likelihood}
+  \likelihood(p) = 2 \, p \, (1-p).
+\end{equation}
+Let's repeat here what did we do above:
+\begin{enumerate}
+\item First, we described the coin toss result as Bernoulli($p$)
+  process.  In order to apply maximum likelihood method, we always
+  need a probability model to describe our data.  $p$, the probability
+  of heads, is the model parameter we typically don't know.  Bernoulli
+  process has only a single parameter, but more complex processes can
+  have many more.
+\item Thereafter we computed the probability to observe the data--one
+  heads, one tails.
+  This is only possible if we have a suitable
+  probability model.  As the model contains (usually unknown)
+  parameters, the probability will also contain parameters.
+\item And finally we just called this probability
+  \emph{likelihood} $\likelihood(p)$ to
+  stressed that it depends on the model parameter.
+\end{enumerate}
+
+What is left is to use this likelihood function to \emph{estimate} the
+parameters.  These are normally unknown, and we want to use
+data to find out the best possible set of parameters.  \emph{Maximum
+  likelihood} (ML) method finds such combination of parameters' value that
+maximizes the likelihood function.  It can be shown that such value
+has number of desirable properties, in particular it will become
+increasingly similar to the ``true value'' on increasingly large
+dataset, given that our probability model is correct.  These desirable
+properties, and relative simplicity of the method, have made ML one of
+the favorite statistical estimators.
+
+
+
+\bigskip
+
+
+log-likelihood instead of likelihood
 
 Use all examples with data
 
