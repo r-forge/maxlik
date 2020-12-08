@@ -149,32 +149,88 @@ Let's repeat here what did we do above:
 What is left is to use this likelihood function to \emph{estimate} the
 parameters.  These are normally unknown, and we want to use
 data to find out the best possible set of parameters.  \emph{Maximum
-  likelihood} (ML) method finds such combination of parameters' value that
+  likelihood} (ML) method finds such combination of parameters' values that
 maximizes the likelihood function.  It can be shown that such value
 has number of desirable properties, in particular it will become
 increasingly similar to the ``true value'' on increasingly large
-dataset, given that our probability model is correct.  These desirable
+dataset, given that our probability model is correct (it is a
+consistent estimator).  These desirable
 properties, and relative simplicity of the method, have made ML one of
-the favorite statistical estimators.
+the most widely used statistical estimators.
+
+Let us now generalize the example we did above, and convert it into a
+form suitable for ML estimation.  Assume we toss a coin of unknown
+``fairness'' where we just denote the probability to receive heads
+with $p$.  Further, assume that out of $N$ trials, $N_{H}$ trials
+turned out heads and $N_{T}$ trials turned tails.  The probability of
+this occuring is
+\begin{equation}
+  \label{eq:general-cointoss-probability}
+  \binom{N}{N_{H}} \, p^{N_{H}} \, (1 - p)^{N_{T}} =
+  \likelihood(p; N_{H}, N_{T})
+\end{equation}
+The binomial coefficient $\displaystyle\binom{N}{N_{H}} = \displaystyle\frac{N!}{N_{H}!(N -
+  N_{H})!}$ takes into account that there are many ways to how heads
+and tail can turn up while still resulting in $N_{H}$ heads and
+$H_{T}$ tails, in the example above there were just two possible
+combinations.  The probability depends on both the parameter $p$ and
+data--the corresponding counts $N_{H}$ and $N_{T}$.  We stress this in
+notation by writing $p$ in the first position followed by data. 
+
+Technically, it is easier to work with log-likelihood instead of
+likelihood (as log is monotonic function, maximum of likelihood and
+maximum of log-likelihood occur at the same parameter value).
+We denote log-likelihood by $\loglik$ and write
+\begin{equation}
+  \label{eq:general-cointoss-loglik}
+  \loglik(p; N_{H}, N_{T}) =
+  \log\likelihood(p; N_{H}, N_{T}) =
+  \log \binom{N}{N_{H}} +
+  N_{H} \log p + N_{T} \log (1 - p).
+\end{equation}
+ML method means finding value of $p$ that maximizes this expression.
+Fortunately, the binomial coefficient $\binom{N}{N_{H}}$ does not
+depend on the parameter $p$.  Intuitively, $p$ determines the
+probability of various combinations of heads and tails, but \emph{what
+  kind of combinations are possible} does not depend on $p$.  Hence we
+can ignore the first term on the right hand side
+of~\eqref{eq:general-cointoss-loglik} when maximizing the
+log-likelihood.  Such approach is very common in practice, many terms
+that are invariant with respect to parameters are often ignored.
+Hence, with certain abuse of notation we can rewrite the
+log-likelihood as
+\begin{equation}
+  \label{eq:general-cointoss-partial-loglik}
+  \loglik(p; N_{H}, N_{T}) =
+  N_{H} \log p + N_{T} \log (1 - p).
+\end{equation}
+It is easy to check that the solution, the value of $p$ that maximizes
+log-likelihood~\eqref{eq:general-cointoss-partial-loglik} is
+\begin{equation}
+  \label{eq:general-cointoss-solution}
+  p^{*} =
+  \frac{N_{H}}{N}.
+\end{equation}
+This should be surprise to no-one--the intuitive 
+``fairness'' of the coin is just the average percentage of heads we
+get.
+
+Next, we look at an example with continuous outcomes--linear
+regression.
+
+
+\subsection{Continuous variables: probability density and likelihood}
+\label{sec:continuous-outcomes}
 
 
 
-\bigskip
 
 
-log-likelihood instead of likelihood
+
+
 
 Use all examples with data
 
-Discrete data
-
-
-Example: Bernoulli distribution: toss a fair coin
-
-Example: Binomial distribution: toss two coins
-
-Example: Poisson distribution, counts.  Use boot::cloth data for number of defects in cloth
-rolls 
 
 
 Continuous data: normal distribution, cats' body weight using
