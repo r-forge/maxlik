@@ -12,6 +12,7 @@
 \newcommand{\likelihood}{\mathcal{L}}% likelihood
 \newcommand{\loglik}{\ell}% log likelihood
 \newcommand{\maxlik}{\texttt{maxLik}\xspace}
+\newcommand{\me}{\mathrm{e}} % Konstant e=2,71828
 \newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
 %\newcommand{\transpose}{\intercal}
 \renewcommand*{\vec}[1]{\boldsymbol{#1}}
@@ -215,33 +216,195 @@ This should be surprise to no-one--the intuitive
 ``fairness'' of the coin is just the average percentage of heads we
 get.
 
+
+\subsection{Doing all this with maxlik}
+\label{sec:doing-this-with-maxlik}
+
+TBD
+
+
+
 Next, we look at an example with continuous outcomes--linear
 regression.
-
 
 \subsection{Continuous variables: probability density and likelihood}
 \label{sec:continuous-outcomes}
 
+In the example above we looked at a case where there were only a small
+number of distinct possibilities (heads and tails).  These are called discrete
+random variables.  What makes discrete random variables easy to
+understand is the fact that we can actually compute the respective
+probabilities, such as the probability to receive one heads, one tails
+in case of two coin toss.  But we cannot do this with continuous
+random variables--probability to receive any particular number is
+zero.  This may sound a little counter-intuitive but perhaps the
+following example helps.  If we ask the computer to produce a single
+random number, uniformly distributed between 0 and 1, we may get
+\Sexpr{x <- runif(1); x}.  What
+is the probability to get the same number again?  You can try, but you
+never get it again.\footnote{As computers operate with finite
+  precision, the actual chances to repeat any particular random number
+  are positive, although small.  The exact answer depends on the
+  numeric precision and the quality of random number generator.
+}
+But despite of probability to receive any such number is zero we
+somehow still produced it in the first place.  Clearly, zero
+probability does not mean the number (the event) was impossible.
+However, if we want to receive a negative number from the same random
+number generator (RNG), it will be impossible (because we ask for
+numbers between 0 and 1).  So probability 0-events may be both
+possible and impossible.  And to make matter worse, they may also be
+more or less likely, e.g. in case of standard normal random numbers the
+values near 0 are much more likely than around 3, despite of
+the probability to receive any particular number still being 0.
+
+The solution is to look not at the probabilities of particular numbers
+but numbers in a narrow interval near these numbers.  This is how the
+concept of probability density is defined.  We look at
+the number of interest $x$, and compute the
+probability that the random value $X$ falls into the narrow interval
+of width $\delta$, $[a - \delta/2, a + \delta/2]$, around this
+number.  Obviously, the smaller the width $\delta$, the less likely
+$X$ falls into this narrow interval.  But it turns out that when we
+divide the probability by the width, we get a stable value at the
+limit
+\begin{equation}
+  \label{eq:probability-density}
+  f(x) =
+  \lim_{\delta\to0}
+  \frac{\Pr(X \in [x - \delta/2, x + \delta/2])}{\delta}.
+\end{equation}
+The result, $f(x)$, is called \emph{probability density function}, or pdf.  In
+case of continuous random variables, we have to work with pdf-s
+instead.
+
+Consider the following somewhat trivial example: we have sampled two
+independent datapoints, 
+$x_{1}$ and $x_{2}$, from a normally distributed random variable with
+variance 1 and mean (expected value) equal to $\mu$.  The latter is
+a parameter, in a similar fashion as $p$ was the parameter of the
+probability of heads in the coin toss example.
+The pdf for unit-variance normal distribution is
+\begin{equation}
+  \label{eq:normal-pdf}
+  f(x; \mu) =
+  \frac{1}{\sqrt{2\pi}}
+  \,
+  \me^{
+    \displaystyle
+    -\frac{1}{2}
+    (x - \mu)^{2}
+  }
+\end{equation}
+and hence from~\eqref{eq:probability-density}
+the probability that we observe a datapoint in the narrow
+interval around $x$ is $f(x; \mu)\cdot \delta$.  As these two
+probabilities are independent, we can just multiply the corresponding
+probabilities to find the probability that both random numbers are
+near their corresponding values:
+\begin{multline}
+  \label{eq:two-normal-probability-likelihood}
+  \Pr{\big(X_{1} \in [x_{1} - \delta/2, x + \delta/2]
+    \quad\text{and}\quad
+    X_{2} \in [x_{2} - \delta/2, x + \delta/2]\big)}
+  =\\=
+  \frac{1}{\sqrt{2\pi}}
+  \,
+  \me^{
+    \displaystyle
+    -\frac{1}{2}
+    (x_{1} - \mu)^{2}
+  } \cdot\delta
+  \times
+  \frac{1}{\sqrt{2\pi}}
+  \,
+  \me^{
+    \displaystyle
+    -\frac{1}{2}
+    (x_{2} - \mu)^{2}
+  } \cdot\delta
+  \equiv\\\equiv
+  \likelihood^{*}(\mu; x_{1}, x_{2})
+\end{multline}
+where the interval width $\delta$ must be small for the equation to
+hold correctly.  We denote this probability with $\likelihood^{*}$ to
+stress that it is essentially a likelihood, just not written in the
+way it is usually done.  As in the coin-toss example above, we write
+it as a function of the parameter $\mu$, and put data $x_{1}$ and
+$x_{2}$ after
+semicolon.  Based on data, we can compute maximum-likelihood estimator
+for $\mu$ by just finding such a $\mu$ value that maximizes the
+expression. 
+
+But note that $\delta$ plays no role in maximizing the likelihood.  It
+is just a multiplicative factor, as the interval width it also must be
+positive.  So for our maximization problem we can just ignore it.
+This is what is normally done when working with continuous variables,
+and hence we can write the likelihood as
+\begin{equation}
+  \label{eq:two-normal-likelihood}
+  \likelihood(\mu; x_{1}, x_{2})
+  =
+  \frac{1}{\sqrt{2\pi}}
+  \,
+  \me^{
+    \displaystyle
+    -\frac{1}{2}
+    (x_{1} - \mu)^{2}
+  }
+  \times
+  \frac{1}{\sqrt{2\pi}}
+  \,
+  \me^{
+    \displaystyle
+    -\frac{1}{2}
+    (x_{2} - \mu)^{2}
+  }.
+\end{equation}
+We denote this by $\likelihood$ instead of $\likelihood^{*}$ to stress
+that this is how likelihood function for continuous random variables
+is usually constructed.
+
+Exactly as in case with discrete variables, it is better to use
+log-likelihood instead of likelihood to actually compute the maximum.
+The log-likelihood of~\eqref{eq:two-normal-likelihood} is
+\begin{multline}
+  \label{eq:two-normal-loglik}
+  \loglik(\mu; x_{1}, x_{2})
+  =
+  -\log{\sqrt{2\pi}}
+  -\frac{1}{2}
+  (x_{1} - \mu)^{2}
+  +
+  (- \log{\sqrt{2\pi}})
+  -\frac{1}{2}
+  (x_{2} - \mu)^{2}
+  =\\=
+  - 2\log{\sqrt{2\pi}}
+  - \frac{1}{2}
+  \sum_{i} (x_{i} - \mu)^{2}.
+\end{multline}
+The first term, $- 2\log{\sqrt{2\pi}}$, is just an additive constant
+and plays no role in the
+actual maximization but it is anyway typically used when defining the
+likelihood function.  The $1/2$ is a positive factor that does not
+play any role either.  When we remove these two terms, what is left is
+$-\sum_{i}(x_{i} - \mu)^{2}$.  So we end up maximizing negative of sum
+of squared errors, equivalent to minimizing the positive sum of squared errors.
+Maximum likelihood method is equivalent to least squares in case of
+normally distributed random variables. 
+
+One can easily check by differentiating the log-likelihood function,
+that the maximum of log-likelihood is achieved when $\mu =
+\frac{1}{2}(x_{1} + x_{2})$.  It is not surprising, our intuitive
+understanding of the mean value carries immediately over to the normal
+distribution context.
 
 
 
-
-
-
-
-Use all examples with data
-
-
-
-Continuous data: normal distribution, cats' body weight using
-boot::catsM data.  pdf is not probability.  Stress it contains two parameters
-
-
-
-\subsection{From probability to likelihood}
+\subsection{Vector arguments}
 \label{sec:from-probability-likelihood}
 
-Kind-of-the same thing: devise likelihood for the previous examples
 
 Vector arguments: put the $\mu$, $\sigma$ into the same vector
 
