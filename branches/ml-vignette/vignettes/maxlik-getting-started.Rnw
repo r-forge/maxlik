@@ -286,7 +286,7 @@ a parameter, in a similar fashion as $p$ was the parameter of the
 probability of heads in the coin toss example.
 The pdf for unit-variance normal distribution is
 \begin{equation}
-  \label{eq:normal-pdf}
+  \label{eq:standard-normal-pdf}
   f(x; \mu) =
   \frac{1}{\sqrt{2\pi}}
   \,
@@ -369,7 +369,7 @@ Exactly as in case with discrete variables, it is better to use
 log-likelihood instead of likelihood to actually compute the maximum.
 The log-likelihood of~\eqref{eq:two-normal-likelihood} is
 \begin{multline}
-  \label{eq:two-normal-loglik}
+  \label{eq:two-standard-normal-loglik}
   \loglik(\mu; x_{1}, x_{2})
   =
   -\log{\sqrt{2\pi}}
@@ -400,13 +400,92 @@ that the maximum of log-likelihood is achieved when $\mu =
 understanding of the mean value carries immediately over to the normal
 distribution context.
 
+Example with random numbers
 
 
 \subsection{Vector arguments}
 \label{sec:from-probability-likelihood}
 
+The previous example is instructive but it does not really
+applicable.  The problem there is that we wrote the probability model
+as standard normal density with unknown location $\mu$.  However, in
+practice we hardly ever know if we are dealing with standard normal,
+more likely both the location and the standard deviation $\sigma$ are
+unknown.  So in order to make the previous example applicable, we need
+to include the unknown standard in the model.
 
-Vector arguments: put the $\mu$, $\sigma$ into the same vector
+The normal density function with standard deviation $\sigma$ is
+\begin{equation}
+  \label{eq:normal-pdf}
+  f(x; \mu, \sigma) =
+  \frac{1}{\sqrt{2\pi}}
+  \frac{1}{\sigma}
+  \,
+  \me^{
+    -\frac{1}{2}
+    \frac{(x - \mu)^{2}}{\sigma^{2}}
+  }.
+\end{equation}
+Similar argumentation as what we did above will give the
+log-likelihood
+\begin{equation}
+  \label{eq:two-normal-loglik}
+  \loglik(\mu, \sigma; x_{1}, x_{2})
+  =
+  - 2\log{\sqrt{2\pi}}
+  - 2\log \sigma
+  - \frac{1}{2}
+  \sum_{i=1}^{2} \frac{(x_{i} - \mu)^{2}}{\sigma^{2}}.
+\end{equation}
+We write the log-likelihood as function of both parameters, $\mu$ and
+$\sigma$; $x_{1}$ and $x_{2}$ after semicolon show that though it
+depends on data too, we are not much interested in that dependency for
+now.  This formula immediately extends to the case of $N$ datapoints
+as 
+\begin{equation}
+  \label{eq:normal-loglik}
+  \loglik(\mu, \sigma; x_{1}, x_{2})
+  =
+  - N\log{\sqrt{2\pi}}
+  - N\log \sigma
+  - \frac{1}{2}
+  \sum_{i=1}^{N} \frac{(x_{i} - \mu)^{2}}{\sigma^{2}}.
+\end{equation}
+In this case we can actually do the optimization analytically, and
+come to the well-known intuitive results: the best estimator for location $\mu$ is
+the sample mean, and for variance $\sigma^{2}$ the sample variance.
+
+However, in general the expression does not allow for analytic
+solution.  In this case we need to use a numeric optimization
+algorithm that searches for the best $\mu$ and $\sigma$ combination.
+The common multi-dimensional optimizers rely on linear algebra and
+need all the parameters submitted as a single vector.  So we can write
+the log-likelihood as
+\begin{equation}
+  \label{eq:normal-loglik-vector}
+  \loglik(\vec{\theta})
+  \quad\text{where}\quad
+  \vec{\theta} = (\mu, \sigma).
+\end{equation}
+Here we denote both parameters $\mu$ and $\sigma$ as components of a
+single vector $\vec{\theta}$.  We have also
+dropped dependency on data in the notation altogether but
+remember that in practical applications log-likelihood will always
+depend on data.  This notation can converted to computer code almost
+verbatim, just when actually calculating log-likelihood inside of
+the function, one has to extract the parameters from $\vec{\theta}$
+vector. 
+
+Example: fathers and sons
+
+
+\subsection{Final Example: Linear Regression}
+\label{sec:linear-regression}
+
+Now when we have the main tools in place, it is rather easy to extend
+the example above to a real statistical model.
+
+
 
 
 \subsection{Non-linear optimization}
