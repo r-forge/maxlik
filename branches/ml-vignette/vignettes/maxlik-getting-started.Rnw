@@ -7,7 +7,7 @@
 \usepackage{natbib}
 \usepackage{xspace}
 
-\newcommand{\elemProd}{\ensuremath{\odot}}  % elementwise product of matrices
+\newcommand{\COii}{\ensuremath{\mathit{CO}_{2}}\xspace}
 \newcommand*{\mat}[1]{\mathsf{#1}}
 \newcommand{\likelihood}{\mathcal{L}}% likelihood
 \newcommand{\loglik}{\ell}% log likelihood
@@ -485,7 +485,100 @@ Example: fathers and sons
 Now when we have the main tools in place, it is rather easy to extend
 the example above to a real statistical model.
 
+Let us analyze the \emph{CO2} dataset (in package \emph{datasets}).
+This describes \COii uptake (variable \emph{uptake}) by different grasses in
+different \COii concentration (variable \emph{conc}) in air.  We can
+describe the corresponding regression model as
+\begin{equation}
+  \label{eq:co2-regression}
+  \mathit{uptake}_{i} = \beta_{0} +
+  \beta_{1} \cdot \mathit{conc}_{i} +
+  \epsilon_{i}.
+\end{equation}
+In order to turn this regression model into a maximum likelihood
+problem, we need again a parametric probability model.  Assume that
+the disturbance term $\epsilon$ is normally distributed with mean 0
+and (unknown) variance $\sigma^{2}$.  So we can
+follow~\eqref{eq:normal-loglik} and write for a single observation
+\begin{equation}
+  \label{eq:co2-epsilon-loglik}
+  \loglik(\sigma; \epsilon_{i})
+  =
+  - \log{\sqrt{2\pi}}
+  - \log \sigma
+  - \frac{1}{2}
+  \frac{(\epsilon_{i} - \mu)^{2}}{\sigma^{2}}.
+\end{equation}
+Next, we can express $\epsilon_{i}$ from~\eqref{eq:co2-regression}:
+\begin{equation}
+  \label{eq:co2-epsilon}
+  \epsilon_{i} =
+  \mathit{uptake}_{i} - \beta_{0} -
+  \beta_{1} \cdot \mathit{conc}_{i}
+\end{equation}
+and finally plug this into~\eqref{eq:co2-epsilon-loglik}:
+\begin{multline}
+  \label{eq:co2-single-loglik}
+  \loglik(\beta_{0}, \beta_{1}, \sigma; \mathit{uptake}_{i}, \mathit{conc}_{i})
+  =\\=
+  - \log{\sqrt{2\pi}}
+  - \log \sigma
+  - \frac{1}{2}
+  \frac{(
+    \mathit{uptake}_{i} - \beta_{0} -
+    \beta_{1} \cdot \mathit{conc}_{i}
+    - \mu)^{2}}{\sigma^{2}}.
+\end{multline}
+We have designed log-likelihood formula for a single linear regression
+observation.  For $N$ observations we have
+\begin{multline}
+  \label{eq:co2-loglik}
+  \loglik(\beta_{0}, \beta_{1}, \sigma; \vec{\mathit{uptake}}, \vec{\mathit{conc}})
+  =\\=
+  - N\log{\sqrt{2\pi}}
+  - N\log \sigma
+  - \frac{1}{2}
+  \sum_{i=1}^{N}
+  \frac{(
+    \mathit{uptake}_{i} - \beta_{0} -
+    \beta_{1} \cdot \mathit{conc}_{i}
+    - \mu)^{2}}{\sigma^{2}}.
+\end{multline}
+This is a fully specified log-likelihood function we can use for
+optimization.  Let us repeat what we have done:
+\begin{itemize}
+\item We write the log-likelihood as a function of parameters
+  $\beta_{0}$, $\beta_{1}$ and $\sigma$.  Note that in ordinary
+  regression model we do not call $\sigma$ a parameter.  But it is
+  still a parameter, one we are usually not interested in (sometimes
+  called ``nuisance parameter'').  We will denote all parameters
+  $\vec{\theta}$ later.
+\item The likelihood function also depends on data, here of the
+  vectors $\vec{\mathit{uptake}}$ and  $\vec{\mathit{conc}}$.
+\item The function definition itself is just sum of log-likelihood
+  contributions of individual normal disturbance terms, but as we do
+  not observe those directly, we express those through the regression
+  equation in~\eqref{eq:co2-single-loglik}.
+\end{itemize}
+Note that the first term on the right hand side does not depend on the
+parameters and hence we can ignore it for the optimization, and write
+the function in a simpler form:
+\begin{equation}
+  \label{eq:co2-loglik-simplified}
+  \loglik(\vec{\theta})
+  =
+  - N\log \sigma
+  - \frac{1}{2}
+  \sum_{i=1}^{N}
+  \frac{(
+    \mathit{uptake}_{i} - \beta_{0} -
+    \beta_{1} \cdot \mathit{conc}_{i}
+    - \mu)^{2}}{\sigma^{2}}.
+\end{equation}
+This is the definition we can easily code and estimate.
 
+
+\verb|summary(lm(uptake ~ conc + plant, data=CO2))|
 
 
 \subsection{Non-linear optimization}
