@@ -13,11 +13,11 @@
 \newcommand{\loglik}{\ell}% log likelihood
 \newcommand{\maxlik}{\texttt{maxLik}\xspace}
 \newcommand{\me}{\mathrm{e}} % Konstant e=2,71828
+\newcommand{\R}{\texttt{R}\xspace}
 \newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
-%\newcommand{\transpose}{\intercal}
 \renewcommand*{\vec}[1]{\boldsymbol{#1}}
 
-% \VignetteIndexEntry{SGA introduction: the basic usage of maxSGA}
+% \VignetteIndexEntry{Maximum Likelihood: Introduction}
 
 \begin{document}
 <<foo,include=FALSE,echo=FALSE>>=
@@ -36,131 +36,134 @@ library(magrittr)
 
 \section{Introduction}
 
-This vignette is intended for those who are rather new for both
+This vignette is intended for those who are rather new to both
 maximum likelihood (ML) estimation and the \texttt{maxLik} package.
 The potential target group contains advanced undergraduate students in
 technical fields, such as statistics or economics, graduate students
-in social sciences or engineering who have to devise their own
-estimators, and research stuff and practitioners who are just moving
-into ML tasks.  If you are familiar enough with the concept of ML, you
+in social sciences or engineering who are devising their own
+estimators, and researchers and practitioners who have little previous
+experience with ML or with \texttt{maxLik}.  However, one should have basic knowledge
+of \R language.  If you are familiar enough with the concept of ML, you
 may
 skip the theoretical introduction and go straight to the
 Section~\ref{sec:maxlik-usage} for \texttt{maxLik} usage.
 
-
-\section{What is maximum likelihood estimation?}
-\label{sec:what-is-ml}
-
-Maximum Likelihood (ML) is in essence of maximizing \emph{likelihood}
-over the parameters of interest.  This section explains what is
-likelihood and how is it related to probability.  We start by
-introducing two important concepts for probability distributions,
-probability mass function and probability density function.
-Thereafter we explain how one transforms probabilities to likelihood,
-and what are the parameters there.  Finally, we also incorporate data
-as most common ML applications are based on data.
+Maximum Likelihood (ML) in its core is maximizing the \emph{likelihood}
+over the parameters of interest.  The first section explains what is
+likelihood and how is it related to probability.  We provide two toy
+examples, and at the end of the section derive the likelihood function
+for linear regression.  All the cases are supplemented with code
+examples.  This section should help beginners to get started with both
+theoretical background and \texttt{maxLik} usage.
+The second section is solely devoted to
+\texttt{maxLik} usage, the reader is assumed to know the relevant
+concepts and look these up as necessary.
 
 
-\subsection{Probability mass function and probability density
-  function}
-\label{sec:pmf-pdf}
+\section{What Is Likelihood? }
+\label{sec:what-is-likelihood}
 
-We start with a very simple example.  Imagine you are tossing a fair
+This section is intended for readers who are unfamiliar with the
+concept of likelihood, or need a quick intuitive brush-up.  We discuss
+three cases: tossing a coin (binomial distribution), computing sample
+average (normal distribution), and linear regression (normal
+distribution).  The examples assume little knowledge besides basic
+statistics and \R knowledge.
+
+Experienced readers should skip this section and start from
+Section~\ref{sec:basic-usage}. 
+
+
+\subsection{Discrete Random Variables}
+\label{sec:discrete-random-variables}
+
+We start with discrete random variables.  ``Discrete'' refers to the
+case where only a limited number of different outcomes are possible,
+and hence we can compute the probability of all these outcomes.
+
+Imagine you are tossing a fair
 coin.  What are the possible outcomes and what are the related
 probabilities?  Obviously, in case of a coin there are only two
 outcomes, heads $H$ and tails $T$.  If the coin is fair, both of these
-will have probability exactly 0.5.  We can denote tails with 0, heads
-with 1, and make a plot of the result
-(Figure~\ref{fig:fair-coin-pmf}).
-
-\begin{figure}[ht]
-  \begin{center}
-<<fig=TRUE, echo=FALSE, height=3.2>>=
-N <- 1
-p <- 0.5
-data.frame(n=0:N, p=dbinom(0:N, N, p)) %>%
-   ggplot(aes(n, p)) +
-   geom_segment(aes(xend=n, yend=0), size=1) +
-   geom_point(size=2) +
-   labs(x = "Number of heads", y = "Probability") +
-   scale_x_continuous(breaks=0:1, labels=0:1,
-                      limits=c(-0.2, 1.2))
-@   
-\end{center}
-\caption{Probability mass function for a fair coin toss}
-\label{fig:fair-coin-pmf}
-\end{figure}
-
-The plot shows the probabilities for all possible events for our coin
-toss example.  This is called \emph{probability mass function} (pmf).
-Pmf just tells you the probability for every possible event.  Our coin toss
-has only two possible events, tails (0) and heads (1), and hence its pmf
-only has two points of support.  Such process is called \emph{Bernoulli
+will have probability exactly 0.5.
+Such process is called \emph{Bernoulli
   process}.  More specifically, this is \emph{Bernoulli(0.5)} process
-as for the fair coin the probability of ``success'' (i.e. heads) is
-0.5.  If the coin is not fair, we denote the corresponding process
+as for the fair coin the probability of ``success'' is 0.5 (we consider
+success to be heads in this example).
+If the coin is not fair, we denote the corresponding process
 Bernoulli($p$), where $p$ is the probability to get heads.
 
-Now lets toss the coin two times.  What is the probability that we end
+Now let us toss the coin two times.  What is the probability that we end
 up with one heads and one tails?  First, as the coin tosses are
 independent,\footnote{Events are independent when outcome of one event
   does not influence the outcome of the other event.  Here the result
-  of the second toss is not affected by the first toss.}
-we can just multiply the probabilities: $0.5$ for one heads and $0.5$
-for one tails, $0.25$ when multiplied.  However, this is not the whole
-story--we have two possibilities to get one heads and one tails,
+  of the second toss is not affected by the outcome of the first toss.}
+we can just multiply the probabilities: $0.5$ for a single heads and $0.5$
+for a single tails equals $0.25$ when multiplied.  However, this is not the whole
+story--we have two ways to get one heads and one tails,
 either $H$, $T$ or $T$, $H$.  Both of these events are equally likely,
 so the final answer will be 0.5.
 
-But now imagine we do not know if the coin is fair.  Maybe it is not a
-coin but and object of complex shape instead.  How can we tell if it
-is fair or not?  We can repeat the exercise what we did with two
-coins.  But as we don't know the true probability of heads, lets
-denote it with $p$.  The probability of tails will be $1-p$
-accordingly, and the probability of tossing the coin two times will be
+But now imagine we do not know if the coin is fair.  Imagine we are
+not tossing a
+coin but and object of complex shape instead.  We can still label one
+side of the object as ``heads'' and the other as ``tails''.
+How can we tell what is the probability of heads?
+Let's start by 
+denoting it with $p$.  Hence the probability of tails will be $1-p$,
+and the probability to receive one heads, one tails when we toss the
+object two times will be
 $2 p (1-p)$, $p$ for one heads, $1-p$ for one tails, and ``2'' takes
-into account the fact that we can get one tails, one heads in two
-possible orders.
+into account the fact that we can get this outcome in two
+different orders.
 
 This probability is essentially the likelihood.  We usually denote the
 likelihood with $\likelihood(p)$, stressing that it depends on the
-model parameter $p$.  Hence in this example we have
+unknown probability $p$.  Hence in this example we have
 \begin{equation}
   \label{eq:2-coin-likelihood}
   \likelihood(p) = 2 \, p \, (1-p).
 \end{equation}
+$p$ is the \emph{model parameter}, the unknown number we are computing
+using the ML method.
+
 Let's repeat here what did we do above:
 \begin{enumerate}
 \item First, we described the coin toss result as Bernoulli($p$)
-  process.  In order to apply maximum likelihood method, we always
+  process.  In order to us ML method, we 
   need a probability model to describe our data.  $p$, the probability
-  of heads, is the model parameter we typically don't know.  Bernoulli
+  of heads, is the model parameter we want to
+  calculate.  Bernoulli
   process has only a single parameter, but more complex processes can
   have many more.
-\item Thereafter we computed the probability to observe the data--one
-  heads, one tails.
-  This is only possible if we have a suitable
-  probability model.  As the model contains (usually unknown)
+\item We compute the likelihood based on data: in this example it was
+  just a single heads, a single tails.
+\item Thereafter we computed the probability to observe the data.
+  This is why we have a suitable
+  probability model.  As the model contains unknown
   parameters, the probability will also contain parameters.
 \item And finally we just called this probability
   \emph{likelihood} $\likelihood(p)$ to
-  stressed that it depends on the model parameter.
+  stressed that it depends on the model parameter.  It also depends on
+  data (the probability will look different for e.g. two heads) but we typically
+  do not stress it in the notation.
 \end{enumerate}
 
 What is left is to use this likelihood function to \emph{estimate} the
-parameters.  These are normally unknown, and we want to use
+parameters, to use
 data to find out the best possible set of parameters.  \emph{Maximum
   likelihood} (ML) method finds such combination of parameters' values that
-maximizes the likelihood function.  It can be shown that such value
+maximizes the likelihood function.  It can be shown that such combination
 has number of desirable properties, in particular it will become
-increasingly similar to the ``true value'' on increasingly large
-dataset, given that our probability model is correct (it is a
-consistent estimator).  These desirable
+increasingly similar to the ``true value'' on an increasingly large
+dataset, given that our probability model is correct.\footnote{This
+  property is formally referred to as \emph{consistency}.  ML is a
+  consistent estimator.}  These desirable
 properties, and relative simplicity of the method, have made ML one of
 the most widely used statistical estimators.
 
-Let us now generalize the example we did above, and convert it into a
-form suitable for ML estimation.  Assume we toss a coin of unknown
+Let us now generalize the example we did above to an arbitrary number
+of coin tosses.  Assume the coin is of unknown
 ``fairness'' where we just denote the probability to receive heads
 with $p$.  Further, assume that out of $N$ trials, $N_{H}$ trials
 turned out heads and $N_{T}$ trials turned tails.  The probability of
@@ -168,15 +171,18 @@ this occuring is
 \begin{equation}
   \label{eq:general-cointoss-probability}
   \binom{N}{N_{H}} \, p^{N_{H}} \, (1 - p)^{N_{T}} =
-  \likelihood(p; N_{H}, N_{T})
+  \likelihood(p; N_{H}, N_{T}).
 \end{equation}
-The binomial coefficient $\displaystyle\binom{N}{N_{H}} = \displaystyle\frac{N!}{N_{H}!(N -
-  N_{H})!}$ takes into account that there are many ways to how heads
+$p^{N_{H}}$ is the probability to get $N_{H}$ heads, $(1 - p)^{N_{T}}$ is
+the probability to get $N_{T}$ tails, and
+the binomial coefficient $\displaystyle\binom{N}{N_{H}} = \displaystyle\frac{N!}{N_{H}!(N -
+  N_{H})!}$ takes into account that there are many ways how heads
 and tail can turn up while still resulting in $N_{H}$ heads and
-$H_{T}$ tails, in the example above there were just two possible
+$N_{T}$ tails.  In the example above there were just two possible
 combinations.  The probability depends on both the parameter $p$ and
 data--the corresponding counts $N_{H}$ and $N_{T}$.  We stress this in
-notation by writing $p$ in the first position followed by data. 
+notation by writing $p$ in the first position followed by data, as our
+prime interest is to compute $p$.
 
 Technically, it is easier to work with log-likelihood instead of
 likelihood (as log is monotonic function, maximum of likelihood and
@@ -189,8 +195,9 @@ We denote log-likelihood by $\loglik$ and write
   \log \binom{N}{N_{H}} +
   N_{H} \log p + N_{T} \log (1 - p).
 \end{equation}
-ML method means finding value of $p$ that maximizes this expression.
-Fortunately, the binomial coefficient $\binom{N}{N_{H}}$ does not
+ML estimation is to find the value of $p$ that maximizes this expression.
+Fortunately, in this case
+the binomial coefficient $\binom{N}{N_{H}}$ depends only on data but does not
 depend on the parameter $p$.  Intuitively, $p$ determines the
 probability of various combinations of heads and tails, but \emph{what
   kind of combinations are possible} does not depend on $p$.  Hence we
@@ -198,7 +205,7 @@ can ignore the first term on the right hand side
 of~\eqref{eq:general-cointoss-loglik} when maximizing the
 log-likelihood.  Such approach is very common in practice, many terms
 that are invariant with respect to parameters are often ignored.
-Hence, with certain abuse of notation we can rewrite the
+Hence, with we can re-define the
 log-likelihood as
 \begin{equation}
   \label{eq:general-cointoss-partial-loglik}
@@ -206,7 +213,9 @@ log-likelihood as
   N_{H} \log p + N_{T} \log (1 - p).
 \end{equation}
 It is easy to check that the solution, the value of $p$ that maximizes
-log-likelihood~\eqref{eq:general-cointoss-partial-loglik} is
+log-likelihood~\eqref{eq:general-cointoss-partial-loglik}
+is\footnote{Just differentiate $\loglik(p)$ with respect to $p$, set
+  the result to zero, and isolate $p$.}
 \begin{equation}
   \label{eq:general-cointoss-solution}
   p^{*} =
@@ -216,13 +225,38 @@ This should be surprise to no-one--the intuitive
 ``fairness'' of the coin is just the average percentage of heads we
 get.
 
-
-\subsection{Doing all this with maxlik}
-\label{sec:doing-this-with-maxlik}
-
-TBD
-
-
+Now it is time to try this out on computer with \texttt{maxLik}.  Lets
+assume we tossed the coin and received $H_{H} = 3$ heads and $H_{T} =
+7$ tails:
+<<>>=
+NH <- 3
+NT <- 7
+@
+Next, we have to define the log-likelihood function.  It has to be a
+function of the parameter, and the parameter must be its first
+argument.  We can access data in different ways, for instance through
+the \R workspace environment.  So we can write the log-likelihood as
+<<>>=
+loglik <- function(p) {
+   NH*log(p) + NT*log(1-p)
+}
+@ 
+And finally, we can use \texttt{maxLik} to compute the likelihood.  In
+its simplest form, \texttt{maxLik} requires two arguments: the
+log-likelihood function, and the start value for the iterative
+algorithm (see Section~\ref{sec:maxlik-usage} for more detailed
+explanations).
+The start value must be a valid parameter value (it must
+not give errors).  We can choose $p_{0} = 0.5$ as the initial value,
+and let the algorithm work to find the best possible $p$ from there:
+<<>>=
+library(maxLik)
+m <- maxLik(loglik, start=0.5)
+summary(m)
+@
+As expected, the best bet for $p$ is 0.3 in this case.  Our intuitive
+approach--just percentage of heads in the experiment--turns also out
+to be the ML estimate.
 
 Next, we look at an example with continuous outcomes--linear
 regression.
