@@ -2,6 +2,7 @@
 \usepackage{graphics}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[inline]{enumitem}
 \usepackage{indentfirst}
 \usepackage[utf8]{inputenc}
 \usepackage{natbib}
@@ -32,7 +33,6 @@ library(magrittr)
 \title{Getting started with maximum likelihood and \texttt{maxLik}}
 \author{Ott Toomet}
 \maketitle
-
 
 \section{Introduction}
 
@@ -261,19 +261,22 @@ to be the ML estimate.
 Next, we look at an example with continuous outcomes--linear
 regression.
 
+
 \subsection{Continuous variables: probability density and likelihood}
 \label{sec:continuous-outcomes}
 
 In the example above we looked at a case where there were only a small
-number of distinct possibilities (heads and tails).  These are called discrete
-random variables.  What makes discrete random variables easy to
-understand is the fact that we can actually compute the respective
-probabilities, such as the probability to receive one heads, one tails
-in case of two coin toss.  But we cannot do this with continuous
-random variables--probability to receive any particular number is
-zero.  This may sound a little counter-intuitive but perhaps the
-following example helps.  If we ask the computer to produce a single
-random number, uniformly distributed between 0 and 1, we may get
+number of distinct possibilities (heads and tails).  Such cases are called discrete
+random variables.  Discrete random variables are easy to
+understand because we can actually compute the respective
+probabilities, such as the probability to receive one heads and one
+tails in our experiment.  Now we consider continuous random variables,
+cases where the outcome can be any number in a certain interval.
+Unfortunately we cannot compute probability of a single value for continuous
+random variables.  Or more precisely--yes, we can, but it is always 0.
+This may sound a little counter-intuitive but perhaps the
+following example helps.  If you ask the computer to generate a single
+random number between 0 and 1, you may get
 \Sexpr{x <- runif(1); x}.  What
 is the probability to get the same number again?  You can try, but you
 never get it again.\footnote{As computers operate with finite
@@ -285,19 +288,20 @@ But despite of probability to receive any such number is zero we
 somehow still produced it in the first place.  Clearly, zero
 probability does not mean the number (the event) was impossible.
 However, if we want to receive a negative number from the same random
-number generator (RNG), it will be impossible (because we ask for
+number generator, it will be impossible (because we it only generates
 numbers between 0 and 1).  So probability 0-events may be both
 possible and impossible.  And to make matter worse, they may also be
-more or less likely, e.g. in case of standard normal random numbers the
-values near 0 are much more likely than around 3, despite of
+more or less likely.  For instance, in case of 0-centered normal
+random numbers (also known as the ``bell curve'') the
+values near 0 are much more likely than values around 3, despite of
 the probability to receive any particular number still being 0.
 
-The solution is to look not at the probabilities of particular numbers
-but numbers in a narrow interval near these numbers.  This is how the
-concept of probability density is defined.  We look at
+The solution is to look not at the probabilities of individual numbers
+but numbers in a narrow interval near these numbers.  Consider
 the number of interest $x$, and compute the
-probability that the random value $X$ falls into the narrow interval
-of width $\delta$, $[a - \delta/2, a + \delta/2]$, around this
+probability that the random value $X$ falls into the narrow  width
+$\delta$ interval
+$[x - \delta/2,\, x + \delta/2]$ around this
 number.  Obviously, the smaller the width $\delta$, the less likely
 $X$ falls into this narrow interval.  But it turns out that when we
 divide the probability by the width, we get a stable value at the
@@ -306,18 +310,34 @@ limit
   \label{eq:probability-density}
   f(x) =
   \lim_{\delta\to0}
-  \frac{\Pr(X \in [x - \delta/2, x + \delta/2])}{\delta}.
+  \frac{\Pr(X \in [x - \delta/2,\, x + \delta/2])}{\delta}.
 \end{equation}
-The result, $f(x)$, is called \emph{probability density function}, or pdf.  In
+The result, $f(x)$, is called \emph{probability density function},
+often abbreviated as pdf.  In
 case of continuous random variables, we have to work with pdf-s
-instead.
+instead of probabilities.
+
+% Do the figure here ....
 
 Consider the following somewhat trivial example: we have sampled two
 independent datapoints, 
 $x_{1}$ and $x_{2}$, from a normally distributed random variable with
-variance 1 and mean (expected value) equal to $\mu$.  The latter is
-a parameter, in a similar fashion as $p$ was the parameter of the
-probability of heads in the coin toss example.
+variance 1 and mean (expected value) equal to $\mu$.  Assume we don't
+know the latter value and let's use ML approach to estimate it.  We
+proceed in a similar steps as what we did for discrete random
+variables:
+\begin{enumerate*}[label=\roman*)]
+\item derive the probability model;
+\item use the model to compute likelihood based on data;
+\item compute probability to observe this data;
+\item and write it as likelihood of the parameter.
+  % we don't need 4 steps, do we? ....
+\end{enumerate*}
+Here the unknown parameter is $\mu$ and we want to derive the
+likelihood function $\likelihood(\mu)$ in a way that maximizing it
+would give us the best estimate of $\mu$.
+
+We start with the probability model.
 The pdf for unit-variance normal distribution is
 \begin{equation}
   \label{eq:standard-normal-pdf}
@@ -328,12 +348,14 @@ The pdf for unit-variance normal distribution is
     \displaystyle
     -\frac{1}{2}
     (x - \mu)^{2}
-  }
+  }.
 \end{equation}
-and hence from~\eqref{eq:probability-density}
+We write it as $f(x; \mu)$ as pdf is usually written as a function of
+data but as our primary interest is $\mu$, we also add this as an
+argument.  Now by using this pdf we can find from~\eqref{eq:probability-density}
 the probability that we observe a datapoint in the narrow
-interval around $x$ is $f(x; \mu)\cdot \delta$.  As these two
-probabilities are independent, we can just multiply the corresponding
+interval around $x$, this is just $f(x; \mu)\cdot \delta$.  As $x_{1}$
+and $x_{2}$ are independent, we can just multiply the corresponding
 probabilities to find the probability that both random numbers are
 near their corresponding values:
 \begin{multline}
@@ -341,28 +363,36 @@ near their corresponding values:
   \Pr{\big(X_{1} \in [x_{1} - \delta/2, x + \delta/2]
     \quad\text{and}\quad
     X_{2} \in [x_{2} - \delta/2, x + \delta/2]\big)}
-  =\\=
-  \frac{1}{\sqrt{2\pi}}
-  \,
-  \me^{
-    \displaystyle
-    -\frac{1}{2}
-    (x_{1} - \mu)^{2}
-  } \cdot\delta
+  =\\[2ex]=
+  \underbrace{
+    \frac{1}{\sqrt{2\pi}}
+    \,
+    \me^{
+      \displaystyle
+      -\frac{1}{2}
+      (x_{1} - \mu)^{2}
+    } \cdot\delta\
+  }_{
+    \text{First random value near $x_{1}$}
+  }
   \times
-  \frac{1}{\sqrt{2\pi}}
-  \,
-  \me^{
-    \displaystyle
-    -\frac{1}{2}
-    (x_{2} - \mu)^{2}
-  } \cdot\delta
-  \equiv\\\equiv
+  \underbrace{
+    \frac{1}{\sqrt{2\pi}}
+    \,
+    \me^{
+      \displaystyle
+      -\frac{1}{2}
+      (x_{2} - \mu)^{2}
+    } \cdot\delta
+  }_{
+    \text{Second random value near $x_{2}$}
+  }
+  \equiv\\[2ex]\equiv
   \likelihood^{*}(\mu; x_{1}, x_{2})
 \end{multline}
 where the interval width $\delta$ must be small for the equation to
-hold correctly.  We denote this probability with $\likelihood^{*}$ to
-stress that it is essentially a likelihood, just not written in the
+hold precisely.  We denote this probability with $\likelihood^{*}$ to
+stress that it is essentially the likelihood, just not written in the
 way it is usually done.  As in the coin-toss example above, we write
 it as a function of the parameter $\mu$, and put data $x_{1}$ and
 $x_{2}$ after
@@ -371,7 +401,7 @@ for $\mu$ by just finding such a $\mu$ value that maximizes the
 expression. 
 
 But note that $\delta$ plays no role in maximizing the likelihood.  It
-is just a multiplicative factor, as the interval width it also must be
+is just a multiplicative factor, and because it is a width, it must be
 positive.  So for our maximization problem we can just ignore it.
 This is what is normally done when working with continuous variables,
 and hence we can write the likelihood as
@@ -399,9 +429,9 @@ We denote this by $\likelihood$ instead of $\likelihood^{*}$ to stress
 that this is how likelihood function for continuous random variables
 is usually constructed.
 
-Exactly as in case with discrete variables, it is better to use
+Exactly as in the case of discrete random variables, it is better to use
 log-likelihood instead of likelihood to actually compute the maximum.
-The log-likelihood of~\eqref{eq:two-normal-likelihood} is
+From~\eqref{eq:two-normal-likelihood} we get log-likelihood as
 \begin{multline}
   \label{eq:two-standard-normal-loglik}
   \loglik(\mu; x_{1}, x_{2})
@@ -413,42 +443,75 @@ The log-likelihood of~\eqref{eq:two-normal-likelihood} is
   (- \log{\sqrt{2\pi}})
   -\frac{1}{2}
   (x_{2} - \mu)^{2}
-  =\\=
+  =\\[2ex]=
   - 2\log{\sqrt{2\pi}}
   - \frac{1}{2}
-  \sum_{i} (x_{i} - \mu)^{2}.
+  \sum_{i=1}^{2} (x_{i} - \mu)^{2}.
 \end{multline}
 The first term, $- 2\log{\sqrt{2\pi}}$, is just an additive constant
 and plays no role in the
-actual maximization but it is anyway typically used when defining the
-likelihood function.  The $1/2$ is a positive factor that does not
+actual maximization but it is typically included when defining the
+likelihood function.\footnote{While additive or multiplicative
+  constants do not play any role for optimization, they play an
+  important role when comparing different log-likelihood values.  This
+  is necessary for likelihood-based tests.
+}
+The $1/2$ is a positive factor that does not
 play any role either.  When we remove these two terms, what is left is
 $-\sum_{i}(x_{i} - \mu)^{2}$.  So we end up maximizing negative of sum
 of squared errors, equivalent to minimizing the positive sum of squared errors.
 Maximum likelihood method is equivalent to least squares in case of
 normally distributed random variables. 
 
-One can easily check by differentiating the log-likelihood function,
+One can easily check by differentiating the log-likelihood function
 that the maximum of log-likelihood is achieved when $\mu =
 \frac{1}{2}(x_{1} + x_{2})$.  It is not surprising, our intuitive
 understanding of the mean value carries immediately over to the normal
 distribution context.
 
-Example with random numbers
+Now it is time to demonstrate these results with \texttt{maxLik}
+package.  First, create our ``data'', just two normally distributed
+random numbers:
+<<>>=
+x1 <- rnorm(1)  # centered around 0
+x2 <- rnorm(1)
+x1
+x2
+@
+and define the log-likelihood function.  We include all the terms as in
+in~\eqref{eq:two-standard-normal-loglik}:
+<<>>=
+loglik <- function(mu) {
+   -2*log(sqrt(2*pi)) - 0.5*((x1 - mu)^2 + (x2 - mu)^2)
+}
+@
+We also need the parameter start value--we can pick $0$.  And we use
+\texttt{maxLik} to find the best $\mu$:
+<<>>=
+m <- maxLik(loglik, start=0)
+summary(m)
+@
+It is easy to check that the answer is the same as sample mean:
+<<>>=
+(x1 + x2)/2
+@ 
 
 
 \subsection{Vector arguments}
 \label{sec:from-probability-likelihood}
 
-The previous example is instructive but it does not really
-applicable.  The problem there is that we wrote the probability model
+The previous example is instructive but it does have very few practical
+applications.  The problem is that we wrote the probability model
 as standard normal density with unknown location $\mu$.  However, in
-practice we hardly ever know if we are dealing with standard normal,
-more likely both the location and the standard deviation $\sigma$ are
-unknown.  So in order to make the previous example applicable, we need
-to include the unknown standard in the model.
+practice we hardly ever know that we are dealing with standard normal.
+More likely both location and scale $\sigma$ are
+unknown.
+(In case of normal distribution, scale $\sigma$ is equal to the
+standard deviation and $\sigma^{2}$ to the variance.)
+So in order to make the previous example applicable, we need
+to incorporate the unknown scale into the model.
 
-The normal density function with standard deviation $\sigma$ is
+The more general normal density function with standard deviation $\sigma$ is
 \begin{equation}
   \label{eq:normal-pdf}
   f(x; \mu, \sigma) =
@@ -478,22 +541,23 @@ now.  This formula immediately extends to the case of $N$ datapoints
 as 
 \begin{equation}
   \label{eq:normal-loglik}
-  \loglik(\mu, \sigma; x_{1}, x_{2})
+  \loglik(\mu, \sigma)
   =
   - N\log{\sqrt{2\pi}}
   - N\log \sigma
   - \frac{1}{2}
-  \sum_{i=1}^{N} \frac{(x_{i} - \mu)^{2}}{\sigma^{2}}.
+  \sum_{i=1}^{N} \frac{(x_{i} - \mu)^{2}}{\sigma^{2}}
 \end{equation}
+where we have dropped the dependency on data in the notation.
 In this case we can actually do the optimization analytically, and
-come to the well-known intuitive results: the best estimator for location $\mu$ is
-the sample mean, and for variance $\sigma^{2}$ the sample variance.
+derive the well-known intuitive results: the best estimator for location $\mu$ is
+the sample mean, and for variance $\sigma^{2}$ it is the sample variance.
 
 However, in general the expression does not allow for analytic
 solution.  In this case we need to use a numeric optimization
 algorithm that searches for the best $\mu$ and $\sigma$ combination.
 The common multi-dimensional optimizers rely on linear algebra and
-need all the parameters submitted as a single vector.  So we can write
+want all the parameters submitted as a single vector.  So we can write
 the log-likelihood as
 \begin{equation}
   \label{eq:normal-loglik-vector}
@@ -502,15 +566,56 @@ the log-likelihood as
   \vec{\theta} = (\mu, \sigma).
 \end{equation}
 Here we denote both parameters $\mu$ and $\sigma$ as components of a
-single vector $\vec{\theta}$.  We have also
-dropped dependency on data in the notation altogether but
+single parameter vector $\vec{\theta}$.  We have also
+dropped dependency on data in the notation but
 remember that in practical applications log-likelihood will always
-depend on data.  This notation can converted to computer code almost
-verbatim, just when actually calculating log-likelihood inside of
-the function, one has to extract the parameters from $\vec{\theta}$
-vector. 
+depend on data.  This notation can be converted to computer code almost
+verbatim, just remember to extract the parameters $\mu$ and $\sigma$
+from $\vec{\theta}$ inside of the log-likelihood function.
 
-Example: fathers and sons
+Let us do an example using the \emph{CO2} dataset (in package
+\emph{datasets}).  
+It describes \COii uptake (variable \emph{uptake}) by different
+grasses in various conditions.  Let us start by plotting the histogram
+of uptake:
+<<fig=TRUE>>=
+data(CO2)
+hist(CO2$uptake,
+     xlab=expression(paste("uptake, ", mu*mol/(m^2 %.% sec))))
+@
+
+Let us model the uptake as a normal
+random variable with expected value $\mu$ and standard deviation
+$\sigma$.  We code~\eqref{eq:normal-loglik} while keeping both
+parameters in a single vector as in~\eqref{eq:normal-loglik-vector}:
+<<>>=
+loglik <- function(theta) {
+   mu <- theta[1]
+   sigma <- theta[2]
+   N <- nrow(CO2)
+   -N*log(sqrt(2*pi)) - N*log(sigma) -
+      0.5*sum((CO2$uptake - mu)^2/sigma^2)
+}
+@
+The function is similar to the one used in
+Section~\ref{sec:continuous-outcomes}.  There are just two main
+differences:
+\begin{itemize}
+\item both arguments, $\mu$ and $\sigma$ are passed to it as
+  components of $\vec{\theta}$, and hence the function starts its work
+  by unpacking the values.
+\item instead of using variables \texttt{x1} and \texttt{x2} as
+  previously, we now extract data directly from the data frame.
+\end{itemize}
+The other logic though is similar.  As our parameter vector now
+contains two components, the start vector must also be of length two.
+Based on the figure we guess that a good starting value would be
+$\mu=30$ and $\sigma=10$:
+<<>>=
+m <- maxLik(loglik, start=c(mu=30, sigma=10))
+summary(m)
+@ 
+Indeed, the results are close.
 
 
 \subsection{Final Example: Linear Regression}
@@ -519,7 +624,6 @@ Example: fathers and sons
 Now when we have the main tools in place, it is rather easy to extend
 the example above to a real statistical model.
 
-Let us analyze the \emph{CO2} dataset (in package \emph{datasets}).
 This describes \COii uptake (variable \emph{uptake}) by different grasses in
 different \COii concentration (variable \emph{conc}) in air.  We can
 describe the corresponding regression model as
