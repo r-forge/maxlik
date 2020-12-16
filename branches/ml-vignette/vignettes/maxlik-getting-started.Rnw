@@ -623,8 +623,8 @@ Indeed, the results are close.
 
 Now when we have the main tools in place, it is rather easy to extend
 the example above to a real statistical model.
-
-This describes \COii uptake (variable \emph{uptake}) by different grasses in
+Let us extend the previous example into a linear regression.
+We describe \COii uptake (variable \emph{uptake}) by 
 different \COii concentration (variable \emph{conc}) in air.  We can
 describe the corresponding regression model as
 \begin{equation}
@@ -634,9 +634,10 @@ describe the corresponding regression model as
   \epsilon_{i}.
 \end{equation}
 In order to turn this regression model into a maximum likelihood
-problem, we need again a parametric probability model.  Assume that
+problem, we again need a parametric probability model.  Assume that
 the disturbance term $\epsilon$ is normally distributed with mean 0
-and (unknown) variance $\sigma^{2}$.  So we can
+and (unknown) variance $\sigma^{2}$ (this is a standard assumption in
+linear regression).  Now we can
 follow~\eqref{eq:normal-loglik} and write for a single observation
 \begin{equation}
   \label{eq:co2-epsilon-loglik}
@@ -645,8 +646,11 @@ follow~\eqref{eq:normal-loglik} and write for a single observation
   - \log{\sqrt{2\pi}}
   - \log \sigma
   - \frac{1}{2}
-  \frac{(\epsilon_{i} - \mu)^{2}}{\sigma^{2}}.
+  \frac{\epsilon_{i}^{2}}{\sigma^{2}}.
 \end{equation}
+Note that as the expected value $\mu=0$ by assumption, we do not have
+$\mu$ in~\eqref{eq:co2-epsilon-loglik} and hence we drop it also from
+the $\loglik$ argument list.
 Next, we can express $\epsilon_{i}$ from~\eqref{eq:co2-regression}:
 \begin{equation}
   \label{eq:co2-epsilon}
@@ -654,7 +658,7 @@ Next, we can express $\epsilon_{i}$ from~\eqref{eq:co2-regression}:
   \mathit{uptake}_{i} - \beta_{0} -
   \beta_{1} \cdot \mathit{conc}_{i}
 \end{equation}
-and finally plug this into~\eqref{eq:co2-epsilon-loglik}:
+and plug this into~\eqref{eq:co2-epsilon-loglik}:
 \begin{multline}
   \label{eq:co2-single-loglik}
   \loglik(\beta_{0}, \beta_{1}, \sigma; \mathit{uptake}_{i}, \mathit{conc}_{i})
@@ -688,23 +692,25 @@ optimization.  Let us repeat what we have done:
 \item We write the log-likelihood as a function of parameters
   $\beta_{0}$, $\beta_{1}$ and $\sigma$.  Note that in ordinary
   regression model we do not call $\sigma$ a parameter.  But it is
-  still a parameter, one we are usually not interested in (sometimes
+  still a parameter, although one we usually do not care much about
+  (sometimes
   called ``nuisance parameter'').  We will denote all parameters
   $\vec{\theta}$ later.
 \item The likelihood function also depends on data, here of the
   vectors $\vec{\mathit{uptake}}$ and  $\vec{\mathit{conc}}$.
 \item The function definition itself is just sum of log-likelihood
   contributions of individual normal disturbance terms, but as we do
-  not observe those directly, we express those through the regression
+  not observe the disturbance terms
+  directly, we express those through the regression
   equation in~\eqref{eq:co2-single-loglik}.
 \end{itemize}
-Note that the first term on the right hand side does not depend on the
-parameters and hence we can ignore it for the optimization, and write
-the function in a simpler form:
+Finally, we also wrap the three parameters into a single vector
+$\vec{\theta}$ and write
 \begin{equation}
   \label{eq:co2-loglik-simplified}
   \loglik(\vec{\theta})
   =
+  - N\log{\sqrt{2\pi}}
   - N\log \sigma
   - \frac{1}{2}
   \sum_{i=1}^{N}
@@ -713,10 +719,31 @@ the function in a simpler form:
     \beta_{1} \cdot \mathit{conc}_{i}
     - \mu)^{2}}{\sigma^{2}}.
 \end{equation}
-This is the definition we can easily code and estimate.
-
-
-\verb|summary(lm(uptake ~ conc + plant, data=CO2))|
+This is the definition we can easily code and estimate.  We guess
+start values $\beta_{0} = 30$ (close to the mean), $\beta_{1} = 0$
+(uptake does not depend on concentration) and $\sigma=10$ (close to
+sample standard deviation).  The results are
+<<>>=
+loglik <- function(theta) {
+   beta0 <- theta[1]
+   beta1 <- theta[2]
+   sigma <- theta[3]
+   N <- nrow(CO2)
+   # compute new mu based on beta1, beta2
+   mu <- beta0 + beta1*CO2$conc
+   # use this mu in a similar fashion as previously
+   -N*log(sqrt(2*pi)) - N*log(sigma) -
+      0.5*sum((CO2$uptake - mu)^2/sigma^2)
+}
+m <- maxLik(loglik, start=c(beta0=30, beta1=0, sigma=10))
+summary(m)
+@ 
+One can check that a linear regression model will give similar
+results:
+<<>>=
+summary(lm(uptake ~ conc, data=CO2))
+@ 
+Indeed, the results are close although not identical.
 
 
 \subsection{Non-linear optimization}
