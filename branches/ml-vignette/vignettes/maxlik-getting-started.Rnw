@@ -2,6 +2,7 @@
 \usepackage{graphics}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[font={small,sl}]{caption}
 \usepackage[inline]{enumitem}
 \usepackage{indentfirst}
 \usepackage[utf8]{inputenc}
@@ -266,84 +267,97 @@ regression.
 \section{Continuous variables: probability density and likelihood}
 \label{sec:continuous-outcomes}
 
-In the example above we looked at a case where there were only a small
-number of distinct possibilities (heads and tails).  Such cases are called discrete
-random variables.  Discrete random variables are easy to
+In the example above we looked at discrete random variables, a case where there were only a small
+number of distinct possibilities (heads and tails).
+Discrete random variables are easy to
 understand because we can actually compute the respective
 probabilities, such as the probability to receive one heads and one
 tails in our experiment.  Now we consider continuous random variables,
-cases where the outcome can be any number in a certain interval.
+the case where the outcome can be any number in a certain interval.
 Unfortunately we cannot compute probability of a single value for continuous
-random variables.  Or more precisely--yes, we can, but it is always 0.
+random variables.  Or more precisely--we can do it, sure, but the answer is always 0.
 This may sound a little counter-intuitive but perhaps the
 following example helps.  If you ask the computer to generate a single
-random number between 0 and 1, you may get
+random number between 0 and 1, you may receive
 \Sexpr{x <- runif(1); x}.  What
 is the probability to get the same number again?  You can try, but you
-never get it again.\footnote{As computers operate with finite
+won't get exactly the same number.\footnote{As computers operate with finite
   precision, the actual chances to repeat any particular random number
   are positive, although small.  The exact answer depends on the
   numeric precision and the quality of random number generator.
 }
-But despite of probability to receive any such number is zero we
+But despite the probability to receive this number is zero we
 somehow still produced it in the first place.  Clearly, zero
-probability does not mean the number (the event) was impossible.
+probability does not mean the number was impossible.
 However, if we want to receive a negative number from the same random
-number generator, it will be impossible (because we it only generates
-numbers between 0 and 1).  So probability 0-events may be both
-possible and impossible.  And to make matter worse, they may also be
-more or less likely.  For instance, in case of 0-centered normal
-random numbers (also known as the ``bell curve'') the
-values near 0 are much more likely than values around 3, despite of
-the probability to receive any particular number still being 0.
+number generator, it will be impossible (because we chose a generator
+that only produces
+numbers between 0 and 1).  So probability 0-events may be
+possible and they may also be impossible.  And to make matter worse, they may also be
+more likely and less likely.  For instance, in case of standard normal
+random numbers (these numbers are distributed as the ``bell curve'') the
+values near $0$ are much more likely than values around $-2$, despite of
+the probability to receive any particular number still being 0
+(see Figure~\ref{fig:standard-normal-intervals}).
 
 The solution is to look not at the probabilities of individual numbers
 but numbers in a narrow interval near these numbers.  Consider
-the number of interest $x$, and compute the
+the number of interest $x_{1}$, and compute the
 probability that the random value $X$ falls into the narrow  width
 $\delta$ interval
-$[x - \delta/2,\, x + \delta/2]$ around this
-number (Figure).  Obviously, the smaller the width $\delta$, the less likely
-$X$ falls into this narrow interval.  But it turns out that when we
+$[x_{1} - \delta/2,\, x_{1} + \delta/2]$ around this
+number (Figure~\ref{fig:standard-normal-intervals}).
+Obviously, the smaller the width $\delta$, the less likely
+it is that $X$ falls into this narrow interval.  But it turns out that when we
 divide the probability by the width, we get a stable value at the
 limit
 \begin{equation}
   \label{eq:probability-density}
-  f(x) =
+  f(x_{1}) =
   \lim_{\delta\to0}
-  \frac{\Pr(X \in [x - \delta/2,\, x + \delta/2])}{\delta}.
+  \frac{\Pr(X \in [x_{1} - \delta/2,\, x_{2} + \delta/2])}{\delta}.
 \end{equation}
+In the example on the Figure, $f(x_{1}) < f(x_{2})$.
 The result, $f(x)$, is called \emph{probability density function},
-often abbreviated as pdf.  In
+often abbreviated as \emph{pdf}.  In
 case of continuous random variables, we have to work with pdf-s
 instead of probabilities.
 
 \begin{figure}[ht]
   \centering
   \includegraphics{probability-density.pdf}
-  \caption{Standard normal probability density.}
+  \caption{Standard normal probability density.  While
+    $\Pr(X = x_{1}) = 0$, i.e. the probability to receive a random
+    number exactly equal to $x_{1}$ is 0, the probability to receive a
+    random number in the narrow interval of width $\delta$ around $x_{1}$ is
+    positive.  The interval around $x_{2}$ is four times more likely
+    than the interval around $x_{1}$.
+  }
+  \label{fig:standard-normal-intervals}
 \end{figure}
 
 Consider the following somewhat trivial example: we have sampled two
-independent datapoints, 
-$x_{1}$ and $x_{2}$, from a normally distributed random variable with
-variance 1 and mean (expected value) equal to $\mu$.  Assume we don't
-know the latter value and let's use ML approach to estimate it.  We
+independent datapoints
+$x_{1}$ and $x_{2}$ from a normally distributed random variable with
+variance 1 and mean (expected value) equal to $\mu$.
+Say, $x_{1} = \Sexpr{x1 <- rnorm(1); round(x1, 3)}$ and
+$x_{2} = \Sexpr{x1 <- rnorm(1); round(x1, 3)}$.
+Assume we do not
+know $\mu$ and use ML to estimate it.  We
 proceed in a similar steps as what we did for discrete random
 variables:
 \begin{enumerate*}[label=\roman*)]
-\item derive the probability model;
-\item use the model to compute likelihood based on data;
-\item compute probability to observe this data;
-\item and write it as likelihood of the parameter.
-  % we don't need 4 steps, do we? ....
+\item set up the probability model;
+\item use the model to compute probability to observe this data;
+\item write this probability as $\likelihood(\mu)$, likelihood function of parameter
+  $\mu$;
+\item and finally, find the $\mu$ value that maximizes the
+  corresponding log-likelihood, $\mu^{*}$.
 \end{enumerate*}
-Here the unknown parameter is $\mu$ and we want to derive the
-likelihood function $\likelihood(\mu)$ in a way that maximizing it
-would give us the best estimate of $\mu$.
+This will be our best estimate for the true mean.
 
-We start with the probability model.
-The pdf for unit-variance normal distribution is
+Let's start with the probability model.
+The pdf for unit-variance normal distribution with mean $\mu$ is
 \begin{equation}
   \label{eq:standard-normal-pdf}
   f(x; \mu) =
@@ -357,11 +371,11 @@ The pdf for unit-variance normal distribution is
 \end{equation}
 We write it as $f(x; \mu)$ as pdf is usually written as a function of
 data but as our primary interest is $\mu$, we also add this as an
-argument.  Now by using this pdf we can find from~\eqref{eq:probability-density}
+argument.  Now we use this pdf and~\eqref{eq:probability-density} to find
 the probability that we observe a datapoint in the narrow
 interval around $x$, this is just $f(x; \mu)\cdot \delta$.  As $x_{1}$
 and $x_{2}$ are independent, we can just multiply the corresponding
-probabilities to find the probability that both random numbers are
+probabilities to find the combined probability that both random numbers are
 near their corresponding values:
 \begin{multline}
   \label{eq:two-normal-probability-likelihood}
@@ -393,22 +407,21 @@ near their corresponding values:
     \text{Second random value near $x_{2}$}
   }
   \equiv\\[2ex]\equiv
-  \likelihood^{*}(\mu; x_{1}, x_{2})
+  \likelihood^{*}(\mu; x_{1}, x_{2}).
 \end{multline}
-where the interval width $\delta$ must be small for the equation to
+The interval width $\delta$ must be small for the equation to
 hold precisely.  We denote this probability with $\likelihood^{*}$ to
 stress that it is essentially the likelihood, just not written in the
 way it is usually done.  As in the coin-toss example above, we write
 it as a function of the parameter $\mu$, and put data $x_{1}$ and
 $x_{2}$ after
-semicolon.  Based on data, we can compute maximum-likelihood estimator
-for $\mu$ by just finding such a $\mu$ value that maximizes the
+semicolon.  Now we just  $\mu$ by just finding such a $\mu$ value that maximizes the
 expression. 
 
 But note that $\delta$ plays no role in maximizing the likelihood.  It
-is just a multiplicative factor, and because it is a width, it must be
-positive.  So for our maximization problem we can just ignore it.
-This is what is normally done when working with continuous variables,
+is just a multiplicative factor, and it must be
+positive because it is a width.  So for our maximization problem we can just ignore it.
+This is what is normally done when working with continuous random variables,
 and hence we can write the likelihood as
 \begin{equation}
   \label{eq:two-normal-likelihood}
@@ -432,7 +445,7 @@ and hence we can write the likelihood as
 \end{equation}
 We denote this by $\likelihood$ instead of $\likelihood^{*}$ to stress
 that this is how likelihood function for continuous random variables
-is usually constructed.
+is usually written.
 
 Exactly as in the case of discrete random variables, it is better to use
 log-likelihood instead of likelihood to actually compute the maximum.
@@ -455,14 +468,14 @@ From~\eqref{eq:two-normal-likelihood} we get log-likelihood as
 \end{multline}
 The first term, $- 2\log{\sqrt{2\pi}}$, is just an additive constant
 and plays no role in the
-actual maximization but it is typically included when defining the
+actual maximization but it is typically still included when defining the
 likelihood function.\footnote{While additive or multiplicative
-  constants do not play any role for optimization, they play an
-  important role when comparing different log-likelihood values.  This
-  is necessary for likelihood-based tests.
+  constants do not play any role for optimization, they are important
+  when comparing different log-likelihood values.  This
+  is often needed for likelihood-based statistical tests.
 }
-The $1/2$ is a positive factor that does not
-play any role either.  When we remove these two terms, what is left is
+The $1/2$ is a positive factor that can be ignored as well.
+When we remove these two terms, what is left is
 $-\sum_{i}(x_{i} - \mu)^{2}$.  So we end up maximizing negative of sum
 of squared errors, equivalent to minimizing the positive sum of squared errors.
 Maximum likelihood method is equivalent to least squares in case of
@@ -496,10 +509,12 @@ We also need the parameter start value--we can pick $0$.  And we use
 m <- maxLik(loglik, start=0)
 summary(m)
 @
-It is easy to check that the answer is the same as sample mean:
+The answer is the same as sample mean:
 <<>>=
 (x1 + x2)/2
-@ 
+@
+As in case of Bernoulli process, the intuitive concept of mean is also
+the solution for normally distributed random numbers.
 
 
 \section{Vector arguments}

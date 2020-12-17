@@ -16,7 +16,7 @@ for(real x = xLeft; x < xRight; x += 0.2) {
 }
 
 // Example points
-real xs[] = {-1.7, 0.3};
+real xs[] = {-1.695, 0.3};
 real delta = 0.15;
 int i = 1;
 for(real x : xs) {
@@ -29,7 +29,7 @@ for(real x : xs) {
   path area = (xl, 0)--striptop--(xr, 0)--cycle;
   filldraw(area, lightgray, linewidth(0.2));
   draw((x, 0)--(x, dnorm(x)), dashed);
-  label("$x_" + string(i) + "$", (x, 0), S);
+  label("$x_" + string(i) + " = " + format("%f", x) +"$", (x, 0), S + 0.2E);
   // width marks and width
   real barheight = dnorm(x) + 0.06;
   Label widthLabel = Label("width $\delta$", MidPoint, 2N);
@@ -60,11 +60,8 @@ draw(yaxis, Arrow(TeXHead, 1));
 label("$x$", point(xaxis, 1), S);
 label("$y$", point(yaxis, 1), W);
 // Axis labels
+real tickLength = 0.05*yTop;
 for(int x = (int)xLeft; x <= (int)xRight; ++x) {
-  draw((x,0)--(x,-0.1));
-  label(string(x), (x,-0.1), S);
-}
-for(int y = 1; y < (int)yTop; ++y) {
-  draw((0,y)--(-0.1,y));
-  label(string(y), (-0.1,y), W);
+  draw((x,0)--(x,-tickLength));
+  label(string(x), (x,-tickLength), 3S);
 }
