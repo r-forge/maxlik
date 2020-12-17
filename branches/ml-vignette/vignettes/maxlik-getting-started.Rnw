@@ -303,7 +303,7 @@ the number of interest $x$, and compute the
 probability that the random value $X$ falls into the narrow  width
 $\delta$ interval
 $[x - \delta/2,\, x + \delta/2]$ around this
-number.  Obviously, the smaller the width $\delta$, the less likely
+number (Figure).  Obviously, the smaller the width $\delta$, the less likely
 $X$ falls into this narrow interval.  But it turns out that when we
 divide the probability by the width, we get a stable value at the
 limit
@@ -318,7 +318,11 @@ often abbreviated as pdf.  In
 case of continuous random variables, we have to work with pdf-s
 instead of probabilities.
 
-% Do the figure here ....
+\begin{figure}[ht]
+  \centering
+  \includegraphics{probability-density.pdf}
+  \caption{Standard normal probability density.}
+\end{figure}
 
 Consider the following somewhat trivial example: we have sampled two
 independent datapoints, 
