@@ -1,0 +1,57 @@
+% -*- mode: LaTeX; mode: flyspell; -*-
+% mode: Tex-Pdf -*-
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage[bookmarks=TRUE,
+            colorlinks,
+            pdfpagemode=none,
+            pdfstartview=FitH,
+            citecolor=black,
+            filecolor=black,
+            linkcolor=blue,
+            urlcolor=black,
+            ]{hyperref}
+\usepackage{graphicx}
+\usepackage{icomma}
+\usepackage[utf8]{inputenc}
+\usepackage{natbib}
+\usepackage{xspace}
+\input{isomath}
+
+\begin{document}
+
+
+\section{How to use maxLik}
+\label{sec:maxlik-usage}
+
+
+\subsection{Basic usage}
+\label{sec:basic-usage}
+
+maxLik function
+
+summary, coef, stdEr
+
+vector arguments
+
+select optimizers
+
+BHHH
+
+providing analytic derivatives
+
+\subsection{Advanced usage}
+\label{sec:advanced-usage}
+
+condiNumber, compareDerivatives
+
+fixed coefficients
+
+mention SGA
+
+
+\bibliographystyle{econometrica}
+\bibliography{Economics}
+
+\end{document}

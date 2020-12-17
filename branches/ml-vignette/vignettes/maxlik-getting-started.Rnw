@@ -18,7 +18,7 @@
 \newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
 \renewcommand*{\vec}[1]{\boldsymbol{#1}}
 
-% \VignetteIndexEntry{Maximum Likelihood: Introduction}
+% \VignetteIndexEntry{Introduction: what is maximum likelihood}
 
 \begin{document}
 <<foo,include=FALSE,echo=FALSE>>=
@@ -28,6 +28,7 @@ options(keep.source = TRUE, width = 60,
 foo <- packageDescription("maxLik")
 library(ggplot2)
 library(magrittr)
+library(plot3D)
 @
 
 \title{Getting started with maximum likelihood and \texttt{maxLik}}
@@ -74,7 +75,7 @@ Experienced readers should skip this section and start from
 Section~\ref{sec:basic-usage}. 
 
 
-\subsection{Discrete Random Variables}
+\section{Discrete Random Variables}
 \label{sec:discrete-random-variables}
 
 We start with discrete random variables.  ``Discrete'' refers to the
@@ -262,7 +263,7 @@ Next, we look at an example with continuous outcomes--linear
 regression.
 
 
-\subsection{Continuous variables: probability density and likelihood}
+\section{Continuous variables: probability density and likelihood}
 \label{sec:continuous-outcomes}
 
 In the example above we looked at a case where there were only a small
@@ -497,8 +498,8 @@ It is easy to check that the answer is the same as sample mean:
 @ 
 
 
-\subsection{Vector arguments}
-\label{sec:from-probability-likelihood}
+\section{Vector arguments}
+\label{sec:vector-arguments}
 
 The previous example is instructive but it does have very few practical
 applications.  The problem is that we wrote the probability model
@@ -618,7 +619,7 @@ summary(m)
 Indeed, the results are close.
 
 
-\subsection{Final Example: Linear Regression}
+\section{Final Example: Linear Regression}
 \label{sec:linear-regression}
 
 Now when we have the main tools in place, it is rather easy to extend
@@ -746,44 +747,129 @@ summary(lm(uptake ~ conc, data=CO2))
 Indeed, the results are close although not identical.
 
 
-\subsection{Non-linear optimization}
+\section{Non-linear optimization}
 \label{sec:non-linear-optimization}
 
-Why do we need it, and why we do the stuff in vector form
+Finally, we discuss the magic inside \texttt{maxLik} that finds the
+optimal parameter values.  Although not necessary in everyday work,
+this knowledge helps a lot to understand the types of issues and
+potential solutions when doing non-linear optimization.
+So how does the optimization work?
 
-What are the issues in high dimensions
+Consider the example in Section~\ref{sec:vector-arguments}
+where we computed the normal distribution parameters for \COii
+intake.  There were two parameters, $\mu$ and $\sigma$, and the
+maximum likelihood procedure returns such a combination that gives the
+largest possible log-likelihood value.
+We can visualize the task by plotting the log-likelihood value for
+different combinations of $\mu$, $\sigma$
+(Figure~\ref{fig:mu-sigma-plot}).
 
-Why gradients are needed
+\begin{figure}[ht]
+  \centering
+<<echo=FALSE, fig=TRUE>>=
+loglik <- function(theta) {
+   mu <- theta[1]
+   sigma <- theta[2]
+   N <- nrow(CO2)
+   -N*log(sqrt(2*pi)) - N*log(sigma) -
+      0.5*sum((CO2$uptake - mu)^2/sigma^2)
+}
+m <- maxLik(loglik, start=c(mu=30, sigma=10))
+params <- coef(m)
+np <- 33
+mu <- seq(6, 36, length.out=np)
+sigma <- seq(5, 50, length.out=np)
+X <- expand.grid(mu=mu, sigma=sigma) %>%
+   as.matrix()
+ll <- apply(X, 1, loglik) %>%
+   matrix(nrow=33)
+levels <- quantile(ll, c(0.05, 0.4, 0.6, 0.8, 0.9, 0.97))
+                           # where to dwar the contours
+colors <- colorRampPalette(c("Blue", "White"))(30)
+par(mar=c(0,0,0,0),
+    mgp=2:0)
+## Perspective plot
+persp3D(mu, sigma, ll, 
+               xlab=expression(mu),
+               ylab=expression(sigma),
+               zlab=expression(log-likelihood),
+               theta=40, phi=30,
+               colkey=FALSE,
+               col=colors, alpha=0.5, facets=TRUE,
+               shade=1,
+               lighting="ambient", lphi=60, ltheta=0,
+               image=TRUE,
+               bty="b2",
+               contour=list(col="gray", side=c("z"), levels=levels)
+               )
+## add the dot for maximum
+scatter3D(rep(coef(m)[1], 2), rep(coef(m)[2], 2), c(maxValue(m), min(ll)),
+          col="red", pch=16, facets=FALSE,
+          bty="n", add=TRUE)
+## line from max on persp to max at bottom surface
+segments3D(coef(m)[1], coef(m)[2], maxValue(m),
+          coef(m)[1], coef(m)[2], min(ll),
+          col="red", lty=2,
+          bty="n", add=TRUE)
+## contours for the bottom image
+contour3D(mu, sigma, z=min(ll) + 0.1, colvar=ll, col="black",
+          levels=levels,
+          add=TRUE)
+@
+\caption{Log-likelihood surface as a function of $\mu$ and $\sigma$.
+  The optimum, denoted as a red dot, is at
+  $\mu=\Sexpr{round(coef(m)[1], 3)}$ and
+  $\sigma=\Sexpr{round(coef(m)[2], 3)}$.  The corresponding countour
+  plot is shows at the bottom.
+}
+\label{fig:mu-sigma-plot}
+\end{figure}
 
+So how does the algorithm find the optimal parameter value
+$\vec{\theta}^*$, the red dot on the figure?
+All the common methods are iterative, i.e. they
+start with a given start value, and repeatedly find a new and better
+parameter that gives larger
+log-likelihood based on the previous iteration.  While humans look at
+the figure, they can immediately see where is its maximum.  But
+computers cannot visualize the image in this way.  And more
+importantly--even humans cannot visualize the function in more than
+three dimensions.  This visualization is so helpful for us because we
+can intuitively understand the 3-dimensional surface.  It is 3-D
+because we have two parameters, $\mu$ and $\sigma$, and a single
+log-likelihood value.  Add one more parameter as we did in
+Section~\ref{sec:linear-regression}, and visualization options are
+very limited.  In case of 10 parameters, it is essentially impossible
+to solve the problem by just visualizations.
 
+It is like climbing uphill in whiteout
+conditions where you cannot distinguish any details around you--sky is
+just white fog and ground is just exactly similar white snow.  But you
+can still feel which way the ground goes up and so you can still go
+uphill.  This is what the popular algorithms do.  They rely on the slope of the
+function, the gradient, and follow the direction suggested by gradient.
+Most optimizers included in the \texttt{maxLik} package need
+gradients, including the default Newton-Raphson method.  But how do we
+know the gradient if the log-likelihood function only returns a single
+value?  There are two ways:
+\begin{enumerate*}[label=\roman*)]
+\item provide a separate function that also computes gradient;
+\item compute the log-likelihood value in multiple points nearby and
+  deduce the gradient from that information.
+\end{enumerate*}
+The first option is superior, in high dimensions it is much faster and
+much less error prone.  But computing and coding the gradient function
+can easily take days of work.  The second approach, numeric gradient,
+forces the computer to do more work more and hence it is slower.  More
+importantly, it is also unreliable for more complex cases.  In
+practice you can notice how the algorithm refuses to converge for
+thousand of iterations.  But numeric gradient works very well, for
+example, the algorithm we used to compute the mean and variance for 
+normally distributed random variables in
+Section~\ref{sec:vector-arguments}
+converged in $\Sexpr{nIter(m)}$ iterations 
 
-\section{How to use maxLik}
-\label{sec:maxlik-usage}
-
-
-\subsection{Basic usage}
-\label{sec:basic-usage}
-
-maxLik function
-
-summary, coef, stdEr
-
-vector arguments
-
-select optimizers
-
-BHHH
-
-providing analytic derivatives
-
-\subsection{Advanced usage}
-\label{sec:advanced-usage}
-
-condiNumber, compareDerivatives
-
-fixed coefficients
-
-mention SGA
 
 \bibliographystyle{apecon}
 \bibliography{sga}
