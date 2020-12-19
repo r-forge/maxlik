@@ -1,7 +1,6 @@
-% -*- mode: LaTeX; mode: flyspell; -*-
-% mode: Tex-Pdf -*-
 \documentclass{article}
 \usepackage{amsmath}
+\usepackage[inline]{enumitem}
 \usepackage[T1]{fontenc}
 \usepackage[bookmarks=TRUE,
             colorlinks,
@@ -15,43 +14,236 @@
 \usepackage{graphicx}
 \usepackage{icomma}
 \usepackage[utf8]{inputenc}
+\usepackage{mathtools}  % for extended pderiv arguments
 \usepackage{natbib}
+\usepackage{xargs}  % for extended pderiv arguments
 \usepackage{xspace}
-\input{isomath}
+
+\newcommand{\COii}{\ensuremath{\mathit{CO}_{2}}\xspace}
+\newcommand*{\mat}[1]{\mathsf{#1}}
+\newcommand{\likelihood}{\mathcal{L}}% likelihood
+\newcommand{\loglik}{\ell}% log likelihood
+\newcommand{\maxlik}{\texttt{maxLik}\xspace}
+\newcommand{\me}{\mathrm{e}} % Konstant e=2,71828
+\newcommandx{\pderiv}[3][1={}, 2={}]{\frac{\partial^{#2}{#1}}{\mathmbox{\partial{#3}}^{#2}}}
+% #1: function to differentiate (optional, empty = write after the formula)
+% #2: the order of differentiation (optional, empty=1)
+% #3: the variable to differentiate wrt (mandatory)
+\newcommand{\R}{\texttt{R}\xspace}
+\newcommand*{\transpose}{^{\mkern-1.5mu\mathsf{T}}}
+\renewcommand*{\vec}[1]{\boldsymbol{#1}}
+% \VignetteIndexEntry{Maximum likelihood estimation with maxLik}
+
+\title{Maximum Likelihood Estimation with \emph{maxLik}}
+\author{Ott Toomet}
 
 \begin{document}
+\maketitle
 
+<<echo=FALSE>>=
+library(maxLik)
+@ 
 
-\section{How to use maxLik}
-\label{sec:maxlik-usage}
+\section{Introduction}
+\label{sec:introduction}
 
+This document is intended for users who are well familiar with
+concepts of likelihood, log-likelihood, and related methods, such as
+information equality and BHHH approximation, and with \R language.  It only
+introduces how to use \maxlik.  Potential target group
+includes researchers, graduate students, and industry practitioners.
 
-\subsection{Basic usage}
+\section{Basic usage}
 \label{sec:basic-usage}
 
-maxLik function
+\subsection{The maxLik function}
+\label{sec:maxlik-function}
 
-summary, coef, stdEr
+The main entry point to the \maxlik functionality is the function of
+the same name, \verb|maxLik|.  It is a wrapper around the underlying
+optimization algorithms that also sets the classes right, so that one
+can use the convenience functions, such as \verb|summary| or
+\verb|logLik| on the returned object.
 
-vector arguments
+The basic usage of the function is very simple: one has just to submit
+the likelihood function (argument \verb|logLik|) and start value
+(argument \verb|start|).  Let us demonstrate the basic usage
+with ML estimation
+of normal distribution parameters.  We create 100 standard normals,
+and estimate the sample mean and standard deviation.  For a refresher,
+the normal probability density function is
+\begin{equation}
+  \label{eq:normal-pdf}
+  f(x; \mu, \sigma) =
+  \frac{1}{\sqrt{2\pi}}
+  \frac{1}{\sigma}
+  \,
+  \me^{
+    -\frac{1}{2}
+    \frac{(x - \mu)^{2}}{\sigma^{2}}
+  }.
+\end{equation}
+and hence the log-likelihood contribution of $x$ is
+\begin{equation}
+  \label{eq:normal-loglik}
+  \loglik(\mu, \sigma; x)
+  =
+  - \log{\sqrt{2\pi}}
+  - \log \sigma
+  - \frac{1}{2} \frac{(x - \mu)^{2}}{\sigma^{2}}.
+\end{equation}
+Instead of explicitly coding our own version, we can instead rely on
+\R function \verb|dnorm|:
+<<>>=
+x <- rnorm(100)  # data.  true mu = 0, sigma = 1
+loglik <- function(theta) {
+   mu <- theta[1]
+   sigma <- theta[2]
+   sum(dnorm(x, mean=mu, sd=sigma, log=TRUE))
+}
+m <- maxLik(loglik, start=c(mu=1, sigma=2))
+                           # give start value somewhat off
+summary(m)
+@ 
+The algorithm converged in 5 iterations, and one can check that the
+results are practically identical to sample mean and
+variance.\footnote{Note that \R function \texttt{var} returns the
+  unbiased
+  estimator by using denominator
+  $n-1$, the ML estimator is biased with denominator $n$.
+}
+
+This example demonstrates a number of key features of \verb|maxLik|:
+\begin{itemize}
+\item The first argument of \verb|logLik| is the parameter vector.  In
+  this example we define it as $\vec{\theta} = (\mu, \sigma)$, and the
+  first lines of \verb|logLik| are used to extract these values from
+  the vector.
+\item The \verb|logLik| function returns a single number, sum of
+  individual log-likelihood contributions of individual $x$
+  components.  (It may also return the components individually, see
+  the description of BHHH below.)
+\item Vector of start values must be of correct length.  In case the
+  components are named, those names are also displayed for \verb|summary|
+  (and for \verb|coef| and \verb|stdEr|, see below).
+\item \verb|summary| method displays a handy summary of the results,
+  including the convergence message, the estimated values, and
+  statistical significance test results.
+\end{itemize}
+As we did not specify the optimizer, \verb|maxLik| picked
+Newton-Raphson by default, and computed the necessary gradient and
+Hessian matrix numerically.
+
+Besides summary, \verb|maxLik| also contains a number of utility
+functions to simplify handling of the estimated models:
+\begin{itemize}
+\item \verb|coef| extracts the model coefficients:
+<<>>=
+coef(m)
+@   
+\item \verb|stdEr| returns the standard errors (by inverting the
+  corresponding Hessian).
+<<>>=
+stdEr(m)
+@   
+\item Other functions include \verb|logLik| to return the
+  log-likelihood value, \verb|returnCode| and \verb|returnMessage| to
+  return the convergence code and message respectively, and \verb|AIC|
+  to return Akaike's information criterion.  See the respective
+  documentation for more information.
+\item One can also query the number of observations with \verb|nObs|,
+  but this requires likelihood values to be supplied by observation (see
+  the BHHH method below).
+\end{itemize}
+
+
+\subsection{Supplying gradients}
+\label{sec:supplying-gradients}
+
+The simple example above worked fast and well.  In particular, the
+numeric gradients \verb|maxLik| had to compute implicitly
+did not pose any problems.  But users are strongly
+advised to supply at least analytic gradients.  More complex problems
+may turn intractably slow, fail to converge completely, or to converge to a
+sub-optimal region if numeric gradients are too noisy.  Here we
+demonstrate how to supply the gradient to the \verb|maxLik| function.
+
+It is easy to see from~\eqref{eq:normal-loglik} that the gradient
+components are
+\begin{equation}
+  \label{eq:loglik-gradient}
+  \begin{split}
+    \pderiv{\mu}\loglik(\mu, \sigma; x) &=
+    \frac{x - \mu}{\sigma^{2}}
+    \\
+    \pderiv{\sigma}\loglik(\mu, \sigma; x) &=
+    -\frac{1}{\sigma} + \frac{(x - \mu)^{2}}{\sigma^{3}}.
+  \end{split}
+\end{equation}
+Hence we can program the gradient function as
+<<>>=
+gradlik <- function(theta) {
+   mu <- theta[1]
+   sigma <- theta[2]
+   N <- length(x)  # number of observations
+   gradient <- numeric(2)
+   gradient[1] <- sum(x - mu)/sigma^2
+   gradient[2] <- -N/sigma + sum((x - mu)^2)/sigma^3
+   gradient
+}
+@ 
+Note that have moved $1/\sigma^{2}$ out of \verb|sum| to avoid
+redundant computations inside, we also have written $N/\sigma$ as the
+term $1/\sigma$ must be summed for all observations (despite it being
+invariant).
+
+Now we can supply this function to \verb|maxLik| as
+<<>>=
+m <- maxLik(loglik, gradlik, start=c(mu=1, sigma=2))
+summary(m)
+@ 
+While these results are identical to the ones above with numeric
+gradients, the algorithm is now much more robust, and much faster in
+case of large number of parameters.
+
+
+
+compareDerivatives
+
+<<>>=
+compareDerivatives(loglik, gradlik, t0=c(1,2))
+@ 
+
+\subsection{Different optimizers}
+\label{sec:different-optimizers}
 
 select optimizers
 
 BHHH
 
-providing analytic derivatives
 
-\subsection{Advanced usage}
+\section{Advanced usage}
 \label{sec:advanced-usage}
 
-condiNumber, compareDerivatives
+arguments to loglik
+
+maxXX functions
+
+condiNumber, 
 
 fixed coefficients
 
 mention SGA
 
+\subsection{Tips and tricks}
+\label{sec:suggestions}
 
-\bibliographystyle{econometrica}
-\bibliography{Economics}
+analytic gradients
+
+speed of convergence
+
+
+\bibliographystyle{apecon}
+\bibliography{maxlik}
 
 \end{document}

@@ -891,6 +891,6 @@ converged in $\Sexpr{nIter(m)}$ iterations
 
 
 \bibliographystyle{apecon}
-\bibliography{sga}
+\bibliography{maxlik}
 
 \end{document}
