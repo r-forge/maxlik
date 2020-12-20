@@ -44,6 +44,7 @@
 
 <<echo=FALSE>>=
 library(maxLik)
+set.seed(6)
 @ 
 
 \section{Introduction}
@@ -395,15 +396,126 @@ supplied through \verb|control=list(...)| method.  Some of the most
 important options include 
 \verb|printLevel| to control debugging information, \verb|iterLim| to
 control the maximum number of iterations, and various
-\verb|tol|-parameters to control the convergence tolerances.
+\verb|tol|-parameters to control the convergence tolerances.  For
+instance, we can limit the iterations to two, while also printing out
+the parameter estimates at each step.  We use the previous
+example with BHHH optimizer:
+<<>>=
+m <- maxLik(loglikH, start=c(mu=1, sigma=2),
+            method="BHHH",
+            control=list(printLevel=3, iterlim=2))
+summary(m)
+@
+The first option, \verb|printLevel=3|, prints out parameters, gradient
+a few other pieces of information at every step.  Printlevel 1 only
+prints the first and last parameter values, and larger numbers print
+more information.  The output from \maxlik-implemented
+optimizers is fairly consistent, but optimizers that are based
+code from other packages, such as BFGS, may output debugging
+information in a quite different way.  We can also see that the
+algorithm now returned after just two iterations with code 4:
+iteration limit exceeded. 
+
+Other sets of handy options are the convergence tolerances.  There are
+three convergence tolerances:
+\begin{description}
+\item[tol] This measures
+  the absolute convergence tolerance.  Stop if
+  successive function evaluations
+  differ by less than \emph{tol} (default $10^{-8}$).  
+\item[reltol] This is somewhat similar to \emph{tol}, but relative to
+  the function value.  Stop if successive function evaluations differ by less than
+  $\mathit{reltol}\cdot (\loglik(\vec{\theta}) + \mathit{reltol})$
+  (default \verb|sqrt(.Machine[["double.eps"]])|).
+\item[gradtol] stop if the (Euclidean) norm of the gradient is smaller
+  than this value (default $10^{-6}$).
+\end{description}
+The default values are typically good enough, but in certain cases one
+may want to switch off certain tolerance-based criteria.  For
+instance, in case our function values are very small, we may want to
+rely only on the relative tolerance.  A simple way to achieve this is
+to set both \emph{tol} and \emph{gradtol} to negative values.  In that
+case these two conditions are never satisfied and the algorithm stops
+only when the relative convergence criterion is fulfilled.  We
+demonstrate this with the BHHH example with no iteration limit:
+<<>>=
+m <- maxLik(loglikH, start=c(mu=1, sigma=2),
+            method="BHHH",
+            control=list(tol=-1, gradtol=-1))
+summary(m)
+@ 
+
+Note that stochastic gradient ascent, rarely used for ML estimation,
+relies on different convergence criteria.  See the dedicated vignette
+``Stochastic Gradient Ascent in \maxlik''.
 
 
 \section{Advanced usage}
 \label{sec:advanced-usage}
 
-arguments to loglik
+This section describes more advanced and less frequently used aspects
+of \maxlik.
 
-maxXX functions
+\subsection{Additional arguments to the log-likelihood function}
+\label{sec:additional-arguments-loglik}
+
+The only rule about the arguments for the log-likelihood is that its
+first argument must be the parameter vector.  But one can have more
+arguments and pass those through \maxlik as additional arguments to
+the \verb|maxLik| function.  For instance, let's change the
+log-likelihood function in a way that it expects data $\vec{x}$ to be
+passed as an argument.  Now we just have to add \verb|x| as an
+additional argument:
+<<>>=
+loglik <- function(theta, x) {
+   mu <- theta[1]
+   sigma <- theta[2]
+   sum(dnorm(x, mean=mu, sd=sigma, log=TRUE))
+}
+m <- maxLik(loglik, start=c(mu=1, sigma=2), x=x)
+summary(m)
+@
+This approach works with most of the argument names, except with those
+that are the same as \verb|maxLik|'s arguments.  In the latter case it
+prints an informative error message.
+
+
+\subsection{Maximizing other functions}
+\label{sec:maximizing-other-functions}
+
+The \verb|maxLik| function is basically just a wrapper to a number of
+maximization algorithms, together with likelihood-related goodies like
+standard errors.  However, from time-to-time we need to optimize other
+functions where inverting the Hessian to compute standard errors is
+not applicable.  In such cases one can call the included optimizers
+directly, using the form \verb|maxXXX| where \verb|XXX| stands for the
+name of the method, e.g. \verb|maxNR| for Newton-Rapshon
+(\verb|method="NR"|) and \verb|maxBFGS| for BFGS.  There is also
+\verb|maxBHHH| although the information equality--based BHHH is not
+correct if we do not work with likelihood function.  Let us optimize
+the 2-dimensional bell curve,
+\begin{equation}
+  \label{eq:2d-bell-curve}
+  f(x, y) = \me^{-x^{2} - y^{2}}:
+\end{equation}
+<<>>=
+f <- function(theta) {
+   x <- theta[1]
+   y <- theta[2]
+   exp(-x^2 - y^2)
+                           # optimum at (0, 0)
+}
+m <- maxBFGS(f, start=c(1,1))
+                           # give start value a bit off
+summary(m)
+@
+Note that the summary output is slightly different: if reports the
+parameter and gradient value, appropriate for a task that is not
+likelihood optimization.  Note also that BFGS, based on the
+\verb|stats::optim| does not report the convergence results in a
+similar way as BHHH and NR, the algorithms provided by the \maxlik
+package. 
+
 
 condiNumber, 
 
