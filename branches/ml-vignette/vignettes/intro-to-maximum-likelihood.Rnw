@@ -27,7 +27,6 @@ options(keep.source = TRUE, width = 60,
         try.outFile=stdout()  # make try to produce error messages
         )
 foo <- packageDescription("maxLik")
-library(ggplot2)
 library(magrittr)
 library(plot3D)
 @
