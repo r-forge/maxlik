@@ -37,42 +37,27 @@ library(plot3D)
 
 \section{Introduction}
 
-This vignette is intended for those who are rather new to both
-maximum likelihood (ML) estimation and the \texttt{maxLik} package.
+This vignette is intended for readers who are unfamiliar with the
+concept of likelihood, or need a quick intuitive brush-up.
 The potential target group contains advanced undergraduate students in
 technical fields, such as statistics or economics, graduate students
 in social sciences or engineering who are devising their own
 estimators, and researchers and practitioners who have little previous
-experience with ML or with \texttt{maxLik}.  However, one should have basic knowledge
-of \R language.  If you are familiar enough with the concept of ML, you
-may
-skip the theoretical introduction and go straight to the
-Section~\ref{sec:maxlik-usage} for \texttt{maxLik} usage.
+experience with ML.  However, one should have basic knowledge
+of \R language.  If you are familiar enough with the concept of ML,
+consult the other vignette, ``Maximum Likelihood Estimation with
+\maxlik'' instead.
 
 Maximum Likelihood (ML) in its core is maximizing the \emph{likelihood}
-over the parameters of interest.  The first section explains what is
-likelihood and how is it related to probability.  We provide two toy
-examples, and at the end of the section derive the likelihood function
-for linear regression.  All the cases are supplemented with code
-examples.  This section should help beginners to get started with both
-theoretical background and \texttt{maxLik} usage.
-The second section is solely devoted to
-\texttt{maxLik} usage, the reader is assumed to know the relevant
-concepts and look these up as necessary.
-
-
-\section{What Is Likelihood? }
-\label{sec:what-is-likelihood}
-
-This section is intended for readers who are unfamiliar with the
-concept of likelihood, or need a quick intuitive brush-up.  We discuss
-three cases: tossing a coin (binomial distribution), computing sample
-average (normal distribution), and linear regression (normal
-distribution).  The examples assume little knowledge besides basic
-statistics and \R knowledge.
-
-Experienced readers should skip this section and start from
-Section~\ref{sec:basic-usage}. 
+over the parameters of interest.  We start with explaining what is
+likelihood and how it is related to probability in case of discrete
+random variables.  The following sections cover continuous random
+variables, multiple parameters as parameter vectors, and end with an
+example of linear regression.  The final section discusses the basics
+of non-linear optimization.
+The examples are supplemented with very simple code and
+assume little knowledge besides basic
+statistics and basic \R knowledge, 
 
 
 \section{Discrete Random Variables}
@@ -294,13 +279,13 @@ that only produces
 numbers between 0 and 1).  So probability 0-events may be
 possible and they may also be impossible.  And to make matter worse, they may also be
 more likely and less likely.  For instance, in case of standard normal
-random numbers (these numbers are distributed as the ``bell curve'') the
+random numbers (these numbers are distributed according to ``bell curve'') the
 values near $0$ are much more likely than values around $-2$, despite of
 the probability to receive any particular number still being 0
 (see Figure~\ref{fig:standard-normal-intervals}).
 
 The solution is to look not at the probabilities of individual numbers
-but numbers in a narrow interval near these numbers.  Consider
+but probabilities in a narrow interval near these numbers.  Consider
 the number of interest $x_{1}$, and compute the
 probability that the random value $X$ falls into the narrow  width
 $\delta$ interval
@@ -309,12 +294,12 @@ number (Figure~\ref{fig:standard-normal-intervals}).
 Obviously, the smaller the width $\delta$, the less likely
 it is that $X$ falls into this narrow interval.  But it turns out that when we
 divide the probability by the width, we get a stable value at the
-limit
+limit which we denote by $f(x_{1})$:
 \begin{equation}
   \label{eq:probability-density}
   f(x_{1}) =
   \lim_{\delta\to0}
-  \frac{\Pr(X \in [x_{1} - \delta/2,\, x_{2} + \delta/2])}{\delta}.
+  \frac{\Pr(X \in [x_{1} - \delta/2,\, x_{1} + \delta/2])}{\delta}.
 \end{equation}
 In the example on the Figure, $f(x_{1}) < f(x_{2})$.
 The result, $f(x)$, is called \emph{probability density function},
@@ -414,8 +399,8 @@ stress that it is essentially the likelihood, just not written in the
 way it is usually done.  As in the coin-toss example above, we write
 it as a function of the parameter $\mu$, and put data $x_{1}$ and
 $x_{2}$ after
-semicolon.  Now we just  $\mu$ by just finding such a $\mu$ value that maximizes the
-expression. 
+semicolon.  Now we just estimate $\mu$ by finding such a value $\mu^{*}$ that maximizes the
+expression~\eqref{eq:two-normal-probability-likelihood}. 
 
 But note that $\delta$ plays no role in maximizing the likelihood.  It
 is just a multiplicative factor, and it must be
@@ -521,7 +506,7 @@ the solution for normally distributed random numbers.
 
 The previous example is instructive but it does have very few practical
 applications.  The problem is that we wrote the probability model
-as standard normal density with unknown location $\mu$.  However, in
+as standard normal density with unknown mean $\mu$.  However, in
 practice we hardly ever know that we are dealing with standard normal.
 More likely both location and scale $\sigma$ are
 unknown.
@@ -626,15 +611,15 @@ differences:
 \item instead of using variables \texttt{x1} and \texttt{x2} as
   previously, we now extract data directly from the data frame.
 \end{itemize}
-The other logic though is similar.  As our parameter vector now
+The rest of the function is similar.  As our parameter vector now
 contains two components, the start vector must also be of length two.
-Based on the figure we guess that a good starting value would be
+Based on the figure we guess that a good starting value might be
 $\mu=30$ and $\sigma=10$:
 <<>>=
 m <- maxLik(loglik, start=c(mu=30, sigma=10))
 summary(m)
 @ 
-Indeed, the results are close.
+Indeed, our guess was close.
 
 
 \section{Final Example: Linear Regression}
@@ -642,7 +627,7 @@ Indeed, the results are close.
 
 Now when we have the main tools in place, it is rather easy to extend
 the example above to a real statistical model.
-Let us extend the previous example into a linear regression.
+Let us build the previous example into a linear regression model.
 We describe \COii uptake (variable \emph{uptake}) by 
 different \COii concentration (variable \emph{conc}) in air.  We can
 describe the corresponding regression model as
@@ -669,7 +654,7 @@ follow~\eqref{eq:normal-loglik} and write for a single observation
 \end{equation}
 Note that as the expected value $\mu=0$ by assumption, we do not have
 $\mu$ in~\eqref{eq:co2-epsilon-loglik} and hence we drop it also from
-the $\loglik$ argument list.
+the argument list of $\loglik$.
 Next, we can express $\epsilon_{i}$ from~\eqref{eq:co2-regression}:
 \begin{equation}
   \label{eq:co2-epsilon}
@@ -705,7 +690,7 @@ observation.  For $N$ observations we have
     \beta_{1} \cdot \mathit{conc}_{i}
     - \mu)^{2}}{\sigma^{2}}.
 \end{multline}
-This is a fully specified log-likelihood function we can use for
+This is a fully specified log-likelihood function that we can use for
 optimization.  Let us repeat what we have done:
 \begin{itemize}
 \item We write the log-likelihood as a function of parameters
@@ -713,8 +698,8 @@ optimization.  Let us repeat what we have done:
   regression model we do not call $\sigma$ a parameter.  But it is
   still a parameter, although one we usually do not care much about
   (sometimes
-  called ``nuisance parameter'').  We will denote all parameters
-  $\vec{\theta}$ later.
+  called ``nuisance parameter'').  Later we will denote all parameters
+  $\vec{\theta}$.
 \item The likelihood function also depends on data, here of the
   vectors $\vec{\mathit{uptake}}$ and  $\vec{\mathit{conc}}$.
 \item The function definition itself is just sum of log-likelihood
@@ -724,7 +709,7 @@ optimization.  Let us repeat what we have done:
   equation in~\eqref{eq:co2-single-loglik}.
 \end{itemize}
 Finally, we also wrap the three parameters into a single vector
-$\vec{\theta}$ and write
+$\vec{\theta}$, suppress dependency on data in the notation, and write
 \begin{equation}
   \label{eq:co2-loglik-simplified}
   \loglik(\vec{\theta})
@@ -770,7 +755,7 @@ Indeed, the results are close although not identical.
 
 Finally, we discuss the magic inside \texttt{maxLik} that finds the
 optimal parameter values.  Although not necessary in everyday work,
-this knowledge helps a lot to understand the types of issues and
+this knowledge helps to understand the issues and
 potential solutions when doing non-linear optimization.
 So how does the optimization work?
 
@@ -839,7 +824,7 @@ contour3D(mu, sigma, z=min(ll) + 0.1, colvar=ll, col="black",
   The optimum, denoted as a red dot, is at
   $\mu=\Sexpr{round(coef(m)[1], 3)}$ and
   $\sigma=\Sexpr{round(coef(m)[2], 3)}$.  The corresponding countour
-  plot is shows at the bottom.
+  plot is shown at the bottom.
 }
 \label{fig:mu-sigma-plot}
 \end{figure}
@@ -861,7 +846,7 @@ Section~\ref{sec:linear-regression}, and visualization options are
 very limited.  In case of 10 parameters, it is essentially impossible
 to solve the problem by just visualizations.
 
-It is like climbing uphill in whiteout
+Non-linear optimization is like climbing uphill in whiteout
 conditions where you cannot distinguish any details around you--sky is
 just white fog and ground is just exactly similar white snow.  But you
 can still feel which way the ground goes up and so you can still go
@@ -872,18 +857,18 @@ gradients, including the default Newton-Raphson method.  But how do we
 know the gradient if the log-likelihood function only returns a single
 value?  There are two ways:
 \begin{enumerate*}[label=\roman*)]
-\item provide a separate function that also computes gradient;
+\item provide a separate function that computes gradient;
 \item compute the log-likelihood value in multiple points nearby and
   deduce the gradient from that information.
 \end{enumerate*}
 The first option is superior, in high dimensions it is much faster and
 much less error prone.  But computing and coding the gradient function
 can easily take days of work.  The second approach, numeric gradient,
-forces the computer to do more work more and hence it is slower.  More
+forces the computer to do more work and hence it is slower.  More
 importantly, it is also unreliable for more complex cases.  In
-practice you can notice how the algorithm refuses to converge for
-thousand of iterations.  But numeric gradient works very well, for
-example, the algorithm we used to compute the mean and variance for 
+practice you may notice how the algorithm refuses to converge for
+thousands of iterations.  But numeric gradient works very well in
+simple cases like the algorithm we used to compute the mean and variance for 
 normally distributed random variables in
 Section~\ref{sec:vector-arguments}
 converged in $\Sexpr{nIter(m)}$ iterations 
