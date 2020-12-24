@@ -26,9 +26,9 @@
 options(keep.source = TRUE, width = 60,
         try.outFile=stdout()  # make try to produce error messages
         )
-foo <- packageDescription("maxLik")
 library(magrittr)
 library(plot3D)
+set.seed(34)
 @
 
 \title{Getting started with maximum likelihood and \texttt{maxLik}}
@@ -259,18 +259,19 @@ to be the ML estimate.
 Next, we look at an example with continuous outcomes.
 
 
-\section{Continuous variables: probability density and likelihood}
+\section{Continuous case: probability density and likelihood}
 \label{sec:continuous-outcomes}
 
-In the example above we looked at discrete random variables, a case where there were only a small
+In the example above we looked at a discrete random process, a case where there were only a small
 number of distinct possibilities (heads and tails).
-Discrete random variables are easy to
+Discrete cases are easy to
 understand because we can actually compute the respective
 probabilities, such as the probability to receive one heads and one
-tails in our experiment.  Now we consider continuous random variables,
-the case where the outcome can be any number in a certain interval.
-Unfortunately we cannot compute probability of a single value for continuous
-random variables.  Or more precisely--we can do it, sure, but the answer is always 0.
+tails in our experiment.  Now we consider continuous random variables
+where the outcome can be any number in a certain interval.
+Unfortunately, in continuous case we cannot compute probability of any
+particular outcome. 
+Or more precisely--we can do it, but the answer is always 0.
 This may sound a little counter-intuitive but perhaps the
 following example helps.  If you ask the computer to generate a single
 random number between 0 and 1, you may receive
@@ -281,7 +282,7 @@ won't get exactly the same number.\footnote{As computers operate with finite
   are positive, although small.  The exact answer depends on the
   numeric precision and the quality of random number generator.
 }
-But despite the probability to receive this number is zero we
+But despite the probability to receive this number is zero, we
 somehow still produced it in the first place.  Clearly, zero
 probability does not mean the number was impossible.
 However, if we want to receive a negative number from the same random
@@ -298,7 +299,7 @@ the probability to receive any particular number still being 0
 The solution is to look not at the probabilities of individual numbers
 but probabilities in a narrow interval near these numbers.  Consider
 the number of interest $x_{1}$, and compute the
-probability that the random value $X$ falls into the narrow  width
+probability that the random outcome $X$ falls into the narrow  width
 $\delta$ interval
 $[x_{1} - \delta/2,\, x_{1} + \delta/2]$ around this
 number (Figure~\ref{fig:standard-normal-intervals}).
@@ -312,7 +313,8 @@ limit which we denote by $f(x_{1})$:
   \lim_{\delta\to0}
   \frac{\Pr(X \in [x_{1} - \delta/2,\, x_{1} + \delta/2])}{\delta}.
 \end{equation}
-In the example on the Figure, $f(x_{1}) < f(x_{2})$.
+In the example on the Figure the values around $x_{1}$ and less likely
+than around $x_{2}$ and hence $f(x_{1}) < f(x_{2})$.
 The result, $f(x)$, is called \emph{probability density function},
 often abbreviated as \emph{pdf}.  In
 case of continuous random variables, we have to work with pdf-s
@@ -321,7 +323,7 @@ instead of probabilities.
 \begin{figure}[ht]
   \centering
   \includegraphics{probability-density.pdf}
-  \caption{Standard normal probability density.  While
+  \caption{Standard normal probability density (thick line).  While
     $\Pr(X = x_{1}) = 0$, i.e. the probability to receive a random
     number exactly equal to $x_{1}$ is 0, the probability to receive a
     random number in the narrow interval of width $\delta$ around $x_{1}$ is
@@ -333,18 +335,17 @@ instead of probabilities.
 
 Consider the following somewhat trivial example: we have sampled two
 independent datapoints
-$x_{1}$ and $x_{2}$ from a normally distributed random variable with
+$x_{1}$ and $x_{2}$ from normal distribution with
 variance 1 and mean (expected value) equal to $\mu$.
 Say, $x_{1} = \Sexpr{x1 <- rnorm(1); round(x1, 3)}$ and
 $x_{2} = \Sexpr{x1 <- rnorm(1); round(x1, 3)}$.
 Assume we do not
 know $\mu$ and use ML to estimate it.  We
-proceed in a similar steps as what we did for discrete random
-variables:
+proceed in a similar steps as what we did for the discrete case:
 \begin{enumerate*}[label=\roman*)]
 \item set up the probability model;
-\item use the model to compute probability to observe this data;
-\item write this probability as $\likelihood(\mu)$, likelihood function of parameter
+\item use the model to compute probability to observe the data;
+\item write the probability as $\likelihood(\mu)$, likelihood function of parameter
   $\mu$;
 \item and finally, find the $\mu$ value that maximizes the
   corresponding log-likelihood, $\mu^{*}$.
@@ -362,21 +363,22 @@ The pdf for unit-variance normal distribution with mean $\mu$ is
     \displaystyle
     -\frac{1}{2}
     (x - \mu)^{2}
-  }.
+  }
 \end{equation}
+(This is the thick curve in Figure~\ref{fig:standard-normal-intervals}).
 We write it as $f(x; \mu)$ as pdf is usually written as a function of
-data but as our primary interest is $\mu$, we also add this as an
+data.  But as our primary interest is $\mu$, we also add this as an
 argument.  Now we use this pdf and~\eqref{eq:probability-density} to find
 the probability that we observe a datapoint in the narrow
-interval around $x$, this is just $f(x; \mu)\cdot \delta$.  As $x_{1}$
-and $x_{2}$ are independent, we can just multiply the corresponding
+interval around $x$.  Here it is just $f(x; \mu)\cdot \delta$.  As $x_{1}$
+and $x_{2}$ are independent, we can simply multiply the corresponding
 probabilities to find the combined probability that both random numbers are
 near their corresponding values:
 \begin{multline}
   \label{eq:two-normal-probability-likelihood}
-  \Pr{\big(X_{1} \in [x_{1} - \delta/2, x + \delta/2]
+  \Pr{\big(X_{1} \in [x_{1} - \delta/2, x_{1} + \delta/2]
     \quad\text{and}\quad
-    X_{2} \in [x_{2} - \delta/2, x + \delta/2]\big)}
+    X_{2} \in [x_{2} - \delta/2, x_{2} + \delta/2]\big)}
   =\\[2ex]=
   \underbrace{
     \frac{1}{\sqrt{2\pi}}
@@ -410,14 +412,14 @@ stress that it is essentially the likelihood, just not written in the
 way it is usually done.  As in the coin-toss example above, we write
 it as a function of the parameter $\mu$, and put data $x_{1}$ and
 $x_{2}$ after
-semicolon.  Now we just estimate $\mu$ by finding such a value $\mu^{*}$ that maximizes the
+semicolon.  Now we can estimate $\mu$ by finding such a value $\mu^{*}$ that maximizes the
 expression~\eqref{eq:two-normal-probability-likelihood}. 
 
 But note that $\delta$ plays no role in maximizing the likelihood.  It
-is just a multiplicative factor, and it must be
-positive because it is a width.  So for our maximization problem we can just ignore it.
+is just a multiplicative factor, and a positive one
+because it is a width.  So for our maximization problem we can just ignore it.
 This is what is normally done when working with continuous random variables,
-and hence we can write the likelihood as
+and hence we write the likelihood as
 \begin{equation}
   \label{eq:two-normal-likelihood}
   \likelihood(\mu; x_{1}, x_{2})
@@ -442,7 +444,7 @@ We denote this by $\likelihood$ instead of $\likelihood^{*}$ to stress
 that this is how likelihood function for continuous random variables
 is usually written.
 
-Exactly as in the case of discrete random variables, it is better to use
+Exactly as in the discrete case, it is better to use
 log-likelihood instead of likelihood to actually compute the maximum.
 From~\eqref{eq:two-normal-likelihood} we get log-likelihood as
 \begin{multline}
@@ -469,7 +471,7 @@ likelihood function.\footnote{While additive or multiplicative
   when comparing different log-likelihood values.  This
   is often needed for likelihood-based statistical tests.
 }
-The $1/2$ is a positive factor that can be ignored as well.
+``$1/2$'' is a positive factor that can be ignored as well.
 When we remove these two terms, what is left is
 $-\sum_{i}(x_{i} - \mu)^{2}$.  So we end up maximizing negative of sum
 of squared errors, equivalent to minimizing the positive sum of squared errors.
@@ -477,9 +479,9 @@ Maximum likelihood method is equivalent to least squares in case of
 normally distributed random variables. 
 
 One can easily check by differentiating the log-likelihood function
-that the maximum of log-likelihood is achieved when $\mu =
+that the maximum is achieved at $\mu^{*} =
 \frac{1}{2}(x_{1} + x_{2})$.  It is not surprising, our intuitive
-understanding of the mean value carries immediately over to the normal
+understanding of mean value carries immediately over to the normal
 distribution context.
 
 Now it is time to demonstrate these results with \texttt{maxLik}
@@ -508,8 +510,6 @@ The answer is the same as sample mean:
 <<>>=
 (x1 + x2)/2
 @
-As in case of Bernoulli process, the intuitive concept of mean is also
-the solution for normally distributed random numbers.
 
 
 \section{Vector arguments}
@@ -517,16 +517,16 @@ the solution for normally distributed random numbers.
 
 The previous example is instructive but it does have very few practical
 applications.  The problem is that we wrote the probability model
-as standard normal density with unknown mean $\mu$.  However, in
-practice we hardly ever know that we are dealing with standard normal.
-More likely both location and scale $\sigma$ are
+as normal density with unknown mean $\mu$ but standard deviation
+$\sigma$ equal to unity.
+However, in
+practice we hardly ever know that we are dealing with unit standard deviation.
+More likely both mean and standard deviation are
 unknown.
-(In case of normal distribution, scale $\sigma$ is equal to the
-standard deviation and $\sigma^{2}$ to the variance.)
 So in order to make the previous example applicable, we need
-to incorporate the unknown scale into the model.
+to incorporate the unknown $\sigma$ into the model.
 
-The more general normal density function with standard deviation $\sigma$ is
+The more general normal pdf with standard deviation $\sigma$ is
 \begin{equation}
   \label{eq:normal-pdf}
   f(x; \mu, \sigma) =
@@ -550,7 +550,8 @@ log-likelihood
   \sum_{i=1}^{2} \frac{(x_{i} - \mu)^{2}}{\sigma^{2}}.
 \end{equation}
 We write the log-likelihood as function of both parameters, $\mu$ and
-$\sigma$; $x_{1}$ and $x_{2}$ after semicolon show that though it
+$\sigma$; the semicolon that separates data $x_{1}$ and $x_{2}$ shows
+that though the log-likelihood
 depends on data too, we are not much interested in that dependency for
 now.  This formula immediately extends to the case of $N$ datapoints
 as 
@@ -565,14 +566,14 @@ as
 \end{equation}
 where we have dropped the dependency on data in the notation.
 In this case we can actually do the optimization analytically, and
-derive the well-known intuitive results: the best estimator for location $\mu$ is
-the sample mean, and for variance $\sigma^{2}$ it is the sample variance.
+derive the well-known intuitive results: the best estimator for mean $\mu$ is
+the sample average, and for variance $\sigma^{2}$ it is the sample variance.
 
-However, in general the expression does not allow for analytic
-solution.  In this case we need to use a numeric optimization
-algorithm that searches for the best $\mu$ and $\sigma$ combination.
+However, in general the expression cannot be solved analytically.
+We have to use numeric optimization to search
+for the best $\mu$ and $\sigma$ combination.
 The common multi-dimensional optimizers rely on linear algebra and
-want all the parameters submitted as a single vector.  So we can write
+expect all the parameters submitted as a single vector.  So we can write
 the log-likelihood as
 \begin{equation}
   \label{eq:normal-loglik-vector}
@@ -581,14 +582,16 @@ the log-likelihood as
   \vec{\theta} = (\mu, \sigma).
 \end{equation}
 Here we denote both parameters $\mu$ and $\sigma$ as components of a
-single parameter vector $\vec{\theta}$.  We have also
-dropped dependency on data in the notation but
+single parameter vector $\vec{\theta}$.  Traditionally vectors are denoted by bold
+symbols. 
+We have also
+dropped dependency on data in notation, but
 remember that in practical applications log-likelihood will always
 depend on data.  This notation can be converted to computer code almost
 verbatim, just remember to extract the parameters $\mu$ and $\sigma$
-from $\vec{\theta}$ inside of the log-likelihood function.
+from $\vec{\theta}$ in the log-likelihood function.
 
-Let us do an example using the \emph{CO2} dataset (in package
+Let us illustrate this using the \emph{CO2} dataset (in package
 \emph{datasets}).  
 It describes \COii uptake (variable \emph{uptake}) by different
 grasses in various conditions.  Let us start by plotting the histogram
@@ -617,12 +620,12 @@ Section~\ref{sec:continuous-outcomes}.  There are just two main
 differences:
 \begin{itemize}
 \item both arguments, $\mu$ and $\sigma$ are passed to it as
-  components of $\vec{\theta}$, and hence the function starts its work
+  components of $\vec{\theta}$, and hence the function starts 
   by unpacking the values.
-\item instead of using variables \texttt{x1} and \texttt{x2} as
-  previously, we now extract data directly from the data frame.
+\item instead of using variables \texttt{x1} and \texttt{x2},
+  we now extract data directly from the data frame.
 \end{itemize}
-The rest of the function is similar.  As our parameter vector now
+As our parameter vector now
 contains two components, the start vector must also be of length two.
 Based on the figure we guess that a good starting value might be
 $\mu=30$ and $\sigma=10$:
@@ -630,17 +633,18 @@ $\mu=30$ and $\sigma=10$:
 m <- maxLik(loglik, start=c(mu=30, sigma=10))
 summary(m)
 @ 
-Indeed, our guess was close.
+Indeed, our guess was close.  It is in general advisable to find good
+starting values, but in this simple case it is of little importance.
 
 
 \section{Final Example: Linear Regression}
 \label{sec:linear-regression}
 
-Now when we have the main tools in place, it is rather easy to extend
+Now we have the main tools in place to extend
 the example above to a real statistical model.
 Let us build the previous example into a linear regression model.
 We describe \COii uptake (variable \emph{uptake}) by 
-different \COii concentration (variable \emph{conc}) in air.  We can
+\COii concentration (variable \emph{conc}) in air.  We can
 describe the corresponding regression model as
 \begin{equation}
   \label{eq:co2-regression}
@@ -648,12 +652,12 @@ describe the corresponding regression model as
   \beta_{1} \cdot \mathit{conc}_{i} +
   \epsilon_{i}.
 \end{equation}
-In order to turn this regression model into a maximum likelihood
-problem, we again need a parametric probability model.  Assume that
+In order to turn this regression model into a ML
+problem, we need a probability model.  Assume that
 the disturbance term $\epsilon$ is normally distributed with mean 0
 and (unknown) variance $\sigma^{2}$ (this is a standard assumption in
 linear regression).  Now we can
-follow~\eqref{eq:normal-loglik} and write for a single observation
+follow~\eqref{eq:two-normal-loglik} and write for a single observation
 \begin{equation}
   \label{eq:co2-epsilon-loglik}
   \loglik(\sigma; \epsilon_{i})
@@ -665,15 +669,21 @@ follow~\eqref{eq:normal-loglik} and write for a single observation
 \end{equation}
 Note that as the expected value $\mu=0$ by assumption, we do not have
 $\mu$ in~\eqref{eq:co2-epsilon-loglik} and hence we drop it also from
-the argument list of $\loglik$.
-Next, we can express $\epsilon_{i}$ from~\eqref{eq:co2-regression}:
+the argument list of $\loglik$.  Otherwise we now have random outcome
+$\epsilon_{i}$ instead of $x$, so we write $\epsilon_{i}$ in place of
+data. 
+Next, we can express $\epsilon_{i}$ from linear regression model~\eqref{eq:co2-regression}:
 \begin{equation}
   \label{eq:co2-epsilon}
   \epsilon_{i} =
   \mathit{uptake}_{i} - \beta_{0} -
-  \beta_{1} \cdot \mathit{conc}_{i}
+  \beta_{1} \cdot \mathit{conc}_{i}.
 \end{equation}
-and plug this into~\eqref{eq:co2-epsilon-loglik}:
+This expression depends on two additional unknown parameters,
+$\beta_{0}$ and $\beta_{1}$.  These are the linear regression
+coefficients we want to find.
+
+Now we plug this into~\eqref{eq:co2-epsilon-loglik}:
 \begin{multline}
   \label{eq:co2-single-loglik}
   \loglik(\beta_{0}, \beta_{1}, \sigma; \mathit{uptake}_{i}, \mathit{conc}_{i})
@@ -683,11 +693,12 @@ and plug this into~\eqref{eq:co2-epsilon-loglik}:
   - \frac{1}{2}
   \frac{(
     \mathit{uptake}_{i} - \beta_{0} -
-    \beta_{1} \cdot \mathit{conc}_{i}
-    - \mu)^{2}}{\sigma^{2}}.
+    \beta_{1} \cdot \mathit{conc}_{i} )^{2}}{\sigma^{2}}.
 \end{multline}
 We have designed log-likelihood formula for a single linear regression
-observation.  For $N$ observations we have
+observation.  It depends on three parameters, $\beta_{0}$,
+$\beta_{1}$ and $\sigma$.
+For $N$ observations we have
 \begin{multline}
   \label{eq:co2-loglik}
   \loglik(\beta_{0}, \beta_{1}, \sigma; \vec{\mathit{uptake}}, \vec{\mathit{conc}})
@@ -698,25 +709,25 @@ observation.  For $N$ observations we have
   \sum_{i=1}^{N}
   \frac{(
     \mathit{uptake}_{i} - \beta_{0} -
-    \beta_{1} \cdot \mathit{conc}_{i}
-    - \mu)^{2}}{\sigma^{2}}.
+    \beta_{1} \cdot \mathit{conc}_{i})^{2}}{\sigma^{2}}
 \end{multline}
+where vectors $\vec{\mathit{uptake}}$ and $\vec{\mathit{conc}}$ contain the data
+values for all the observations.
 This is a fully specified log-likelihood function that we can use for
 optimization.  Let us repeat what we have done:
 \begin{itemize}
-\item We write the log-likelihood as a function of parameters
+\item We wrote log-likelihood as a function of parameters
   $\beta_{0}$, $\beta_{1}$ and $\sigma$.  Note that in ordinary
   regression model we do not call $\sigma$ a parameter.  But it is
   still a parameter, although one we usually do not care much about
   (sometimes
   called ``nuisance parameter'').  Later we will denote all parameters
-  $\vec{\theta}$.
-\item The likelihood function also depends on data, here of the
+  by $\vec{\theta}$.
+\item The likelihood function also depends on data, here the
   vectors $\vec{\mathit{uptake}}$ and  $\vec{\mathit{conc}}$.
 \item The function definition itself is just sum of log-likelihood
   contributions of individual normal disturbance terms, but as we do
-  not observe the disturbance terms
-  directly, we express those through the regression
+  not observe the disturbance terms, we express those through the regression
   equation in~\eqref{eq:co2-single-loglik}.
 \end{itemize}
 Finally, we also wrap the three parameters into a single vector
@@ -731,8 +742,7 @@ $\vec{\theta}$, suppress dependency on data in the notation, and write
   \sum_{i=1}^{N}
   \frac{(
     \mathit{uptake}_{i} - \beta_{0} -
-    \beta_{1} \cdot \mathit{conc}_{i}
-    - \mu)^{2}}{\sigma^{2}}.
+    \beta_{1} \cdot \mathit{conc}_{i})^{2}}{\sigma^{2}}.
 \end{equation}
 This is the definition we can easily code and estimate.  We guess
 start values $\beta_{0} = 30$ (close to the mean), $\beta_{1} = 0$
@@ -772,10 +782,10 @@ So how does the optimization work?
 
 Consider the example in Section~\ref{sec:vector-arguments}
 where we computed the normal distribution parameters for \COii
-intake.  There were two parameters, $\mu$ and $\sigma$, and the
-maximum likelihood procedure returns such a combination that gives the
+intake.  There are two parameters, $\mu$ and $\sigma$, and \maxlik
+returns the combination that gives the
 largest possible log-likelihood value.
-We can visualize the task by plotting the log-likelihood value for
+We can visualize the task by plotting the log-likelihood for
 different combinations of $\mu$, $\sigma$
 (Figure~\ref{fig:mu-sigma-plot}).
 
@@ -835,7 +845,7 @@ contour3D(mu, sigma, z=min(ll) + 0.1, colvar=ll, col="black",
   The optimum, denoted as a red dot, is at
   $\mu=\Sexpr{round(coef(m)[1], 3)}$ and
   $\sigma=\Sexpr{round(coef(m)[2], 3)}$.  The corresponding countour
-  plot is shown at the bottom.
+  plot is shown at the bottom of the figure box.
 }
 \label{fig:mu-sigma-plot}
 \end{figure}
@@ -843,10 +853,11 @@ contour3D(mu, sigma, z=min(ll) + 0.1, colvar=ll, col="black",
 So how does the algorithm find the optimal parameter value
 $\vec{\theta}^*$, the red dot on the figure?
 All the common methods are iterative, i.e. they
-start with a given start value, and repeatedly find a new and better
+start with a given start value (that's why we need the start value),
+and repeatedly find a new and better
 parameter that gives larger
-log-likelihood based on the previous iteration.  While humans look at
-the figure, they can immediately see where is its maximum.  But
+log-likelihood based on the previous iteration.  While humans can look at
+the figure and immediately see where is its maximum,
 computers cannot visualize the image in this way.  And more
 importantly--even humans cannot visualize the function in more than
 three dimensions.  This visualization is so helpful for us because we
@@ -859,7 +870,7 @@ to solve the problem by just visualizations.
 
 Non-linear optimization is like climbing uphill in whiteout
 conditions where you cannot distinguish any details around you--sky is
-just white fog and ground is just exactly similar white snow.  But you
+just a white fog and the ground is covered with exactly as white snow.  But you
 can still feel which way the ground goes up and so you can still go
 uphill.  This is what the popular algorithms do.  They rely on the slope of the
 function, the gradient, and follow the direction suggested by gradient.
@@ -879,13 +890,9 @@ forces the computer to do more work and hence it is slower.  More
 importantly, it is also unreliable for more complex cases.  In
 practice you may notice how the algorithm refuses to converge for
 thousands of iterations.  But numeric gradient works very well in
-simple cases like the algorithm we used to compute the mean and variance for 
-normally distributed random variables in
-Section~\ref{sec:vector-arguments}
-converged in $\Sexpr{nIter(m)}$ iterations 
+simple cases we demonstrated here.
 
-
-\bibliographystyle{apecon}
-\bibliography{maxlik}
+% \bibliographystyle{apecon}
+% \bibliography{maxlik}
 
 \end{document}

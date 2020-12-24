@@ -1,9 +1,9 @@
-unitsize(25mm,55mm);
+unitsize(25mm,65mm);
 defaultpen(fontsize(9));
 
 real xLeft = -2.2;
 real xRight = 2.2;
-real yTop = 0.6;
+real yTop = 0.5;
 
 // normal density
 real dnorm(real x) {
@@ -11,7 +11,7 @@ real dnorm(real x) {
 }
 // compute normal curve, plot later
 path normalCurve;
-for(real x = xLeft; x < xRight; x += 0.2) {
+for(real x = xLeft + 0.1; x < xRight - 0.1; x += 0.15) {
   normalCurve = normalCurve..(x, dnorm(x));
 }
 
@@ -50,15 +50,14 @@ for(real x : xs) {
 }
 
 // add normal curve later as filling area cuts into the curve otherwise
-draw(normalCurve);
+draw(normalCurve, linewidth(0.7));
 
 // Add Axes after are to avoid cutting into it
 path xaxis = (xLeft,0)--(xRight,0);
 path yaxis = (0,0)--(0,yTop);
 draw(xaxis, Arrow(TeXHead, 1));
 draw(yaxis, Arrow(TeXHead, 1));
-label("$x$", point(xaxis, 1), S);
-label("$y$", point(yaxis, 1), W);
+label("$x$", point(xaxis, 1), 2S);
 // Axis labels
 real tickLength = 0.05*yTop;
 for(int x = (int)xLeft; x <= (int)xRight; ++x) {
