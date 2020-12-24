@@ -38,34 +38,34 @@ library(plot3D)
 \section{Introduction}
 
 This vignette is intended for readers who are unfamiliar with the
-concept of likelihood, or need a quick intuitive brush-up.
-The potential target group contains advanced undergraduate students in
+concept of likelihood, or who want a quick intuitive brush-up.
+The potential target group includes advanced undergraduate students in
 technical fields, such as statistics or economics, graduate students
 in social sciences or engineering who are devising their own
 estimators, and researchers and practitioners who have little previous
 experience with ML.  However, one should have basic knowledge
 of \R language.  If you are familiar enough with the concept of ML,
-consult the other vignette, ``Maximum Likelihood Estimation with
-\maxlik'' instead.
+consult instead the other vignette, ``Maximum Likelihood Estimation with
+\maxlik''.
 
 Maximum Likelihood (ML) in its core is maximizing the \emph{likelihood}
-over the parameters of interest.  We start with explaining what is
-likelihood and how it is related to probability in case of discrete
-random variables.  The following sections cover continuous random
-variables, multiple parameters as parameter vectors, and end with an
-example of linear regression.  The final section discusses the basics
+over the parameters of interest.  We start with a discrete case to explain what is
+likelihood and how it is related to probability.  The following
+sections cover continuous cases,
+multiple parameters in vector form, and conclude with a
+linear regression example.  The final section discusses the basics
 of non-linear optimization.
-The examples are supplemented with very simple code and
+The examples are supplemented with simple code and
 assume little knowledge besides basic
-statistics and basic \R knowledge, 
+statistics and basic \R knowledge. 
 
 
 \section{Discrete Random Variables}
 \label{sec:discrete-random-variables}
 
-We start with discrete random variables.  ``Discrete'' refers to the
-case where only a limited number of different outcomes are possible,
-and hence we can compute the probability of all these outcomes.
+We start with a discrete case.  ``Discrete'' refers to only limited
+number of possible outcomes,
+and hence we can compute the probability of every outcome.
 
 Imagine you are tossing a fair
 coin.  What are the possible outcomes and what are the related
@@ -80,21 +80,21 @@ If the coin is not fair, we denote the corresponding process
 Bernoulli($p$), where $p$ is the probability to get heads.
 
 Now let us toss the coin two times.  What is the probability that we end
-up with one heads and one tails?  First, as the coin tosses are
+up with one heads and one tails?  As the coin tosses are
 independent,\footnote{Events are independent when outcome of one event
   does not influence the outcome of the other event.  Here the result
   of the second toss is not affected by the outcome of the first toss.}
 we can just multiply the probabilities: $0.5$ for a single heads and $0.5$
 for a single tails equals $0.25$ when multiplied.  However, this is not the whole
 story--we have two ways to get one heads and one tails,
-either $H$, $T$ or $T$, $H$.  Both of these events are equally likely,
+either $H$ first and $T$ thereafter or $T$ first and $H$ thereafter.  Both of these events are equally likely,
 so the final answer will be 0.5.
 
-But now imagine we do not know if the coin is fair.  Imagine we are
+But now imagine we do not know if the coin is fair.  Maybe we are
 not tossing a
-coin but and object of complex shape instead.  We can still label one
-side of the object as ``heads'' and the other as ``tails''.
-How can we tell what is the probability of heads?
+coin but an object of a complex shape instead.  We can still label one
+side as ``heads'' and the other as ``tails''.
+But how can we tell what is the probability of heads?
 Let's start by 
 denoting it with $p$.  Hence the probability of tails will be $1-p$,
 and the probability to receive one heads, one tails when we toss the
@@ -103,75 +103,84 @@ $2 p (1-p)$, $p$ for one heads, $1-p$ for one tails, and ``2'' takes
 into account the fact that we can get this outcome in two
 different orders.
 
-This probability is essentially the likelihood.  We usually denote the
+This probability is essentially likelihood.  We denote
 likelihood with $\likelihood(p)$, stressing that it depends on the
-unknown probability $p$.  Hence in this example we have
+unknown probability $p$.  So in this example we have
 \begin{equation}
   \label{eq:2-coin-likelihood}
   \likelihood(p) = 2 \, p \, (1-p).
 \end{equation}
-$p$ is the \emph{model parameter}, the unknown number we are computing
+$p$ is the \emph{model parameter}, the unknown number we want to compute
 using the ML method.
 
 Let's repeat here what did we do above:
 \begin{enumerate}
-\item First, we described the coin toss result as Bernoulli($p$)
-  process.  In order to us ML method, we 
-  need a probability model to describe our data.  $p$, the probability
-  of heads, is the model parameter we want to
-  calculate.  Bernoulli
-  process has only a single parameter, but more complex processes can
-  have many more.
-\item We compute the likelihood based on data: in this example it was
-  just a single heads, a single tails.
-\item Thereafter we computed the probability to observe the data.
-  This is why we have a suitable
-  probability model.  As the model contains unknown
-  parameters, the probability will also contain parameters.
+\item We observe data.  In this example data contains the counts:
+  one heads, one tails.
+\item We model the coin toss--data generating process--as
+  Bernoulli($p$) process.
+  $p$, the probability of heads, is the model parameter we want
+  to calculate.  Bernoulli process has only a single parameter, but
+  more complex processes can have many more.
+\item Thereafter we compute the probability to observe the data based
+  on the model.  This is why we need a probability model.  As the
+  model contains unknown parameters, the probability will also contain
+  parameters.
 \item And finally we just called this probability
-  \emph{likelihood} $\likelihood(p)$ to
-  stressed that it depends on the model parameter.  It also depends on
-  data (the probability will look different for e.g. two heads) but we typically
-  do not stress it in the notation.
+  \emph{likelihood} $\likelihood(p)$.  We write it as a function of
+  the parameter to
+  stress that the parameter is what we are interested in.  Likelihood
+  also depends on
+  data (the probability will look different for e.g. two heads instead
+  of a head and a tail) but we typically
+  do not reflect it in notation.
 \end{enumerate}
 
 What is left is to use this likelihood function to \emph{estimate} the
-parameters, to use
-data to find out the best possible set of parameters.  \emph{Maximum
-  likelihood} (ML) method finds such combination of parameters' values that
-maximizes the likelihood function.  It can be shown that such combination
-has number of desirable properties, in particular it will become
+parameter, to use
+data to find out the best possible parameter value.  \emph{Maximum
+  likelihood} (ML) method finds such parameter value that
+maximizes the likelihood function.  It can be shown that such value
+has a number of desirable properties, in particular it will become
 increasingly similar to the ``true value'' on an increasingly large
-dataset, given that our probability model is correct.\footnote{This
+dataset (given that our probability model is correct).\footnote{This
   property is formally referred to as \emph{consistency}.  ML is a
   consistent estimator.}  These desirable
 properties, and relative simplicity of the method, have made ML one of
 the most widely used statistical estimators.
 
-Let us now generalize the example we did above to an arbitrary number
-of coin tosses.  Assume the coin is of unknown
+Let us generalize the example we did above for an arbitrary number
+of coin flips.  Assume the coin is of unknown
 ``fairness'' where we just denote the probability to receive heads
 with $p$.  Further, assume that out of $N$ trials, $N_{H}$ trials
 turned out heads and $N_{T}$ trials turned tails.  The probability of
 this occuring is
 \begin{equation}
   \label{eq:general-cointoss-probability}
-  \binom{N}{N_{H}} \, p^{N_{H}} \, (1 - p)^{N_{T}} =
-  \likelihood(p; N_{H}, N_{T}).
+  \binom{N}{N_{H}} \, p^{N_{H}} \, (1 - p)^{N_{T}}
 \end{equation}
 $p^{N_{H}}$ is the probability to get $N_{H}$ heads, $(1 - p)^{N_{T}}$ is
 the probability to get $N_{T}$ tails, and
-the binomial coefficient $\displaystyle\binom{N}{N_{H}} = \displaystyle\frac{N!}{N_{H}!(N -
+the binomial coefficient $\displaystyle\binom{N}{N_{H}} =
+\displaystyle\frac{N!}{N_{H}! (N -
   N_{H})!}$ takes into account that there are many ways how heads
 and tail can turn up while still resulting in $N_{H}$ heads and
-$N_{T}$ tails.  In the example above there were just two possible
-combinations.  The probability depends on both the parameter $p$ and
-data--the corresponding counts $N_{H}$ and $N_{T}$.  We stress this in
-notation by writing $p$ in the first position followed by data, as our
-prime interest is to compute $p$.
+$N_{T}$ tails.  In the previous example $N=2$, $N_{H} = 1$ and
+there were just two possible
+combinations as $\displaystyle\binom{2}{1} = 2$.  The probability depends on both the parameter $p$ and
+data--the corresponding counts $N_{H}$ and $N_{T}$.  This is
+likelihood--probability to observe data.  We are interested how does
+it depend on $p$ and stress this by writing $p$ in the first position
+followed by semicolon and data:
+\begin{equation}
+  \label{eq:general-cointoss-likelihood}
+  \likelihood(p; N_{H}, N_{T})
+  =
+  \binom{N}{N_{H}} \, p^{N_{H}} \, (1 - p)^{N_{T}}
+\end{equation}
 
 Technically, it is easier to work with log-likelihood instead of
-likelihood (as log is monotonic function, maximum of likelihood and
+likelihood (as log is monotonic, maximum of likelihood and
 maximum of log-likelihood occur at the same parameter value).
 We denote log-likelihood by $\loglik$ and write
 \begin{equation}
@@ -181,10 +190,11 @@ We denote log-likelihood by $\loglik$ and write
   \log \binom{N}{N_{H}} +
   N_{H} \log p + N_{T} \log (1 - p).
 \end{equation}
-ML estimation is to find the value of $p$ that maximizes this expression.
+ML estimator of $p$ is the value that maximizes this expression.
 Fortunately, in this case
-the binomial coefficient $\binom{N}{N_{H}}$ depends only on data but does not
-depend on the parameter $p$.  Intuitively, $p$ determines the
+the binomial coefficient $\displaystyle\binom{N}{N_{H}}$ depends only
+on data
+but not on the $p$.  Intuitively, $p$ determines the
 probability of various combinations of heads and tails, but \emph{what
   kind of combinations are possible} does not depend on $p$.  Hence we
 can ignore the first term on the right hand side
@@ -205,6 +215,7 @@ is\footnote{Just differentiate $\loglik(p)$ with respect to $p$, set
 \begin{equation}
   \label{eq:general-cointoss-solution}
   p^{*} =
+  \frac{N_{H}}{N_{H} + N_{T}} =
   \frac{N_{H}}{N}.
 \end{equation}
 This should be surprise to no-one--the intuitive 
@@ -230,22 +241,22 @@ loglik <- function(p) {
 And finally, we can use \texttt{maxLik} to compute the likelihood.  In
 its simplest form, \texttt{maxLik} requires two arguments: the
 log-likelihood function, and the start value for the iterative
-algorithm (see Section~\ref{sec:maxlik-usage} for more detailed
+algorithm (see documentation and vignette \textsl{Maximum Likelihood Estimation with
+\maxlik} for more detailed
 explanations).
-The start value must be a valid parameter value (it must
-not give errors).  We can choose $p_{0} = 0.5$ as the initial value,
+The start value must be a valid parameter value (the loglik function must
+not give errors when called with the start value).  We can choose $p_{0} = 0.5$ as the initial value,
 and let the algorithm work to find the best possible $p$ from there:
 <<>>=
 library(maxLik)
 m <- maxLik(loglik, start=0.5)
 summary(m)
 @
-As expected, the best bet for $p$ is 0.3 in this case.  Our intuitive
-approach--just percentage of heads in the experiment--turns also out
+As expected, the best bet for $p$ is 0.3.  Our intuitive
+approach--the percentage of heads in the experiment--turns also out
 to be the ML estimate.
 
-Next, we look at an example with continuous outcomes--linear
-regression.
+Next, we look at an example with continuous outcomes.
 
 
 \section{Continuous variables: probability density and likelihood}
