@@ -50,11 +50,27 @@ set.seed(6)
 \section{Introduction}
 \label{sec:introduction}
 
-This document is intended for users who are well familiar with
+This vignette is intended for users who are well familiar with
 concepts of likelihood, log-likelihood, and related methods, such as
-information equality and BHHH approximation, and with \R language.  It only
-introduces how to use \maxlik.  Potential target group
-includes researchers, graduate students, and industry practitioners.
+information equality and BHHH approximation, and with \R language.
+The vignette 
+focuses on \maxlik usage and does not explain the underlying
+mathematical concepts.  If you need a refresher, consult the
+accompanied vignette ``Getting started with maximum likelihood and
+\maxlik''. 
+Potential target group
+includes researchers, graduate students, and industry practitioners
+who want to apply their own custom maximum likelihood estimators.
+
+The next section introduces the basic usage, including the \maxlik
+function, the main entry point for the package, gradients, selecting
+different optimizers, and controlling the optimization behavior.
+These are topics that are hard to avoid when working with applied ML
+estimation.  Section~\ref{sec:advanced-usage}
+contains a selection of more niche topics, including
+arguments to the log-likelihood function, other types of optimization,
+testing condition numbers and constrained optimization.
+
 
 \section{Basic usage}
 \label{sec:basic-usage}
@@ -62,18 +78,18 @@ includes researchers, graduate students, and industry practitioners.
 \subsection{The maxLik function}
 \label{sec:maxlik-function}
 
-The main entry point to the \maxlik functionality is the function of
+The main entry point to \maxlik functionality is the function of
 the same name, \verb|maxLik|.  It is a wrapper around the underlying
-optimization algorithms that also sets the classes right, so that one
+optimization algorithms that also ensures that the returned object is
+of the right class, so that one
 can use the convenience functions, such as \verb|summary| or
-\verb|logLik| on the returned object.
+\verb|logLik| with it.
 
 The basic usage of the function is very simple: one has just to submit
 the likelihood function (argument \verb|logLik|) and start value
 (argument \verb|start|).  Let us demonstrate the basic usage
-with ML estimation
-of normal distribution parameters.  We create 100 standard normals,
-and estimate the sample mean and standard deviation.  For a refresher,
+by estimating the normal distribution parameters.  We create 100 standard normals,
+and estimate the best fit mean and standard deviation.  For a refresher,
 the normal probability density function is
 \begin{equation}
   \label{eq:normal-pdf}
@@ -96,7 +112,8 @@ and hence the log-likelihood contribution of $x$ is
   - \frac{1}{2} \frac{(x - \mu)^{2}}{\sigma^{2}}.
 \end{equation}
 Instead of explicitly coding our own version, we can instead rely on
-\R function \verb|dnorm|:
+\R function \verb|dnorm| (see Section~\ref{sec:different-optimizers}
+for a version that does not rely on \verb|dnorm|):
 <<>>=
 x <- rnorm(100)  # data.  true mu = 0, sigma = 1
 loglik <- function(theta) {
@@ -108,8 +125,8 @@ m <- maxLik(loglik, start=c(mu=1, sigma=2))
                            # give start value somewhat off
 summary(m)
 @ 
-The algorithm converged in 5 iterations, and one can check that the
-results are practically identical to sample mean and
+The algorithm converged in 7 iterations and one can check that the
+results are equal to the sample mean and
 variance.\footnote{Note that \R function \texttt{var} returns the
   unbiased
   estimator by using denominator
@@ -125,8 +142,9 @@ This example demonstrates a number of key features of \verb|maxLik|:
 \item The \verb|logLik| function returns a single number, sum of
   individual log-likelihood contributions of individual $x$
   components.  (It may also return the components individually, see
-  the description of BHHH below.)
-\item Vector of start values must be of correct length.  In case the
+  the explanation of the BHHH method
+  in Section~\ref{sec:different-optimizers} below.)
+\item Vector of start values must be of correct length.  If the
   components are named, those names are also displayed for \verb|summary|
   (and for \verb|coef| and \verb|stdEr|, see below).
 \item \verb|summary| method displays a handy summary of the results,
@@ -138,14 +156,14 @@ Newton-Raphson by default, and computed the necessary gradient and
 Hessian matrix numerically.
 
 Besides summary, \verb|maxLik| also contains a number of utility
-functions to simplify handling of the estimated models:
+functions to simplify handling of estimated models:
 \begin{itemize}
 \item \verb|coef| extracts the model coefficients:
 <<>>=
 coef(m)
 @   
 \item \verb|stdEr| returns the standard errors (by inverting the
-  corresponding Hessian).
+  corresponding Hessian):
 <<>>=
 stdEr(m)
 @   
@@ -156,7 +174,7 @@ stdEr(m)
   documentation for more information.
 \item One can also query the number of observations with \verb|nObs|,
   but this requires likelihood values to be supplied by observation (see
-  the BHHH method below).
+  the BHHH method in Section~\ref{sec:different-optimizers} below).
 \end{itemize}
 
 
@@ -164,12 +182,14 @@ stdEr(m)
 \label{sec:supplying-gradients}
 
 The simple example above worked fast and well.  In particular, the
-numeric gradients \verb|maxLik| had to compute implicitly
+numeric gradient \verb|maxLik| had to compute implicitly
 did not pose any problems.  But users are strongly
-advised to supply at least analytic gradients.  More complex problems
-may be intractably slow, fail to converge completely, or to converge to a
-sub-optimal region if numeric gradients are too noisy.  Here we
-demonstrate how to supply the gradient to the \verb|maxLik| function.
+advised to supply analytic gradient, or even better, both gradient
+and Hessian.  More complex problems
+may be intractably slow, completely fail to converge, or converge to a
+sub-optimal solution if numeric gradients are too noisy.  Needless to
+say, unreliable Hessian also leads to unreliable inference.  Here we
+demonstrate how to supply gradient to the \verb|maxLik| function.
 
 It is easy to see from~\eqref{eq:normal-loglik} that the gradient
 components are
@@ -189,15 +209,15 @@ gradlik <- function(theta) {
    mu <- theta[1]
    sigma <- theta[2]
    N <- length(x)  # number of observations
-   gradient <- numeric(2)
-   gradient[1] <- sum(x - mu)/sigma^2
-   gradient[2] <- -N/sigma + sum((x - mu)^2)/sigma^3
+   gradient <- numeric(2)  # create an empty gradient vector
+   gradient[1] <- sum((x - mu)/sigma^2)
+   gradient[2] <- -N/sigma + sum((x - mu)^2/sigma^3)
    gradient
 }
 @ 
-Note that have moved $1/\sigma^{2}$ out of \verb|sum| to avoid
-redundant computations inside, we also have written $N/\sigma$ as the
-term $1/\sigma$ must be summed for all observations (despite it being
+Note that we have written $-N/\sigma$ as the first term for the second
+component because the
+term $-1/\sigma$ must be summed over all observations (despite it being
 invariant).  We also return gradient as a length-2 vector, not a
 matrix.  The example with BHHH below demonstrates gradient in a matrix form.
 
@@ -214,7 +234,7 @@ While this is perhaps the most straightforward way to compute
 gradients, \maxlik also supports gradients (and Hessian) supplied as
 log-likelihood function attribute.  This is motivated by the fact that
 computing gradient often involves a number of similar computations as
-gradient, and one may want to re-use the auxiliary results.  We
+computing log-likelihood, and one may want to re-use the auxiliary results.  We
 demonstrate this on the same example, but this time we do not rely on
 the \verb|dnorm| function in order to show how certain results can be
 reused:
@@ -248,7 +268,8 @@ the efficiency gain will depend on the amount of computations re-used,
 and the number of likelihood calls versus gradient calls.
 
 While analytic gradients are always helpful and often necessary, they
-may be hard to derive and code.  In order to help debugging the provided function,
+may be hard to derive and code.  In order to help to derive and debug the
+analytic gradient, another provided function,
 \verb|compareDerivatives|, takes the log-likelihood function, analytic
 gradent, and compares the numeric and analytic gradient.  As an
 example, we compare the log-likelihood and gradient functions we coded above:
@@ -257,7 +278,7 @@ compareDerivatives(loglik, gradlik, t0=c(1,2))
                            # 't0' is the parameter value
 @
 The function prints the analytic gradient, numeric gradient, their
-relative difference, and the largest relative difference (in absolute
+relative difference, and the largest relative difference value (in absolute
 value).  The latter is handy in case of large gradient vectors where
 it may be hard to spot a lonely component that is off.
 In case of reasonably smooth functions, expect
@@ -268,6 +289,10 @@ Note that the gradient of log-likelihood, a scalar function, with
 respect to length-2 parameter vector is
 $1\times2$ matrix.  \maxlik uses numerator layout.
 
+\verb|compareDerivatives| supports vector functions, so one can use
+the same to test analytic Hessian by calling it with \verb|gradlik| as
+the first argument and the analytic hessian as the second argument. 
+
 
 \subsection{Different optimizers}
 \label{sec:different-optimizers}
@@ -277,29 +302,32 @@ swap the optimizer by \verb|method| argument.  The supported
 optimizers include ``NR'' for the default Newton-Raphson, ``BFGS'' for
 gradient-only Broyden-Fletcher-Goldfarb-Shannon, ``BHHH'' for the
 information-equality based Berndt-Hall-Hall-Hausman, and ``NM'' for
-gradient-less Nelder-Mead.  Different arguments 
+gradient-less Nelder-Mead.  Different optimizers have their different
+strengths and weaknesses.  They may also be based on very different
+approaches and certain concepts, such as \emph{iteration}, may mean
+quite different things for different methods.
 
 For instance, although Newton-Raphson is a simple, fast and intuitive
 method that approximates the function with a parabola, it needs to
 know the Hessian matrix (the second derivatives).  This is usually
 even harder to program, and even slower and more error-prone when
 computed numerically.  Let us replace NR with gradient-only
-BFGS:\footnote{Internally, BFGS approximates Hessian through gradient.}
+BFGS method.  It is a quasi-Newton method that computes its own
+internal approximation of the Hessian while relying only on gradients:
 <<>>=
 m <- maxLik(loglik, gradlik, start=c(mu=1, sigma=2),
             method="BFGS")
 summary(m)
 @ 
 One can see that the results were identical, but while NR converged in
-5 iterations, it took 30 iterations for BFGS.  This is a manifestation
+7 iterations, it took 20 iterations for BFGS.  This is a manifestation
 of the fact that providing more information (in this case gradient)
 helps to find the solution.
-In a similar fashion, one can use most other provided optimizers.
-Each of those have their strong and weak sides.
+In a similar fashion, one can simply drop in most other provided optimizers.
 
-One method that is very popular in case of maximum likelihood is
+One method that is very popular for ML estimation is
 BHHH.  We discuss it here at length because that method requires both
-log-likelihood and gradient function to return somewhat different
+log-likelihood and gradient function to return a somewhat different
 value.  The essence of BHHH is information equality, the fact that in
 case of log-likelihood function $\loglik(\theta)$, the expected value
 of Hessian at the true parameter value $\vec{\theta}_{0}$ can be
@@ -310,7 +338,7 @@ gradient:
   \E
   \left[
     \frac{\partial^2 l(\vec{\theta})}
-    {\partial\vec{\theta} \partial\vec{\theta}'}
+    {\partial\vec{\theta}\, \partial\vec{\theta}'}
   \right]_{\vec{\theta} = \vec{\theta}_0}
   =
   - \E
@@ -319,7 +347,7 @@ gradient:
       \frac{\partial l(\vec{\theta})}
       {\partial\vec{\theta}'}
     \right|_{\vec{\theta} = \vec{\theta}_0}
-    % 
+    \cdot
     \left.
       \frac{\partial l(\vec{\theta})}
       {\partial\vec{\theta}}
@@ -331,26 +359,28 @@ gradient.  Obviously, this is only an approximation, and it is less
 correct when we are far from the true value $\vec{\theta}_{0}$.  Note
 also that information equality relies on the assumption that the
 observations are independent, and may not work with non-independent
-data, such as time series observations.
+data, such as time series.
 
 However, in order to compute the average outer product, we need to
 compute gradient \emph{by observation}.  Hence it is not enough to
-just compute a single gradient vector, we have to compute a matrix
+just return a single gradient vector, we have to compute a matrix
 where rows correspond to individual data points and columns to the
 parameter components.  The following example demonstrates the usage:
 <<>>=
-gradlikH <- function(theta) {
+gradlikB <- function(theta) {
+   ## BHHH-compatible gradient
    mu <- theta[1]
    sigma <- theta[2]
    N <- length(x)  # number of observations
-   gradient <- matrix(0, N, 2)  # gradient is matrix
+   gradient <- matrix(0, N, 2)  # gradient is matrix:
+                           # N datapoints (rows), 2 components
    gradient[, 1] <- (x - mu)/sigma^2
                            # first column: derivative wrt mu
    gradient[, 2] <- -1/sigma + (x - mu)^2/sigma^3
                            # second column: derivative wrt sigma
    gradient
 }
-m <- maxLik(loglik, gradlikH, start=c(mu=1, sigma=2),
+m <- maxLik(loglik, gradlikB, start=c(mu=1, sigma=2),
             method="BHHH")
 summary(m)
 @ 
@@ -359,19 +389,20 @@ but we do not sum over the individual values.  Instead, we fill the
 rows of the $N\times2$ gradient matrix with the values
 observation-wise.
 
-In case we do not have time and energy for analytic gradient, we can
-do BHHH with numeric one.  In this case we have to supply the
+In case we do not have time and energy to code the analytic gradient, we can
+let \maxlik figure out a numeric one for BHHH too.
+In this case we have to supply the
 log-likelihood by observation.  This essentially means we remove
 summing from the original likelihood function:
 <<>>=
-loglikH <- function(theta) {
+loglikB <- function(theta) {
    mu <- theta[1]
    sigma <- theta[2]
    -log(sqrt(2*pi)) - log(sigma) - 0.5*(x - mu)^2/sigma^2
                            # no summing here
                            # also no 'N*' terms as we work by individual observations
 }
-m <- maxLik(loglikH, start=c(mu=1, sigma=2),
+m <- maxLik(loglikB, start=c(mu=1, sigma=2),
             method="BHHH")
 summary(m)
 @
@@ -384,8 +415,13 @@ reliable.
 
 For convenience, the other methods also support
 observation-wise gradients and log-likelihood values, those numbers
-are just summed internally.  So one can just implement the
-BHHH-compatible functions and use these for all supported optimizers.
+are just summed internally.  So one can just code the problem in an 
+BHHH-compatible manner and use it for all supported optimizers.
+
+\maxlik package also supports stochastic gradient ascent optimizer.
+However, as that method is rarely ever used for ML estimation, it
+cannot be supplied through the ``method'' argument.  Consult
+the separate vignette ``Stochastic gradient ascent in \maxlik''.
 
 
 \subsection{Control options}
@@ -401,19 +437,22 @@ instance, we can limit the iterations to two, while also printing out
 the parameter estimates at each step.  We use the previous
 example with BHHH optimizer:
 <<>>=
-m <- maxLik(loglikH, start=c(mu=1, sigma=2),
+m <- maxLik(loglikB, start=c(mu=1, sigma=2),
             method="BHHH",
             control=list(printLevel=3, iterlim=2))
 summary(m)
 @
 The first option, \verb|printLevel=3|, prints out parameters, gradient
-a few other pieces of information at every step.  Printlevel 1 only
-prints the first and last parameter values, and larger numbers print
-more information.  The output from \maxlik-implemented
-optimizers is fairly consistent, but optimizers that are based
-code from other packages, such as BFGS, may output debugging
-information in a quite different way.  We can also see that the
-algorithm now returned after just two iterations with code 4:
+a few other pieces of information at every step.  Larger levels output
+more information, printlevel 1 only
+prints the first and last parameter values.
+The output from \maxlik-implemented
+optimizers is fairly consistent, but methods that are call optimizers in
+other packages, such as BFGS, may output debugging
+information in a quite different way.  The second option,
+\verb|iterLim=2| stops the algorithm after two iterations.  It returns
+with
+code 4:
 iteration limit exceeded. 
 
 Other sets of handy options are the convergence tolerances.  There are
@@ -436,16 +475,16 @@ instance, in case our function values are very small, we may want to
 rely only on the relative tolerance.  A simple way to achieve this is
 to set both \emph{tol} and \emph{gradtol} to negative values.  In that
 case these two conditions are never satisfied and the algorithm stops
-only when the relative convergence criterion is fulfilled.  We
-demonstrate this with the BHHH example with no iteration limit:
+only when the relative convergence criterion is fulfilled.  For
+instance, in the previous case we get:
 <<>>=
-m <- maxLik(loglikH, start=c(mu=1, sigma=2),
+m <- maxLik(loglikB, start=c(mu=1, sigma=2),
             method="BHHH",
             control=list(tol=-1, gradtol=-1))
 summary(m)
 @ 
 
-Note that stochastic gradient ascent, rarely used for ML estimation,
+Note that stochastic gradient ascent
 relies on different convergence criteria.  See the dedicated vignette
 ``Stochastic Gradient Ascent in \maxlik''.
 
@@ -737,11 +776,6 @@ summary(m)
 The solution is $(1, 0)$ the closest point to the origin where both
 constraints are satisfied.
 
-
-\subsection{Other tools}
-\label{sec:other-tools}
-
-mention SGA
 
 \section{Tips and tricks}
 \label{sec:suggestions}
