@@ -498,13 +498,13 @@ of \maxlik.
 \subsection{Additional arguments to the log-likelihood function}
 \label{sec:additional-arguments-loglik}
 
-The only rule about the arguments for the log-likelihood is that its
-first argument must be the parameter vector.  But one can have more
-arguments and pass those through \maxlik as additional arguments to
-the \verb|maxLik| function.  For instance, let's change the
+\maxlik expects the first argument of log-likelihood function to be
+the parameter vector.  But the function may have more
+arguments.  Those can be passed as additional named arguments to
+\verb|maxLik| function.  For instance, let's change the
 log-likelihood function in a way that it expects data $\vec{x}$ to be
-passed as an argument.  Now we just have to add \verb|x| as an
-additional argument:
+passed as an argument \verb|x|.  Now we have to call \maxlik with an
+additional argument \verb|x=...|:
 <<>>=
 loglik <- function(theta, x) {
    mu <- theta[1]
@@ -512,17 +512,18 @@ loglik <- function(theta, x) {
    sum(dnorm(x, mean=mu, sd=sigma, log=TRUE))
 }
 m <- maxLik(loglik, start=c(mu=1, sigma=2), x=x)
+                           # named argument 'x' will be passed to loglik
 summary(m)
 @
-This approach works with most of the argument names, except with those
-that are the same as \verb|maxLik|'s arguments.  In the latter case it
+This approach only works if the argument names do not coincide with
+\verb|maxLik|'s arguments' names.  In the latter case it
 prints an informative error message.
 
 
 \subsection{Maximizing other functions}
 \label{sec:maximizing-other-functions}
 
-The \verb|maxLik| function is basically just a wrapper to a number of
+The \verb|maxLik| function is mostly just a wrapper for a number of
 maximization algorithms, together with likelihood-related goodies like
 standard errors.  However, from time-to-time we need to optimize other
 functions where inverting the Hessian to compute standard errors is
@@ -531,12 +532,18 @@ directly, using the form \verb|maxXXX| where \verb|XXX| stands for the
 name of the method, e.g. \verb|maxNR| for Newton-Rapshon
 (\verb|method="NR"|) and \verb|maxBFGS| for BFGS.  There is also
 \verb|maxBHHH| although the information equality--based BHHH is not
-correct if we do not work with likelihood function.  Let us optimize
+correct if we do not work with a likelihood function.  The arguments
+for \verb|maxXXX|-functions are largely similar to those for \maxlik,
+the first argument is the function, and one also has to supply start
+values.
+
+Let us demonstrate this functionality by optimizing
 the 2-dimensional bell curve,
 \begin{equation}
   \label{eq:2d-bell-curve}
-  f(x, y) = \me^{-x^{2} - y^{2}}:
+  f(x, y) = \me^{-x^{2} - y^{2}}.
 \end{equation}
+We code this function and just call \verb|maxBFGS| on it:
 <<>>=
 f <- function(theta) {
    x <- theta[1]
@@ -548,21 +555,29 @@ m <- maxBFGS(f, start=c(1,1))
                            # give start value a bit off
 summary(m)
 @
-Note that the summary output is slightly different: if reports the
+Note that the summary output is slightly different: it reports the
 parameter and gradient value, appropriate for a task that is not
-likelihood optimization.  Note also that BFGS, based on the
+likelihood optimization.  This is because the \verb|maxXXX|-functions
+return an object of \emph{maxim}-class, not \emph{\maxlik}-class.
+Note also that BFGS, based on the
 \verb|stats::optim| does not report the convergence results in a
 similar way as BHHH and NR, the algorithms provided by the \maxlik
-package. 
+package.  Instead of tolerance limits or gradient close to zero
+message, we learn about ``successful convergence''.
+
 
 \subsection{Testing condition numbers}
 \label{sec:testing-condition-numbers}
 
-Non-linear optimizers perform best in regions that are roughly round.
-In an area that is fairly flat, they performance will degrade and they
-may fail to converge completely.  The flatness may occur for different
-reasons, below we demonstrate a simple linear regression example with
-very different scale of the variables.  We create three variables,
+Non-linear optimizers perform best in regions that level sets
+(contours) are
+roughly circular.
+If an area that is fairly flat with contours extremely elongated
+ellipses,
+the performance will degrade and the algorithms
+may completely fail to converge.  The highly elliptical level sets may
+be caused by different factors, below we demonstrate a simple linear regression example with
+very different variable range.  We create three variables,
 $x_{1}$, $x_{2}$ and $x_{3}$ at very different scale, and set up a
 linear regression task
 \begin{equation}
@@ -594,49 +609,77 @@ summary(m)
 As one can see, the optimizer gets stuck and returns completely wrong
 values.  The reason here is that the loss function (TSS) is of
 extremely elongated shape, and the parabolic approximation of
-Newton-Raphson optimizer fails to represent it correctly.
+Newton-Raphson optimizer fails to represent it correctly because
+the numeric gradient is too noisy.
 In this particular case one can easily solve the problem by
 re-scaling the variables, introducing analytic derivatives, or
-choosing a more robust optimizer.
+choosing a more robust optimizer.\footnote{As the loss function is
+  quadratic, Newton-Raphson should provide the correct solution
+  in a single
+  iteration only, given the gradient and Hessian are correct.  This is
+  apparently not the case here as numeric gradient cannot correctly
+  handle the extreme curvature along $x_{3}$.
+}
 But
 this is not always possible, in particular complex
-function in high dimensions may contain flat regions of unknown shape
+functions in high dimensions may contain regions of unknown shape,
+flat in one direction and extremely curved in another,
 where the algorithm cannot easily proceed.
 
-In such conditions one may want to test the
-condition number of the Hessian matrix.  \verb|condinumber| runs such
+In such case one may want to test the
+condition number of Hessian matrix.  \verb|condiNumber| runs such
 test variable-by-variable:
 <<>>=
 condiNumber(hessian(m))
 @ 
-Condition number of the first column of the Hessian ($1\times1$ matrix) is always
-one.  When we the second column corresponding to $x_{2}$, the
+Condition number of the first column of Hessian ($1\times1$ matrix) is always
+one.  When we add the second column corresponding to $x_{2}$, the
 condition number is still small.  However, bringing in the last column
 makes the Hessian not well conditioned.  This hints that the problem
 is related to $x_{3}$, or more specifically, $x_{3}$ does not play
 well along with $x_{1}$ and $x_{2}$.  Such knowledge occasionally
 helps to debug and address the convergence problems.
 
-What helps here to locate the problem is to see how the condition
+In particular, what helps here to locate the problem is to observe
+how the condition
 number increases when we keep adding columns.  This helps to see which
 variable does not play together with others in a nice manner.  If we
 only observe the condition number of the complete Hessian, we do not
 gain such insight.
 
+In a similar fashion, one may want to test for multicollinearity in the
+dataset or the design matrix.  In a complex case it is easy to add too
+many fixed effects or include combinations of variables that are
+essentially multicollinear.  In the linear regression
+regression problem the design matrix is just
+\begin{equation}
+  \label{eq:ols-design-matrix}
+  \mat{X} =
+  \begin{pmatrix}
+    \vec{x}_{1} & \vec{x}_{2} & \vec{x}_{3}
+  \end{pmatrix},
+\end{equation}
+i.e. the three data vectors stacked next to each other.  We test the
+condition numbers of it by
+<<>>=
+X <- cbind(x1, x2, x3)
+condiNumber(X)
+@ 
+
 
 \subsection{Fixed parameters and constrained optimization}
 \label{sec:fixed-parameters}
 
-\maxlik supports three types of constrains.  The first one is the
-simplest: just keeping values of certain parameters fixed.  The other
+\maxlik supports three types of constrains.  The simplest case just
+keeps certain parameters' values fixed.  The other
 two, general linear equality and inequality constraints are somewhat
 more complex.
 
 Occasionally we want to treat one of the model parameters as
 constant.  This can be achieved in a very simple manner, just through
 the argument \verb|fixed|.  It must be an index vector,
-such as \verb|c(2,4)|, \verb|c(FALSE, TRUE, FALSE, TRUE)|, or
-\verb|c("beta2", "beta4")| if \verb|start| has names.  We demonstrate
+either numeric as \verb|c(2,4)|, logical as \verb|c(FALSE, TRUE, FALSE, TRUE)|, or
+character as \verb|c("beta2", "beta4")| if \verb|start| has names.  We demonstrate
 this with the original example where the task is to estimate the
 parameters for normal distribution.  However, this time we fix $\sigma
 = 1$:
@@ -652,17 +695,18 @@ m <- maxLik(loglik, start=c(mu=1, sigma=1),
                            # fix the component names 'sigma'
 summary(m)
 @
-The result has $\sigma$ equal to exactly $1$, it's standard error $0$,
+The result has $\sigma$ exactly equal to $1$, it's standard error $0$,
 and $t$ value undefined.
-The fixed components are ignored when computing gradients and Hessian,
-so the standard errors are correct.
+The fixed components are ignored when computing gradients and Hessian
+in the optimizer, essentially reducing the problem from 2-dimensional
+case to 1-dimensional.  Hence the inference for $\mu$ is still correct.
 
 Next, we demonstrate equality constraints.  We take the
-two-dimensional we used in
+two-dimensional function we used in
 Section~\ref{sec:maximizing-other-functions} and add constraints $x +
 y = 1$.  The constraint must be described in matrix form
-$\mat{A}\,\vec{\theta} + \vec{b} = 0$ where $\vec{\theta}$ is the
-parameter vector and $\mat{A}$ and $vec{b}$ describe the constraints.
+$\mat{A}\,\vec{\theta} + \vec{B} = 0$ where $\vec{\theta}$ is the
+parameter vector and $\mat{A}$ and $\vec{B}$ describe the constraints.
 In this case we can write
 \begin{equation}
   \label{eq:equality-constraints}
@@ -679,15 +723,15 @@ In this case we can write
   \end{pmatrix}
   = 0,
 \end{equation}
-i.e. $\mat{A} = (1 1)$ and $\vec{b} = -1$.  These values must be
+i.e. $\mat{A} = (1 \; 1)$ and $\vec{B} = -1$.  These values must be
 supplied to the optimizer argument \verb|constraints|.  This is a list
 with components names \verb|eqA| and \verb|eqB| for $\mat{A}$ and
-$\vec{b}$ accordingly.
+$\vec{B}$ accordingly.
 We choose not
 to demonstrate
 this with a likelihood example as no corrections to the Hessian matrix
-is done and hence the standard errors are incorrect.  But for ordinary
-optimization, one can write:
+is done and hence the standard errors are incorrect.  But if you are
+not interested in likelihood-based inference, it works well:
 <<>>=
 f <- function(theta) {
    x <- theta[1]
@@ -702,15 +746,15 @@ m <- maxNR(f, start=c(1,1),
 summary(m)
 @
 The problem is solved using sequential unconstrained maximization
-technique (SUMT).  The idea of it to add a small penalty for the
+technique (SUMT).  The idea is to add a small penalty for the
 constraint violation, and to slowly increase the penalty until
 violations are prohibitively expensive.  As the example indicates, the
 solution is extremely close to the constraint line.
 
 Finally the inequality constraints.  The usage of inequality
 constraints is fairly similar to the usage of equality constraints.
-We have to code the inequalities as $\mat{A}\,\vec{\theta} + \vec{b} >
-0$ where the matrices $\mat{A}$ and $vec{b}$ are defined as above.
+We have to code the inequalities as $\mat{A}\,\vec{\theta} + \vec{B} >
+0$ where the matrices $\mat{A}$ and $\vec{B}$ are defined as above.
 Let us optimize the function over the region $x + y > 1$.  In matrix
 form this will be
 \begin{equation}
@@ -746,8 +790,9 @@ boundary, the same line what we specified using equality constraints.
 
 One can supply more than one set of constraints, in that case these all
 must be satisfied at the same time.  For instance, let's add another
-condition, $x - y > 1$.  Both constraints together in the matrix form
-will be
+condition, $x - y > 1$.  This should be coded as another line of
+$\mat{A}$ and another component of $\vec{B}$, in matrix form the
+constraint is now
 \begin{equation}
   \label{eq:inequality-constraints-2}
   \begin{pmatrix}
@@ -762,8 +807,9 @@ will be
   \begin{pmatrix}
     -1 \\ -1
   \end{pmatrix}
-  > 0.
+  > \vec{0}
 \end{equation}
+where ``>'' must be understood as an element-wise operation.
 We also have to ensure the initial value satisfies the constraint, so
 we choose $\vec{\theta}_{0} = (2, 0)$.  The code will be accordingly:
 <<>>=
