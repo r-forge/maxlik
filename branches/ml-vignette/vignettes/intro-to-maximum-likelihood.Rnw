@@ -7,6 +7,7 @@
 \usepackage{indentfirst}
 \usepackage[utf8]{inputenc}
 \usepackage{natbib}
+\usepackage{siunitx}
 \usepackage{xspace}
 
 \newcommand{\COii}{\ensuremath{\mathit{CO}_{2}}\xspace}
@@ -38,52 +39,56 @@ set.seed(34)
 \section{Introduction}
 
 This vignette is intended for readers who are unfamiliar with the
-concept of likelihood, or who want a quick intuitive brush-up.
+concept of likelihood, and for those who want a quick intuitive brush-up.
 The potential target group includes advanced undergraduate students in
 technical fields, such as statistics or economics, graduate students
-in social sciences or engineering who are devising their own
+in social sciences and engineering who are devising their own
 estimators, and researchers and practitioners who have little previous
 experience with ML.  However, one should have basic knowledge
-of \R language.  If you are familiar enough with the concept of ML,
+of \R language.  If you are familiar enough with the concept of
+likelihood and maximum likelihood,
 consult instead the other vignette, ``Maximum Likelihood Estimation with
 \maxlik''.
 
 Maximum Likelihood (ML) in its core is maximizing the \emph{likelihood}
-over the parameters of interest.  We start with a discrete case to explain what is
+over the parameters of interest.  We start with a discrete data example
+to explain what is
 likelihood and how it is related to probability.  The following
-sections cover continuous cases,
+sections cover continuous data,
 multiple parameters in vector form, and conclude with a
 linear regression example.  The final section discusses the basics
 of non-linear optimization.
 The examples are supplemented with simple code and
-assume little knowledge besides basic
+assume little background besides basic
 statistics and basic \R knowledge. 
 
 
 \section{Discrete Random Variables}
 \label{sec:discrete-random-variables}
 
-We start with a discrete case.  ``Discrete'' refers to only limited
+We start with a discrete case.  ``Discrete'' refers to random
+experiments or phenomena with only limited
 number of possible outcomes,
-and hence we can compute the probability of every outcome.
+and hence we can compute and tabulate every single outcome separately.
 
-Imagine you are tossing a fair
+Imagine you are flipping a fair
 coin.  What are the possible outcomes and what are the related
-probabilities?  Obviously, in case of a coin there are only two
+probabilities?  Obviously, in case of coin there are only two
 outcomes, heads $H$ and tails $T$.  If the coin is fair, both of these
-will have probability exactly 0.5.
+will have probability of exactly 0.5.
 Such process is called \emph{Bernoulli
   process}.  More specifically, this is \emph{Bernoulli(0.5)} process
 as for the fair coin the probability of ``success'' is 0.5 (we consider
-success to be heads in this example).
+success to be heads below, but you can as well choose tails).
 If the coin is not fair, we denote the corresponding process
 Bernoulli($p$), where $p$ is the probability to get heads.
 
 Now let us toss the coin two times.  What is the probability that we end
-up with one heads and one tails?  As the coin tosses are
+up with one heads and one tails?  As the coin flips are
 independent,\footnote{Events are independent when outcome of one event
-  does not influence the outcome of the other event.  Here the result
-  of the second toss is not affected by the outcome of the first toss.}
+  does not carry information about
+  the outcome of the other event.  Here the result
+  of the second toss is not related to the outcome of the first toss.}
 we can just multiply the probabilities: $0.5$ for a single heads and $0.5$
 for a single tails equals $0.25$ when multiplied.  However, this is not the whole
 story--we have two ways to get one heads and one tails,
@@ -96,7 +101,8 @@ coin but an object of a complex shape instead.  We can still label one
 side as ``heads'' and the other as ``tails''.
 But how can we tell what is the probability of heads?
 Let's start by 
-denoting it with $p$.  Hence the probability of tails will be $1-p$,
+denoting this probability
+with $p$.  Hence the probability of tails will be $1-p$,
 and the probability to receive one heads, one tails when we toss the
 object two times will be
 $2 p (1-p)$, $p$ for one heads, $1-p$ for one tails, and ``2'' takes
@@ -117,28 +123,29 @@ Let's repeat here what did we do above:
 \begin{enumerate}
 \item We observe data.  In this example data contains the counts:
   one heads, one tails.
-\item We model the coin toss--data generating process--as
-  Bernoulli($p$) process.
+\item We model the coin toss experiment, the data generating process, as
+  Bernoulli($p$) random variable.
   $p$, the probability of heads, is the model parameter we want
   to calculate.  Bernoulli process has only a single parameter, but
-  more complex processes can have many more.
+  more complex processes may contain many more.
 \item Thereafter we compute the probability to observe the data based
-  on the model.  This is why we need a probability model.  As the
+  on the model, here it is equation~\eqref{eq:2-coin-likelihood}.
+  This is why we need a probability model.  As the
   model contains unknown parameters, the probability will also contain
   parameters.
-\item And finally we just called this probability
+\item And finally we just call this probability
   \emph{likelihood} $\likelihood(p)$.  We write it as a function of
   the parameter to
   stress that the parameter is what we are interested in.  Likelihood
   also depends on
   data (the probability will look different for e.g. two heads instead
   of a head and a tail) but we typically
-  do not reflect it in notation.
+  do not reflect this in notation.
 \end{enumerate}
 
-What is left is to use this likelihood function to \emph{estimate} the
+The next task is to use this likelihood function to \emph{estimate} the
 parameter, to use
-data to find out the best possible parameter value.  \emph{Maximum
+data to find the best possible parameter value.  \emph{Maximum
   likelihood} (ML) method finds such parameter value that
 maximizes the likelihood function.  It can be shown that such value
 has a number of desirable properties, in particular it will become
@@ -153,7 +160,7 @@ Let us generalize the example we did above for an arbitrary number
 of coin flips.  Assume the coin is of unknown
 ``fairness'' where we just denote the probability to receive heads
 with $p$.  Further, assume that out of $N$ trials, $N_{H}$ trials
-turned out heads and $N_{T}$ trials turned tails.  The probability of
+were heads and $N_{T}$ trials were tails.  The probability of
 this occuring is
 \begin{equation}
   \label{eq:general-cointoss-probability}
@@ -164,14 +171,16 @@ the probability to get $N_{T}$ tails, and
 the binomial coefficient $\displaystyle\binom{N}{N_{H}} =
 \displaystyle\frac{N!}{N_{H}! (N -
   N_{H})!}$ takes into account that there are many ways how heads
-and tail can turn up while still resulting in $N_{H}$ heads and
+and tail can turn up while still resulting $N_{H}$ heads and
 $N_{T}$ tails.  In the previous example $N=2$, $N_{H} = 1$ and
 there were just two possible
 combinations as $\displaystyle\binom{2}{1} = 2$.  The probability depends on both the parameter $p$ and
-data--the corresponding counts $N_{H}$ and $N_{T}$.  This is
+data--the corresponding counts $N_{H}$ and $N_{T}$.
+Equation~\eqref{eq:general-cointoss-probability} is essentially
 likelihood--probability to observe data.  We are interested how does
 it depend on $p$ and stress this by writing $p$ in the first position
-followed by semicolon and data:
+followed by semicolon and data as we care less about the dependency on
+data:
 \begin{equation}
   \label{eq:general-cointoss-likelihood}
   \likelihood(p; N_{H}, N_{T})
@@ -180,7 +189,7 @@ followed by semicolon and data:
 \end{equation}
 
 Technically, it is easier to work with log-likelihood instead of
-likelihood (as log is monotonic, maximum of likelihood and
+likelihood (as log is monotonic function, maximum of likelihood and
 maximum of log-likelihood occur at the same parameter value).
 We denote log-likelihood by $\loglik$ and write
 \begin{equation}
@@ -222,8 +231,8 @@ This should be surprise to no-one--the intuitive
 ``fairness'' of the coin is just the average percentage of heads we
 get.
 
-Now it is time to try this out on computer with \texttt{maxLik}.  Lets
-assume we tossed the coin and received $H_{H} = 3$ heads and $H_{T} =
+Now it is time to try this out on computer with \texttt{maxLik}.  Let's
+assume we toss a coin and receive $H_{H} = 3$ heads and $H_{T} =
 7$ tails:
 <<>>=
 NH <- 3
@@ -241,12 +250,13 @@ loglik <- function(p) {
 And finally, we can use \texttt{maxLik} to compute the likelihood.  In
 its simplest form, \texttt{maxLik} requires two arguments: the
 log-likelihood function, and the start value for the iterative
-algorithm (see documentation and vignette \textsl{Maximum Likelihood Estimation with
+algorithm (see Section~\ref{sec:non-linear-optimization}, and
+the documentation and vignette \textsl{Maximum Likelihood Estimation with
 \maxlik} for more detailed
 explanations).
 The start value must be a valid parameter value (the loglik function must
 not give errors when called with the start value).  We can choose $p_{0} = 0.5$ as the initial value,
-and let the algorithm work to find the best possible $p$ from there:
+and let the algorithm to find the best possible $p$ from there:
 <<>>=
 library(maxLik)
 m <- maxLik(loglik, start=0.5)
@@ -276,7 +286,8 @@ This may sound a little counter-intuitive but perhaps the
 following example helps.  If you ask the computer to generate a single
 random number between 0 and 1, you may receive
 \Sexpr{x <- runif(1); x}.  What
-is the probability to get the same number again?  You can try, but you
+is the probability to get the same number again?  You can try, you
+will get close but you
 won't get exactly the same number.\footnote{As computers operate with finite
   precision, the actual chances to repeat any particular random number
   are positive, although small.  The exact answer depends on the
@@ -299,9 +310,10 @@ the probability to receive any particular number still being 0
 The solution is to look not at the probabilities of individual numbers
 but probabilities in a narrow interval near these numbers.  Consider
 the number of interest $x_{1}$, and compute the
-probability that the random outcome $X$ falls into the narrow  width
-$\delta$ interval
-$[x_{1} - \delta/2,\, x_{1} + \delta/2]$ around this
+probability that the random outcome $X$ falls into the narrow interval
+of width
+$\delta$,
+$[x_{1} - \delta/2,\, x_{1} + \delta/2]$, around this
 number (Figure~\ref{fig:standard-normal-intervals}).
 Obviously, the smaller the width $\delta$, the less likely
 it is that $X$ falls into this narrow interval.  But it turns out that when we
@@ -313,7 +325,7 @@ limit which we denote by $f(x_{1})$:
   \lim_{\delta\to0}
   \frac{\Pr(X \in [x_{1} - \delta/2,\, x_{1} + \delta/2])}{\delta}.
 \end{equation}
-In the example on the Figure the values around $x_{1}$ and less likely
+In the example on the Figure the values around $x_{1}$ are less likely
 than around $x_{2}$ and hence $f(x_{1}) < f(x_{2})$.
 The result, $f(x)$, is called \emph{probability density function},
 often abbreviated as \emph{pdf}.  In
@@ -323,12 +335,13 @@ instead of probabilities.
 \begin{figure}[ht]
   \centering
   \includegraphics{probability-density.pdf}
-  \caption{Standard normal probability density (thick line).  While
+  \caption{Standard normal probability density (thick black curve).  While
     $\Pr(X = x_{1}) = 0$, i.e. the probability to receive a random
     number exactly equal to $x_{1}$ is 0, the probability to receive a
     random number in the narrow interval of width $\delta$ around $x_{1}$ is
-    positive.  The interval around $x_{2}$ is four times more likely
-    than the interval around $x_{1}$.
+    positive.  In this example, the probability to get a random number
+    in the interval around $x_{2}$ is four times larger
+    than for the interval around $x_{1}$.
   }
   \label{fig:standard-normal-intervals}
 \end{figure}
@@ -343,17 +356,21 @@ Assume we do not
 know $\mu$ and use ML to estimate it.  We
 proceed in a similar steps as what we did for the discrete case:
 \begin{enumerate*}[label=\roman*)]
+\item observe data, in this case $x_{1}$ and $x_{2}$;
 \item set up the probability model;
 \item use the model to compute probability to observe the data;
-\item write the probability as $\likelihood(\mu)$, likelihood function of parameter
+\item write the probability as $\loglik(\mu)$, log-likelihood
+  function of the parameter
   $\mu$;
-\item and finally, find the $\mu$ value that maximizes the
-  corresponding log-likelihood, $\mu^{*}$.
+\item and finally, find $\mu^{*}$, the $\mu$ value that maximizes the
+  corresponding log-likelihood.
 \end{enumerate*}
 This will be our best estimate for the true mean.
 
-Let's start with the probability model.
-The pdf for unit-variance normal distribution with mean $\mu$ is
+As we already have our data points $x_{1}$ and $x_{2}$, our next step
+is the probability model.
+The probability density function (pdf)
+for normal distribution with  mean $\mu$ and variance 1 is
 \begin{equation}
   \label{eq:standard-normal-pdf}
   f(x; \mu) =
@@ -376,9 +393,9 @@ probabilities to find the combined probability that both random numbers are
 near their corresponding values:
 \begin{multline}
   \label{eq:two-normal-probability-likelihood}
-  \Pr{\big(X_{1} \in [x_{1} - \delta/2, x_{1} + \delta/2]
+  \Pr{\Big(X_{1} \in [x_{1} - \delta/2, x_{1} + \delta/2]
     \quad\text{and}\quad
-    X_{2} \in [x_{2} - \delta/2, x_{2} + \delta/2]\big)}
+    X_{2} \in [x_{2} - \delta/2, x_{2} + \delta/2]\Big)}
   =\\[2ex]=
   \underbrace{
     \frac{1}{\sqrt{2\pi}}
@@ -404,10 +421,10 @@ near their corresponding values:
     \text{Second random value near $x_{2}$}
   }
   \equiv\\[2ex]\equiv
-  \likelihood^{*}(\mu; x_{1}, x_{2}).
+  \tilde\likelihood(\mu; x_{1}, x_{2}).
 \end{multline}
 The interval width $\delta$ must be small for the equation to
-hold precisely.  We denote this probability with $\likelihood^{*}$ to
+hold precisely.  We denote this probability with $\tilde\likelihood$ to
 stress that it is essentially the likelihood, just not written in the
 way it is usually done.  As in the coin-toss example above, we write
 it as a function of the parameter $\mu$, and put data $x_{1}$ and
@@ -416,7 +433,7 @@ semicolon.  Now we can estimate $\mu$ by finding such a value $\mu^{*}$ that max
 expression~\eqref{eq:two-normal-probability-likelihood}. 
 
 But note that $\delta$ plays no role in maximizing the likelihood.  It
-is just a multiplicative factor, and a positive one
+is just a multiplicative factor, and it cannot be negative
 because it is a width.  So for our maximization problem we can just ignore it.
 This is what is normally done when working with continuous random variables,
 and hence we write the likelihood as
@@ -440,7 +457,7 @@ and hence we write the likelihood as
     (x_{2} - \mu)^{2}
   }.
 \end{equation}
-We denote this by $\likelihood$ instead of $\likelihood^{*}$ to stress
+We denote this by $\likelihood$ instead of $\tilde\likelihood$ to stress
 that this is how likelihood function for continuous random variables
 is usually written.
 
@@ -471,12 +488,6 @@ likelihood function.\footnote{While additive or multiplicative
   when comparing different log-likelihood values.  This
   is often needed for likelihood-based statistical tests.
 }
-``$1/2$'' is a positive factor that can be ignored as well.
-When we remove these two terms, what is left is
-$-\sum_{i}(x_{i} - \mu)^{2}$.  So we end up maximizing negative of sum
-of squared errors, equivalent to minimizing the positive sum of squared errors.
-Maximum likelihood method is equivalent to least squares in case of
-normally distributed random variables. 
 
 One can easily check by differentiating the log-likelihood function
 that the maximum is achieved at $\mu^{*} =
@@ -493,8 +504,8 @@ x2 <- rnorm(1)
 x1
 x2
 @
-and define the log-likelihood function.  We include all the terms as in
-in~\eqref{eq:two-standard-normal-loglik}:
+and define the log-likelihood function.  We include all the terms as
+in the final version of~\eqref{eq:two-standard-normal-loglik}:
 <<>>=
 loglik <- function(mu) {
    -2*log(sqrt(2*pi)) - 0.5*((x1 - mu)^2 + (x2 - mu)^2)
@@ -518,7 +529,7 @@ The answer is the same as sample mean:
 The previous example is instructive but it does have very few practical
 applications.  The problem is that we wrote the probability model
 as normal density with unknown mean $\mu$ but standard deviation
-$\sigma$ equal to unity.
+$\sigma$ equal to one.
 However, in
 practice we hardly ever know that we are dealing with unit standard deviation.
 More likely both mean and standard deviation are
@@ -534,11 +545,11 @@ The more general normal pdf with standard deviation $\sigma$ is
   \frac{1}{\sigma}
   \,
   \me^{
-    -\frac{1}{2}
+    -\displaystyle\frac{1}{2}
     \frac{(x - \mu)^{2}}{\sigma^{2}}
   }.
 \end{equation}
-Similar argumentation as what we did above will give the
+Similar reasoning as what we did above will give the
 log-likelihood
 \begin{equation}
   \label{eq:two-normal-loglik}
@@ -567,7 +578,8 @@ as
 where we have dropped the dependency on data in the notation.
 In this case we can actually do the optimization analytically, and
 derive the well-known intuitive results: the best estimator for mean $\mu$ is
-the sample average, and for variance $\sigma^{2}$ it is the sample variance.
+the sample average, and the best estimator for $\sigma^{2}$
+is the sample variance.
 
 However, in general the expression cannot be solved analytically.
 We have to use numeric optimization to search
@@ -593,13 +605,13 @@ from $\vec{\theta}$ in the log-likelihood function.
 
 Let us illustrate this using the \emph{CO2} dataset (in package
 \emph{datasets}).  
-It describes \COii uptake (variable \emph{uptake}) by different
+It describes \COii uptake (\si{\micro\mol\per\meter\squared\sec}, 
+variable \emph{uptake}) by different
 grasses in various conditions.  Let us start by plotting the histogram
 of uptake:
 <<fig=TRUE>>=
 data(CO2)
-hist(CO2$uptake,
-     xlab=expression(paste("uptake, ", mu*mol/(m^2 %.% sec))))
+hist(CO2$uptake)
 @
 
 Let us model the uptake as a normal
@@ -615,16 +627,19 @@ loglik <- function(theta) {
       0.5*sum((CO2$uptake - mu)^2/sigma^2)
 }
 @
-The function is similar to the one used in
+The function is similar to the function \texttt{loglik} we used in
 Section~\ref{sec:continuous-outcomes}.  There are just two main
 differences:
 \begin{itemize}
-\item both arguments, $\mu$ and $\sigma$ are passed to it as
+\item both arguments, $\mu$ and $\sigma$ are passed as
   components of $\vec{\theta}$, and hence the function starts 
   by unpacking the values.
 \item instead of using variables \texttt{x1} and \texttt{x2},
   we now extract data directly from the data frame.
 \end{itemize}
+Besides of these two, the formula now includes $\sigma$
+and sums over all observations.
+
 As our parameter vector now
 contains two components, the start vector must also be of length two.
 Based on the figure we guess that a good starting value might be
@@ -633,8 +648,7 @@ $\mu=30$ and $\sigma=10$:
 m <- maxLik(loglik, start=c(mu=30, sigma=10))
 summary(m)
 @ 
-Indeed, our guess was close.  It is in general advisable to find good
-starting values, but in this simple case it is of little importance.
+Indeed, our guess was close.  
 
 
 \section{Final Example: Linear Regression}
@@ -642,7 +656,7 @@ starting values, but in this simple case it is of little importance.
 
 Now we have the main tools in place to extend
 the example above to a real statistical model.
-Let us build the previous example into a linear regression model.
+Let us build the previous example into linear regression.
 We describe \COii uptake (variable \emph{uptake}) by 
 \COii concentration (variable \emph{conc}) in air.  We can
 describe the corresponding regression model as
@@ -672,7 +686,8 @@ $\mu$ in~\eqref{eq:co2-epsilon-loglik} and hence we drop it also from
 the argument list of $\loglik$.  Otherwise we now have random outcome
 $\epsilon_{i}$ instead of $x$, so we write $\epsilon_{i}$ in place of
 data. 
-Next, we can express $\epsilon_{i}$ from linear regression model~\eqref{eq:co2-regression}:
+We do not know $\epsilon_{i}$ but
+we can express using linear regression model~\eqref{eq:co2-regression}:
 \begin{equation}
   \label{eq:co2-epsilon}
   \epsilon_{i} =
@@ -717,8 +732,9 @@ This is a fully specified log-likelihood function that we can use for
 optimization.  Let us repeat what we have done:
 \begin{itemize}
 \item We wrote log-likelihood as a function of parameters
-  $\beta_{0}$, $\beta_{1}$ and $\sigma$.  Note that in ordinary
-  regression model we do not call $\sigma$ a parameter.  But it is
+  $\beta_{0}$, $\beta_{1}$ and $\sigma$.  Note that in case of
+  linear regression we typically
+  do not call $\sigma$ a parameter.  But it is
   still a parameter, although one we usually do not care much about
   (sometimes
   called ``nuisance parameter'').  Later we will denote all parameters
@@ -842,7 +858,7 @@ contour3D(mu, sigma, z=min(ll) + 0.1, colvar=ll, col="black",
           add=TRUE)
 @
 \caption{Log-likelihood surface as a function of $\mu$ and $\sigma$.
-  The optimum, denoted as a red dot, is at
+  The optimum, denoted as the red dot, is at
   $\mu=\Sexpr{round(coef(m)[1], 3)}$ and
   $\sigma=\Sexpr{round(coef(m)[2], 3)}$.  The corresponding countour
   plot is shown at the bottom of the figure box.
@@ -855,8 +871,9 @@ $\vec{\theta}^*$, the red dot on the figure?
 All the common methods are iterative, i.e. they
 start with a given start value (that's why we need the start value),
 and repeatedly find a new and better
-parameter that gives larger
-log-likelihood based on the previous iteration.  While humans can look at
+parameter that gives a larger
+log-likelihood value compared to
+the previous iteration.  While humans can look at
 the figure and immediately see where is its maximum,
 computers cannot visualize the image in this way.  And more
 importantly--even humans cannot visualize the function in more than
@@ -871,7 +888,7 @@ to solve the problem by just visualizations.
 Non-linear optimization is like climbing uphill in whiteout
 conditions where you cannot distinguish any details around you--sky is
 just a white fog and the ground is covered with exactly as white snow.  But you
-can still feel which way the ground goes up and so you can still go
+can still feel where the ground goes up and so you can still go
 uphill.  This is what the popular algorithms do.  They rely on the slope of the
 function, the gradient, and follow the direction suggested by gradient.
 Most optimizers included in the \texttt{maxLik} package need
@@ -884,13 +901,24 @@ value?  There are two ways:
   deduce the gradient from that information.
 \end{enumerate*}
 The first option is superior, in high dimensions it is much faster and
-much less error prone.  But computing and coding the gradient function
-can easily take days of work.  The second approach, numeric gradient,
+much less error prone.  But computing and coding gradient
+can easily mean days of work.  The second approach, numeric gradient,
 forces the computer to do more work and hence it is slower.  More
 importantly, it is also unreliable for more complex cases.  In
 practice you may notice how the algorithm refuses to converge for
 thousands of iterations.  But numeric gradient works very well in
 simple cases we demonstrated here.
+
+This also hints why it is useful to choose good start values.  The
+closer we start to our final destination, the less work the computer
+has to do.  And while we may not care too much about a few seconds of
+computer's work, we also help the algorithm to find the correct
+maximum.  The less the algorithm has to work, the less
+likely it is that it gets stuck in a wrong place or just wanders
+cluelessly around.  If this is the case, you may see how the algorithm
+gets slow, refuses to converge (returns the ``maximum number of
+iterations exceeded'' message), how the results look weird, or
+standard errors are extremely large.
 
 % \bibliographystyle{apecon}
 % \bibliography{maxlik}

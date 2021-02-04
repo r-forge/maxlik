@@ -833,7 +833,14 @@ speed of convergence
 
 \subsection{TODO}
 
-example with Hessian
+\begin{itemize}
+\item example with Hessian
+\item analytic gradient example: use OLS with very unequal scale
+\item stress that maximization, not minimization
+\item condinumber: do collinearity, not different scales
+\end{itemize}
+
+
 
 % \bibliographystyle{apecon}
 % \bibliography{maxlik}
