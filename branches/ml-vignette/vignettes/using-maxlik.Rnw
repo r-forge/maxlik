@@ -55,21 +55,21 @@ concepts of likelihood, log-likelihood, and related methods, such as
 information equality and BHHH approximation, and with \R language.
 The vignette 
 focuses on \maxlik usage and does not explain the underlying
-mathematical concepts.  If you need a refresher, consult the
-accompanied vignette ``Getting started with maximum likelihood and
-\maxlik''. 
+mathematical concepts. 
 Potential target group
 includes researchers, graduate students, and industry practitioners
-who want to apply their own custom maximum likelihood estimators.
+who want to apply their own custom maximum likelihood estimators.  If you need a refresher, consult the
+accompanied vignette ``Getting started with maximum likelihood and
+\maxlik''.
 
 The next section introduces the basic usage, including the \maxlik
-function, the main entry point for the package, gradients, selecting
-different optimizers, and controlling the optimization behavior.
+function, the main entry point for the package; gradients;
+different optimizers; and controlling the optimization behavior.
 These are topics that are hard to avoid when working with applied ML
 estimation.  Section~\ref{sec:advanced-usage}
 contains a selection of more niche topics, including
 arguments to the log-likelihood function, other types of optimization,
-testing condition numbers and constrained optimization.
+testing condition numbers, and constrained optimization.
 
 
 \section{Basic usage}
@@ -83,13 +83,13 @@ the same name, \verb|maxLik|.  It is a wrapper around the underlying
 optimization algorithms that also ensures that the returned object is
 of the right class, so that one
 can use the convenience functions, such as \verb|summary| or
-\verb|logLik| with it.
+\verb|logLik|.
 
-The basic usage of the function is very simple: one has just to submit
-the likelihood function (argument \verb|logLik|) and start value
+The basic usage of the function is very simple: just pass 
+log-likelihood function (argument \verb|logLik|) and start value
 (argument \verb|start|).  Let us demonstrate the basic usage
 by estimating the normal distribution parameters.  We create 100 standard normals,
-and estimate the best fit mean and standard deviation.  For a refresher,
+and estimate the best fit mean and standard deviation.  Remember,
 the normal probability density function is
 \begin{equation}
   \label{eq:normal-pdf}
@@ -98,7 +98,7 @@ the normal probability density function is
   \frac{1}{\sigma}
   \,
   \me^{
-    -\frac{1}{2}
+    -\displaystyle\frac{1}{2}
     \frac{(x - \mu)^{2}}{\sigma^{2}}
   }.
 \end{equation}
@@ -111,8 +111,8 @@ and hence the log-likelihood contribution of $x$ is
   - \log \sigma
   - \frac{1}{2} \frac{(x - \mu)^{2}}{\sigma^{2}}.
 \end{equation}
-Instead of explicitly coding our own version, we can instead rely on
-\R function \verb|dnorm| (see Section~\ref{sec:different-optimizers}
+Instead of explicitly coding our own version, we can rely on the
+\R function \verb|dnorm| instead (see Section~\ref{sec:different-optimizers}
 for a version that does not rely on \verb|dnorm|):
 <<>>=
 x <- rnorm(100)  # data.  true mu = 0, sigma = 1
@@ -149,7 +149,7 @@ This example demonstrates a number of key features of \verb|maxLik|:
   (and for \verb|coef| and \verb|stdEr|, see below).
 \item \verb|summary| method displays a handy summary of the results,
   including the convergence message, the estimated values, and
-  statistical significance test results.
+  statistical significance.
 \end{itemize}
 As we did not specify the optimizer, \verb|maxLik| picked
 Newton-Raphson by default, and computed the necessary gradient and
@@ -186,8 +186,8 @@ numeric gradient \verb|maxLik| had to compute implicitly
 did not pose any problems.  But users are strongly
 advised to supply analytic gradient, or even better, both gradient
 and Hessian.  More complex problems
-may be intractably slow, completely fail to converge, or converge to a
-sub-optimal solution if numeric gradients are too noisy.  Needless to
+may be intractably slow, converge to a
+sub-optimal solution, or completely fail to converge if numeric gradients are too noisy.  Needless to
 say, unreliable Hessian also leads to unreliable inference.  Here we
 demonstrate how to supply gradient to the \verb|maxLik| function.
 
@@ -250,7 +250,7 @@ loglikA <- function(theta) {
    ## compute gradient
    gradient <- numeric(2)
    gradient[1] <- sum(x - mu)/sigma^2
-   gradient[2] <- -N/sigma + sse/sigma^3
+   gradient[2] <- -N/sigma + sse/sigma^3  # re-use sse here
    attr(ll, "gradient") <- gradient
                            # add gradient as attribute 'gradient'
    ll
@@ -272,7 +272,7 @@ may be hard to derive and code.  In order to help to derive and debug the
 analytic gradient, another provided function,
 \verb|compareDerivatives|, takes the log-likelihood function, analytic
 gradent, and compares the numeric and analytic gradient.  As an
-example, we compare the log-likelihood and gradient functions we coded above:
+example, we compare the log-likelihood and gradient functions we just coded:
 <<>>=
 compareDerivatives(loglik, gradlik, t0=c(1,2))
                            # 't0' is the parameter value
@@ -289,8 +289,9 @@ Note that the gradient of log-likelihood, a scalar function, with
 respect to length-2 parameter vector is
 $1\times2$ matrix.  \maxlik uses numerator layout.
 
-\verb|compareDerivatives| supports vector functions, so one can use
-the same to test analytic Hessian by calling it with \verb|gradlik| as
+\verb|compareDerivatives| supports vector functions, so one can test
+analytic Hessian in the same way by calling \verb|compareDerivatives|
+with \verb|gradlik| as
 the first argument and the analytic hessian as the second argument. 
 
 
@@ -400,7 +401,8 @@ loglikB <- function(theta) {
    sigma <- theta[2]
    -log(sqrt(2*pi)) - log(sigma) - 0.5*(x - mu)^2/sigma^2
                            # no summing here
-                           # also no 'N*' terms as we work by individual observations
+                           # also no 'N*' terms as we work by
+                           # individual observations
 }
 m <- maxLik(loglikB, start=c(mu=1, sigma=2),
             method="BHHH")
@@ -419,7 +421,7 @@ are just summed internally.  So one can just code the problem in an
 BHHH-compatible manner and use it for all supported optimizers.
 
 \maxlik package also supports stochastic gradient ascent optimizer.
-However, as that method is rarely ever used for ML estimation, it
+However, as that method is rarely used for ML estimation, it
 cannot be supplied through the ``method'' argument.  Consult
 the separate vignette ``Stochastic gradient ascent in \maxlik''.
 
@@ -442,12 +444,13 @@ m <- maxLik(loglikB, start=c(mu=1, sigma=2),
             control=list(printLevel=3, iterlim=2))
 summary(m)
 @
-The first option, \verb|printLevel=3|, prints out parameters, gradient
+The first option, \verb|printLevel=3|, make \verb|maxLik| to print
+out parameters, gradient
 a few other pieces of information at every step.  Larger levels output
 more information, printlevel 1 only
 prints the first and last parameter values.
 The output from \maxlik-implemented
-optimizers is fairly consistent, but methods that are call optimizers in
+optimizers is fairly consistent, but methods that call optimizers in
 other packages, such as BFGS, may output debugging
 information in a quite different way.  The second option,
 \verb|iterLim=2| stops the algorithm after two iterations.  It returns
@@ -469,10 +472,11 @@ three convergence tolerances:
 \item[gradtol] stop if the (Euclidean) norm of the gradient is smaller
   than this value (default $10^{-6}$).
 \end{description}
-The default values are typically good enough, but in certain cases one
-may want to switch off certain tolerance-based criteria.  For
+Default tolerance values are typically good enough, but in certain cases one
+may want to adjust these.  For
 instance, in case our function values are very small, we may want to
-rely only on the relative tolerance.  A simple way to achieve this is
+rely only on the relative tolerance, and ignore tolerance and gradient
+tolerance criteria.  A simple way to achieve this is
 to set both \emph{tol} and \emph{gradtol} to negative values.  In that
 case these two conditions are never satisfied and the algorithm stops
 only when the relative convergence criterion is fulfilled.  For
@@ -516,7 +520,7 @@ m <- maxLik(loglik, start=c(mu=1, sigma=2), x=x)
 summary(m)
 @
 This approach only works if the argument names do not coincide with
-\verb|maxLik|'s arguments' names.  In the latter case it
+\verb|maxLik|'s arguments' names.  If that happens, it
 prints an informative error message.
 
 
@@ -532,7 +536,7 @@ directly, using the form \verb|maxXXX| where \verb|XXX| stands for the
 name of the method, e.g. \verb|maxNR| for Newton-Rapshon
 (\verb|method="NR"|) and \verb|maxBFGS| for BFGS.  There is also
 \verb|maxBHHH| although the information equality--based BHHH is not
-correct if we do not work with a likelihood function.  The arguments
+correct if we do not work with log-likelihood functions.  The arguments
 for \verb|maxXXX|-functions are largely similar to those for \maxlik,
 the first argument is the function, and one also has to supply start
 values.
@@ -563,23 +567,22 @@ Note also that BFGS, based on the
 \verb|stats::optim| does not report the convergence results in a
 similar way as BHHH and NR, the algorithms provided by the \maxlik
 package.  Instead of tolerance limits or gradient close to zero
-message, we learn about ``successful convergence''.
+message, we hear about ``successful convergence''.
 
 
 \subsection{Testing condition numbers}
 \label{sec:testing-condition-numbers}
 
-Non-linear optimizers perform best in regions that level sets
+Non-linear optimizers perform best in regions where level sets
 (contours) are
 roughly circular.
-If an area that is fairly flat with contours extremely elongated
+In a fairly flat area with contours that are extremely elongated
 ellipses,
 the performance will degrade and the algorithms
 may completely fail to converge.  The highly elliptical level sets may
 be caused by different factors, below we demonstrate a simple linear regression example with
 very different variable range.  We create three variables,
-$x_{1}$, $x_{2}$ and $x_{3}$ at very different scale, and set up a
-linear regression task
+$x_{1}$, $x_{2}$ and $x_{3}$ at very different scale, and compute $y$ as
 \begin{equation}
   \label{eq:different-scale-linear-regression}
   y_{i} = x_{1} + x_{2} + x_{3} + \epsilon_{i}.
@@ -626,7 +629,7 @@ functions in high dimensions may contain regions of unknown shape,
 flat in one direction and extremely curved in another,
 where the algorithm cannot easily proceed.
 
-In such case one may want to test the
+In such case we may learn more about the problem by testing the
 condition number of Hessian matrix.  \verb|condiNumber| runs such
 test variable-by-variable:
 <<>>=
@@ -642,7 +645,7 @@ helps to debug and address the convergence problems.
 
 In particular, what helps here to locate the problem is to observe
 how the condition
-number increases when we keep adding columns.  This helps to see which
+number increases when we keep adding columns.  This allows us to see which
 variable does not play together with others in a nice manner.  If we
 only observe the condition number of the complete Hessian, we do not
 gain such insight.
@@ -650,7 +653,7 @@ gain such insight.
 In a similar fashion, one may want to test for multicollinearity in the
 dataset or the design matrix.  In a complex case it is easy to add too
 many fixed effects or include combinations of variables that are
-essentially multicollinear.  In the linear regression
+essentially multicollinear.  In the linear 
 regression problem the design matrix is just
 \begin{equation}
   \label{eq:ols-design-matrix}
@@ -664,7 +667,7 @@ condition numbers of it by
 <<>>=
 X <- cbind(x1, x2, x3)
 condiNumber(X)
-@ 
+@
 
 
 \subsection{Fixed parameters and constrained optimization}
@@ -679,7 +682,9 @@ Occasionally we want to treat one of the model parameters as
 constant.  This can be achieved in a very simple manner, just through
 the argument \verb|fixed|.  It must be an index vector,
 either numeric as \verb|c(2,4)|, logical as \verb|c(FALSE, TRUE, FALSE, TRUE)|, or
-character as \verb|c("beta2", "beta4")| if \verb|start| has names.  We demonstrate
+character as \verb|c("beta2", "beta4")| given \verb|start| is a named
+vector.
+We demonstrate
 this with the original example where the task is to estimate the
 parameters for normal distribution.  However, this time we fix $\sigma
 = 1$:
@@ -699,7 +704,7 @@ The result has $\sigma$ exactly equal to $1$, it's standard error $0$,
 and $t$ value undefined.
 The fixed components are ignored when computing gradients and Hessian
 in the optimizer, essentially reducing the problem from 2-dimensional
-case to 1-dimensional.  Hence the inference for $\mu$ is still correct.
+to 1-dimensional.  Hence the inference for $\mu$ is still correct.
 
 Next, we demonstrate equality constraints.  We take the
 two-dimensional function we used in
@@ -751,7 +756,7 @@ constraint violation, and to slowly increase the penalty until
 violations are prohibitively expensive.  As the example indicates, the
 solution is extremely close to the constraint line.
 
-Finally the inequality constraints.  The usage of inequality
+The usage of inequality
 constraints is fairly similar to the usage of equality constraints.
 We have to code the inequalities as $\mat{A}\,\vec{\theta} + \vec{B} >
 0$ where the matrices $\mat{A}$ and $\vec{B}$ are defined as above.
@@ -786,7 +791,7 @@ summary(m)
 @
 Not surprisingly, the result is exactly the same as in case of
 equality constraints, in this case the optimum is found at the
-boundary, the same line what we specified using equality constraints.
+boundary, at the same line what we specified using equality constraints.
 
 One can supply more than one set of constraints, in that case these all
 must be satisfied at the same time.  For instance, let's add another
