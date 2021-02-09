@@ -182,14 +182,181 @@ stdEr(m)
 \label{sec:supplying-gradients}
 
 The simple example above worked fast and well.  In particular, the
-numeric gradient \verb|maxLik| had to compute implicitly
+numeric gradient \verb|maxLik| computed implicitly
 did not pose any problems.  But users are strongly
-advised to supply analytic gradient, or even better, both gradient
-and Hessian.  More complex problems
+advised to supply analytic gradient, or even better, both the gradient
+and the Hessian matrix.  More complex problems
 may be intractably slow, converge to a
 sub-optimal solution, or completely fail to converge if numeric gradients are too noisy.  Needless to
 say, unreliable Hessian also leads to unreliable inference.  Here we
-demonstrate how to supply gradient to the \verb|maxLik| function.
+show how to supply gradient to the \verb|maxLik| function.
+
+We demonstrate this taking an example of linear regression.
+Non-linear optimizers perform best in regions where level sets
+(contours) are
+roughly circular.  However, using data in a very different
+scale, we create the log-likelihood function with the contours in the
+form of extremely elongated
+ellipses.  In this example the Newton-Raphson algorithm
+fails to converge when relying on numeric derivatives.
+
+% using matrix notation
+
+We combine three variables,
+$x_{1}$, $x_{2}$ and $x_{3}$, created at a very different scale, into
+the design matrix $\mat{X} = \begin{pmatrix}
+  \vec{x}_{1} & \vec{x}_{2} & \vec{x}_{3}
+\end{pmatrix}$
+and compute $\vec{y}$ as
+\begin{equation}
+  \label{eq:linear-regression-matrix}
+  y = \mat{X}
+  \begin{pmatrix}
+    1 \\ 1 \\ 1
+  \end{pmatrix}
+  + \vec{\epsilon}:
+\end{equation}
+<<>>=
+## create 3 variables with very different scale
+X <- cbind(rnorm(100), rnorm(100, sd=1e3), rnorm(100, sd=1e7))
+## note: correct coefficients are 1, 1, 1
+y <- X %*% c(1,1,1) + rnorm(100)
+@ 
+Next, we maximize negative sum of squared errors (\emph{SSE})
+\begin{equation}
+  \label{eq:ols-sse-matrix}
+  \mathit{SSE}(\vec{\beta}) =
+  (\vec{y} - \mat{X} \cdot \vec{\beta})^{\transpose}
+  (\vec{y} - \mat{X} \cdot \vec{\beta})
+\end{equation}
+as this
+is equivalent to likelihood maximization:
+<<>>=
+SSE <- function(beta) {
+   e <- y - X %*% beta
+   -crossprod(e)
+                           # note '-': we are maximizing
+}
+m <- maxLik(SSE, start=c(0,0,0))
+                           # give start values a bit off
+summary(m)
+@
+As one can see, the algorithm gets stuck and fails to converge, the
+last parameter estimate are also way off from the correct value $(1,
+1, 1)$.
+
+% not using matrix notation
+
+We create three variables,
+$x_{1}$, $x_{2}$ and $x_{3}$ at very different scale, and compute $y$ as
+\begin{equation}
+  \label{eq:different-scale-linear-regression}
+  y_{i} = x_{1i} + x_{2i} + x_{3i} + \epsilon_{i}
+\end{equation}
+Hence the correct parameter values are $\beta_{1} = \beta_{2} =
+\beta_{3} = 1$.  Denote $\vec{\beta} = (\beta_{1}, \beta_{2}, \beta_{3})$.
+We optimize the negative of the sum-of-squared
+errors
+\begin{equation}
+  \label{eq:linear-regression-sse}
+  \mathit{SSE}(\vec{\beta}) =
+  \sum_{i}
+  (y_{i} - x_{1i}\beta_{1} - x_{2i}\beta_{2} - x_{3i}\beta_{3})^{2},
+\end{equation}
+this is equivalent to maximizing likelihood in case of
+normally distributed errors.
+<<echo=FALSE>>=
+set.seed(4)
+@ 
+<<>>=
+## create 3 variables with very different scale
+x1 <- rnorm(100)
+x2 <- rnorm(100, sd=1e4)
+x3 <- rnorm(100, sd=1e7)
+## note: correct coefficients are 1, 1, 1
+y <- x1 + x2 + x3 + rnorm(100)
+SSE <- function(theta) {
+   ## total sum of squares
+   yhat <- theta[1]*x1 + theta[2]*x2 + theta[3]*x3
+   -sum((yhat - y)^2)
+   # note: '-' as we are maximizing
+}
+m <- maxNR(SSE, start=c(x1=0, x2=0, x3=0))
+                           # give start values a bit off
+summary(m)
+@
+As one can see, the optimizer gets stuck and returns completely wrong
+values.  The reason here is that the loss function (ESS) is of
+extremely elongated shape, and the finite difference approximation is
+too crude to correctly compute the curvature.
+In this particular case one can easily solve the problem by
+re-scaling the variables, or
+choosing a more robust optimizer.\footnote{As the loss function is
+  quadratic, Newton-Raphson should provide the correct solution
+  in a single
+  iteration only, given the gradient and Hessian are correct.
+}
+But
+this is not always possible, in particular complex
+functions in high dimensions may contain regions of unknown shape,
+flat in one direction and extremely curved in another,
+where the algorithm cannot easily proceed.
+
+Here we solve the problem by introducing analytic derivatives
+instead.  The gradient of $\mathit{SSE}$ is
+\begin{equation}
+  \label{eq:dsse-dbeta}
+  \pderiv{\vec{\beta}}\mathit{SSE}(\vec{\beta}) =
+  (\vec{e}^{\transpose} \vec{x}_{1},
+  \vec{e}^{\transpose} \vec{x}_{2}, 
+  \vec{e}^{\transpose} \vec{x}_{3})
+\end{equation}
+where $\vec{e} = (e_{1}, e_{2}, \dots, e_{N})$ and $e_{i} = y_{i} -
+x_{1i}\beta_{1} - x_{2i}\beta_{2} - x_{3i}\beta_{3}$ is vector of the
+residuals. 
+
+
+In such case we may learn more about the problem by testing the
+condition number of Hessian matrix.  \verb|condiNumber| runs such
+test variable-by-variable:
+<<>>=
+condiNumber(hessian(m))
+@ 
+Condition number of the first column of Hessian ($1\times1$ matrix) is always
+one.  When we add the second column corresponding to $x_{2}$, the
+condition number is still small.  However, bringing in the last column
+makes the Hessian not well conditioned.  This hints that the problem
+is related to $x_{3}$, or more specifically, $x_{3}$ does not play
+well along with $x_{1}$ and $x_{2}$.  Such knowledge occasionally
+helps to debug and address the convergence problems.
+
+In particular, what helps here to locate the problem is to observe
+how the condition
+number increases when we keep adding columns.  This allows us to see which
+variable does not play together with others in a nice manner.  If we
+only observe the condition number of the complete Hessian, we do not
+gain such insight.
+
+In a similar fashion, one may want to test for multicollinearity in the
+dataset or the design matrix.  In a complex case it is easy to add too
+many fixed effects or include combinations of variables that are
+essentially multicollinear.  In the linear 
+regression problem the design matrix is just
+\begin{equation}
+  \label{eq:ols-design-matrix}
+  \mat{X} =
+  \begin{pmatrix}
+    \vec{x}_{1} & \vec{x}_{2} & \vec{x}_{3}
+  \end{pmatrix},
+\end{equation}
+i.e. the three data vectors stacked next to each other.  We test the
+condition numbers of it by
+<<>>=
+X <- cbind(x1, x2, x3)
+condiNumber(X)
+@
+
+
 
 It is easy to see from~\eqref{eq:normal-loglik} that the gradient
 components are
@@ -844,8 +1011,6 @@ speed of convergence
 \item stress that maximization, not minimization
 \item condinumber: do collinearity, not different scales
 \end{itemize}
-
-
 
 % \bibliographystyle{apecon}
 % \bibliography{maxlik}
