@@ -178,7 +178,7 @@ stdEr(m)
 \end{itemize}
 
 
-\subsection{Supplying gradients}
+\subsection{Supplying analytic gradient}
 \label{sec:supplying-gradients}
 
 The simple example above worked fast and well.  In particular, the
@@ -187,18 +187,20 @@ did not pose any problems.  But users are strongly
 advised to supply analytic gradient, or even better, both the gradient
 and the Hessian matrix.  More complex problems
 may be intractably slow, converge to a
-sub-optimal solution, or completely fail to converge if numeric gradients are too noisy.  Needless to
+sub-optimal solution, or converge at all
+if numeric gradients are too noisy.  Needless to
 say, unreliable Hessian also leads to unreliable inference.  Here we
 show how to supply gradient to the \verb|maxLik| function.
 
 We demonstrate this taking an example of linear regression.
 Non-linear optimizers perform best in regions where level sets
 (contours) are
-roughly circular.  However, using data in a very different
+roughly circular.  In the following example we use data in a very different
 scale, we create the log-likelihood function with the contours in the
 form of extremely elongated
 ellipses.  In this example the Newton-Raphson algorithm
-fails to converge when relying on numeric derivatives.
+fails to converge when relying on numeric derivatives, but works well
+with analytic gradient.
 
 % using matrix notation
 
@@ -214,8 +216,11 @@ and compute $\vec{y}$ as
   \begin{pmatrix}
     1 \\ 1 \\ 1
   \end{pmatrix}
-  + \vec{\epsilon}:
+  + \vec{\epsilon}.
 \end{equation}
+We create $\vec{x}_{1}$, $\vec{x}_{2}$ and $\vec{x}_{3}$ as random
+normals with standard deviation of 1, 1000 and $10^{7}$ respectively,
+$\vec{\epsilon}$ is random normal disturbance term:
 <<>>=
 ## create 3 variables with very different scale
 X <- cbind(rnorm(100), rnorm(100, sd=1e3), rnorm(100, sd=1e7))
@@ -239,199 +244,104 @@ SSE <- function(beta) {
 }
 m <- maxLik(SSE, start=c(0,0,0))
                            # give start values a bit off
-summary(m)
+summary(m, eigentol=1e-15)
 @
 As one can see, the algorithm gets stuck and fails to converge, the
-last parameter estimate are also way off from the correct value $(1,
-1, 1)$.
+last parameter value is also way off from the correct value $(1,
+1, 1)$.  We have amended summary with an extra argument,
+\verb|eigentol=1e-15|.  Otherwise \maxlik refuses to compute standard
+errors for near-singular Hessian,
+see the documentation of \verb|summary.maxLik|.  It makes no
+difference here but we want to keep it consistent
+with the
+following examples.
 
-% not using matrix notation
-
-We create three variables,
-$x_{1}$, $x_{2}$ and $x_{3}$ at very different scale, and compute $y$ as
+Now let's improve the model performance with analytic
+gradient.  The gradient of \emph{SSE}
 \begin{equation}
-  \label{eq:different-scale-linear-regression}
-  y_{i} = x_{1i} + x_{2i} + x_{3i} + \epsilon_{i}
+  \label{eq:ols-sse-gradient-matrix}
+  \pderiv{\vec{\beta}}\mathit{SSE}(\vec{\beta})
+  =
+  -(\vec{y} - \mat{X}\vec{\beta})^{\transpose} \mat{X}.
 \end{equation}
-Hence the correct parameter values are $\beta_{1} = \beta_{2} =
-\beta_{3} = 1$.  Denote $\vec{\beta} = (\beta_{1}, \beta_{2}, \beta_{3})$.
-We optimize the negative of the sum-of-squared
-errors
-\begin{equation}
-  \label{eq:linear-regression-sse}
-  \mathit{SSE}(\vec{\beta}) =
-  \sum_{i}
-  (y_{i} - x_{1i}\beta_{1} - x_{2i}\beta_{2} - x_{3i}\beta_{3})^{2},
-\end{equation}
-this is equivalent to maximizing likelihood in case of
-normally distributed errors.
-<<echo=FALSE>>=
-set.seed(4)
-@ 
+\maxlik uses numerator layout, i.e. the derivative of the scalar
+log-likelihood with respect to column vector of parameters must be a
+row vector.
+We can code negative of it as
 <<>>=
-## create 3 variables with very different scale
-x1 <- rnorm(100)
-x2 <- rnorm(100, sd=1e4)
-x3 <- rnorm(100, sd=1e7)
-## note: correct coefficients are 1, 1, 1
-y <- x1 + x2 + x3 + rnorm(100)
-SSE <- function(theta) {
-   ## total sum of squares
-   yhat <- theta[1]*x1 + theta[2]*x2 + theta[3]*x3
-   -sum((yhat - y)^2)
-   # note: '-' as we are maximizing
+grad <- function(beta) {
+   t(y - X %*% beta) %*% X
 }
-m <- maxNR(SSE, start=c(x1=0, x2=0, x3=0))
-                           # give start values a bit off
-summary(m)
 @
-As one can see, the optimizer gets stuck and returns completely wrong
-values.  The reason here is that the loss function (ESS) is of
-extremely elongated shape, and the finite difference approximation is
-too crude to correctly compute the curvature.
-In this particular case one can easily solve the problem by
-re-scaling the variables, or
-choosing a more robust optimizer.\footnote{As the loss function is
-  quadratic, Newton-Raphson should provide the correct solution
-  in a single
-  iteration only, given the gradient and Hessian are correct.
-}
-But
-this is not always possible, in particular complex
-functions in high dimensions may contain regions of unknown shape,
-flat in one direction and extremely curved in another,
-where the algorithm cannot easily proceed.
-
-Here we solve the problem by introducing analytic derivatives
-instead.  The gradient of $\mathit{SSE}$ is
-\begin{equation}
-  \label{eq:dsse-dbeta}
-  \pderiv{\vec{\beta}}\mathit{SSE}(\vec{\beta}) =
-  (\vec{e}^{\transpose} \vec{x}_{1},
-  \vec{e}^{\transpose} \vec{x}_{2}, 
-  \vec{e}^{\transpose} \vec{x}_{3})
-\end{equation}
-where $\vec{e} = (e_{1}, e_{2}, \dots, e_{N})$ and $e_{i} = y_{i} -
-x_{1i}\beta_{1} - x_{2i}\beta_{2} - x_{3i}\beta_{3}$ is vector of the
-residuals. 
-
-
-In such case we may learn more about the problem by testing the
-condition number of Hessian matrix.  \verb|condiNumber| runs such
-test variable-by-variable:
+We can simply add gradient to \verb|maxLik| as an additional argument
+\verb|grad|:
 <<>>=
-condiNumber(hessian(m))
-@ 
-Condition number of the first column of Hessian ($1\times1$ matrix) is always
-one.  When we add the second column corresponding to $x_{2}$, the
-condition number is still small.  However, bringing in the last column
-makes the Hessian not well conditioned.  This hints that the problem
-is related to $x_{3}$, or more specifically, $x_{3}$ does not play
-well along with $x_{1}$ and $x_{2}$.  Such knowledge occasionally
-helps to debug and address the convergence problems.
-
-In particular, what helps here to locate the problem is to observe
-how the condition
-number increases when we keep adding columns.  This allows us to see which
-variable does not play together with others in a nice manner.  If we
-only observe the condition number of the complete Hessian, we do not
-gain such insight.
-
-In a similar fashion, one may want to test for multicollinearity in the
-dataset or the design matrix.  In a complex case it is easy to add too
-many fixed effects or include combinations of variables that are
-essentially multicollinear.  In the linear 
-regression problem the design matrix is just
-\begin{equation}
-  \label{eq:ols-design-matrix}
-  \mat{X} =
-  \begin{pmatrix}
-    \vec{x}_{1} & \vec{x}_{2} & \vec{x}_{3}
-  \end{pmatrix},
-\end{equation}
-i.e. the three data vectors stacked next to each other.  We test the
-condition numbers of it by
-<<>>=
-X <- cbind(x1, x2, x3)
-condiNumber(X)
+m <- maxLik(SSE, grad=grad, start=c(0,0,0))
+summary(m, eigentol=1e-15)
 @
-
-
-
-It is easy to see from~\eqref{eq:normal-loglik} that the gradient
-components are
+Now the algorithm converged rapidly, and the estimate is close to the
+true value.  Let us also add analytic Hessian, in
+this case it is
 \begin{equation}
-  \label{eq:loglik-gradient}
-  \begin{split}
-    \pderiv{\mu}\loglik(\mu, \sigma; x) &=
-    \frac{x - \mu}{\sigma^{2}}
-    \\
-    \pderiv{\sigma}\loglik(\mu, \sigma; x) &=
-    -\frac{1}{\sigma} + \frac{(x - \mu)^{2}}{\sigma^{3}}.
-  \end{split}
+  \label{eq:ols-sse-hessian-matrix}
+  \frac{\partial^{2}}{\partial\vec{\beta}\,\partial\vec{\beta}^{\transpose}}
+  \mathit{SSE}(\vec{\beta})
+  =
+  \mat{X}^{\transpose}\mat{X}
 \end{equation}
-Hence we can program the gradient function as
+and we implement it as
 <<>>=
-gradlik <- function(theta) {
-   mu <- theta[1]
-   sigma <- theta[2]
-   N <- length(x)  # number of observations
-   gradient <- numeric(2)  # create an empty gradient vector
-   gradient[1] <- sum((x - mu)/sigma^2)
-   gradient[2] <- -N/sigma + sum((x - mu)^2/sigma^3)
-   gradient
+hess <- function(beta) {
+   -crossprod(X)
 }
 @ 
-Note that we have written $-N/\sigma$ as the first term for the second
-component because the
-term $-1/\sigma$ must be summed over all observations (despite it being
-invariant).  We also return gradient as a length-2 vector, not a
-matrix.  The example with BHHH below demonstrates gradient in a matrix form.
-
-Now we can supply this function to \verb|maxLik| as
-<<>>=
-m <- maxLik(loglik, gradlik, start=c(mu=1, sigma=2))
-summary(m)
+Analytic Hessian matrix can be included with the argument \verb|hess|,
+and now the results are
+<<hessianExample>>=
+m <- maxLik(SSE, grad=grad, hess=hess, start=c(0,0,0))
+summary(m, eigentol=1e-15)
 @ 
-While these results are identical to the ones above with numeric
-gradients, the algorithm is now much more robust, and much faster in
-case of large number of parameters.
+Analytic Hessian did not change the convergence behavior.
+Note that 
+as the loss function is
+quadratic, Newton-Raphson should provide the correct solution
+in a single
+iteration only, given the gradient and Hessian are correct.  However,
+this is not the case here because of issues with numerical
+precision when inverting near-singular Hessian.  One can easily check
+that when creating the covariates with a less extreme scale
+differences, then the convergence is indeed immediate, in a single
+iteration only.
 
 While this is perhaps the most straightforward way to compute
-gradients, \maxlik also supports gradients (and Hessian) supplied as
-log-likelihood function attribute.  This is motivated by the fact that
+gradients, \maxlik also supports gradient and Hessian supplied as
+log-likelihood function attributes.  This is motivated by the fact that
 computing gradient often involves a number of similar computations as
 computing log-likelihood, and one may want to re-use the auxiliary results.  We
-demonstrate this on the same example, but this time we do not rely on
-the \verb|dnorm| function in order to show how certain results can be
-reused:
-<<>>=
-loglikA <- function(theta) {
-   ## log-likelihood with gradent attribute
-   mu <- theta[1]
-   sigma <- theta[2]
-   N <- length(x)  # number of observations
-   sse <- sum((x - mu)^2)  # we re-use this value for the gradient
-   ## compute log likelihood
-   ll <- -N*log(sqrt(2*pi)) - N*log(sigma) - 0.5*sse/sigma^2
-   ## compute gradient
-   gradient <- numeric(2)
-   gradient[1] <- sum(x - mu)/sigma^2
-   gradient[2] <- -N/sigma + sse/sigma^3  # re-use sse here
-   attr(ll, "gradient") <- gradient
-                           # add gradient as attribute 'gradient'
-   ll
+demonstrate this on the same example, by writing a version of
+log-likelihood function that also computes the gradient and Hessian:
+<<SSEA>>=
+SSEA <- function(beta) {
+   ## SSE with attributes
+   e <- y - X %*% beta  # we will re-use 'e'
+   sse <- -crossprod(e)
+                           # note '-': we are maximizing
+   attr(sse, "gradient") <- t(e) %*% X
+   attr(sse, "Hessian") <- -crossprod(X)
+   sse
 }
-m <- maxLik(loglikA, gradlik, start=c(mu=1, sigma=2))
-summary(m)
+m <- maxLik(SSEA, start=c(0,0,0))
+summary(m, eigentol=1e-15)
 @
-The log-likelihood with attribute \verb|loglikA| computes
+The log-likelihood with ``gradient'' and ``Hessian'' attributes,
+\verb|SSEA|,
+computes
 log-likelihood as above, but also computes its gradient, and adds it
 as attribute ``gradient'' to the log-likelihood.  This gives a
 potential efficiency gain as sum of squared errors, \verb|sse|, is
 re-used.  \maxlik checks the presence of the attribute, and if it is
-there, it uses the provided gradient.  Obviously, in real applications
-the efficiency gain will depend on the amount of computations re-used,
+there, it uses the provided gradient.  In real applications
+the efficiency gain will obviously depend on the amount of computations re-used,
 and the number of likelihood calls versus gradient calls.
 
 While analytic gradients are always helpful and often necessary, they
@@ -441,7 +351,7 @@ analytic gradient, another provided function,
 gradent, and compares the numeric and analytic gradient.  As an
 example, we compare the log-likelihood and gradient functions we just coded:
 <<>>=
-compareDerivatives(loglik, gradlik, t0=c(1,2))
+compareDerivatives(SSE, grad, t0=c(0,0,0))
                            # 't0' is the parameter value
 @
 The function prints the analytic gradient, numeric gradient, their
@@ -449,17 +359,16 @@ relative difference, and the largest relative difference value (in absolute
 value).  The latter is handy in case of large gradient vectors where
 it may be hard to spot a lonely component that is off.
 In case of reasonably smooth functions, expect
-the relative difference to be smaller than $10^{-7}$.  In this simple
-case it is of order $10^{-9}$.
-
-Note that the gradient of log-likelihood, a scalar function, with
-respect to length-2 parameter vector is
-$1\times2$ matrix.  \maxlik uses numerator layout.
+the relative difference to be smaller than $10^{-7}$.  But in this
+example the numerical gradients are clearly off.
 
 \verb|compareDerivatives| supports vector functions, so one can test
 analytic Hessian in the same way by calling \verb|compareDerivatives|
 with \verb|gradlik| as
-the first argument and the analytic hessian as the second argument. 
+the first argument and the analytic hessian as the second argument.
+Remember that in
+numerator layout, the gradient of $M\times1$ vector with respect to
+$K\times1$ parameter vector is $M\times K$ matrix.
 
 
 \subsection{Different optimizers}
@@ -482,8 +391,8 @@ even harder to program, and even slower and more error-prone when
 computed numerically.  Let us replace NR with gradient-only
 BFGS method.  It is a quasi-Newton method that computes its own
 internal approximation of the Hessian while relying only on gradients:
-<<>>=
-m <- maxLik(loglik, gradlik, start=c(mu=1, sigma=2),
+<<BFGS>>=
+m <- maxLik(loglik, start=c(mu=1, sigma=2),
             method="BFGS")
 summary(m)
 @ 
@@ -740,101 +649,99 @@ message, we hear about ``successful convergence''.
 \subsection{Testing condition numbers}
 \label{sec:testing-condition-numbers}
 
-Non-linear optimizers perform best in regions where level sets
-(contours) are
-roughly circular.
-In a fairly flat area with contours that are extremely elongated
-ellipses,
-the performance will degrade and the algorithms
-may completely fail to converge.  The highly elliptical level sets may
-be caused by different factors, below we demonstrate a simple linear regression example with
-very different variable range.  We create three variables,
-$x_{1}$, $x_{2}$ and $x_{3}$ at very different scale, and compute $y$ as
-\begin{equation}
-  \label{eq:different-scale-linear-regression}
-  y_{i} = x_{1} + x_{2} + x_{3} + \epsilon_{i}.
-\end{equation}
-Hence the correct parameter values are $\beta_{1} = \beta_{2} =
-\beta_{3} = 1$.
-<<echo=FALSE>>=
-set.seed(4)
-@ 
+Analytic gradient we demonstrated in
+Section~\ref{sec:supplying-gradients} helps to avoid numerical
+problems.  But not all problems can or should be solved by analytic
+gradients.  For instance, multicollinearity should be addressed on
+data or model level.  \maxlik provides a helper function,
+\verb|condiNumbers|, to detect such problems.  We demonstrate this by
+creating a highly multicollinear dataset and estimating a linear
+regression model.  We re-use the regression code from
+Section~\ref{sec:supplying-gradients} but this time we create
+multicollinear data in similar scale.
 <<>>=
 ## create 3 variables with very different scale
 x1 <- rnorm(100)
-x2 <- rnorm(100, sd=1e4)
-x3 <- rnorm(100, sd=1e7)
-## note: correct coefficients are 1, 1, 1
-y <- x1 + x2 + x3 + rnorm(100)
-TSS <- function(theta) {
-   ## total sum of squares
-   yhat <- theta[1]*x1 + theta[2]*x2 + theta[3]*x3
-   -sum((yhat - y)^2)
-   # note: '-' as we are maximizing
-}
-m <- maxNR(TSS, start=c(x1=0, x2=0, x3=0))
+x2 <- rnorm(100)
+x3 <- x1 + x2 + rnorm(100, sd=1e-6)  # highly correlated w/x1, x2
+X <- cbind(x1, x2, x3)
+y <- X %*% c(1, 1, 1) + rnorm(100)
+m <- maxLik(SSEA, start=c(x1=0, x2=0, x3=0))
                            # give start values a bit off
 summary(m)
 @
-As one can see, the optimizer gets stuck and returns completely wrong
-values.  The reason here is that the loss function (TSS) is of
-extremely elongated shape, and the parabolic approximation of
-Newton-Raphson optimizer fails to represent it correctly because
-the numeric gradient is too noisy.
-In this particular case one can easily solve the problem by
-re-scaling the variables, introducing analytic derivatives, or
-choosing a more robust optimizer.\footnote{As the loss function is
-  quadratic, Newton-Raphson should provide the correct solution
-  in a single
-  iteration only, given the gradient and Hessian are correct.  This is
-  apparently not the case here as numeric gradient cannot correctly
-  handle the extreme curvature along $x_{3}$.
-}
-But
-this is not always possible, in particular complex
-functions in high dimensions may contain regions of unknown shape,
-flat in one direction and extremely curved in another,
-where the algorithm cannot easily proceed.
+As one can see, the model converges but the standard errors are
+missing (because Hessian is not negative definite).  
 
 In such case we may learn more about the problem by testing the
-condition number of Hessian matrix.  \verb|condiNumber| runs such
-test variable-by-variable:
+condition numbers $\kappa$ of either the design matrix $\mat{X}$ or of the
+Hessian matrix.  It is instructive to test not just the complete matrix,
+but to do it column-by-column, and see where the number suddenly
+jumps.  This hints which variable does not play nicely with the rest
+of data.
+\verb|condiNumber| provides such functionality:
+<<>>=
+condiNumber(X)
+@ 
+First, we test the condition number of the design matrix.  We can see
+that when only including $\vec{x}_{1}$ and $\vec{x}_{2}$ into the
+design, the condition number is 1.35, far from any singularity-related
+problems.  However, adding $\vec{x}_{3}$ to the matrix causes $\kappa$
+to jump to over 5 millions.  This suggests that $\vec{x}_{3}$ is
+highly collinear with $\vec{x}_{1}$ and $\vec{x}_{2}$.  In this
+example the problem is obvious as this is how we created
+$\vec{x}_{3}$, in real applications one often needs further analysis.
+For instance, the problem may be in categorical values that contain
+too few observations or complex fixed effects that turn out to be
+perfectly multicollinear.  A good suggestion is to estimate a linear
+regression model where one explains the offending variable using all
+the previous variables.  In this example we might estimate
+\verb|lm(x3 ~ x1 + x2)| and see which variables help to explain
+$\vec{x}_{3}$ perfectly.
+
+Sometimes the design matrix is fine but the problem arises because
+data and model do not match.  In that case it may be more informative
+to test condition number of Hessian matrix instead.  The example below
+creates a linearly separated set of observations and estimates this
+with logistic regression.  As a refresher, the log-likelihood of
+logistic regression is
+\begin{equation}
+  \label{eq:logistic-loglik}
+  \loglik(\beta) =
+  \sum_{i: y_{i} = 1} \log\Lambda(\vec{x}_{i}^{\transpose} \vec{\beta}) +
+  \sum_{i: y_{i} = 0} \log\Lambda(-\vec{x}_{i}^{\transpose} \vec{\beta})
+\end{equation}
+where $\Lambda(x) = 1/(1 + \exp(-x))$ is the logistic cumulative
+distribution function.
+We implement it using \R function \verb|plogis|
+<<>>=
+x1 <- rnorm(100)
+x2 <- rnorm(100)
+x3 <- rnorm(100)
+X <- cbind(x1, x2, x3)
+y <- X %*% c(1, 1, 1) > 0
+                           # positive/negative y linearly separated
+loglik <- function(beta) {
+   link <- X %*% beta
+   sum(ifelse(y > 0, plogis(link, log=TRUE),
+              plogis(-link, log=TRUE)))
+}
+m <- maxLik(loglik, start=c(x1=0, x2=0, x3=0))
+summary(m)
+@ 
+Not surprisingly, all coefficients tend to infinity and inference is
+problematic.  In this case the design matrix does not show any issues:
+<<>>=
+condiNumber(X)
+@
+But the Hessian reveals that including $\vec{x}_{3}$ in the model is still
+problematic: 
 <<>>=
 condiNumber(hessian(m))
 @ 
-Condition number of the first column of Hessian ($1\times1$ matrix) is always
-one.  When we add the second column corresponding to $x_{2}$, the
-condition number is still small.  However, bringing in the last column
-makes the Hessian not well conditioned.  This hints that the problem
-is related to $x_{3}$, or more specifically, $x_{3}$ does not play
-well along with $x_{1}$ and $x_{2}$.  Such knowledge occasionally
-helps to debug and address the convergence problems.
-
-In particular, what helps here to locate the problem is to observe
-how the condition
-number increases when we keep adding columns.  This allows us to see which
-variable does not play together with others in a nice manner.  If we
-only observe the condition number of the complete Hessian, we do not
-gain such insight.
-
-In a similar fashion, one may want to test for multicollinearity in the
-dataset or the design matrix.  In a complex case it is easy to add too
-many fixed effects or include combinations of variables that are
-essentially multicollinear.  In the linear 
-regression problem the design matrix is just
-\begin{equation}
-  \label{eq:ols-design-matrix}
-  \mat{X} =
-  \begin{pmatrix}
-    \vec{x}_{1} & \vec{x}_{2} & \vec{x}_{3}
-  \end{pmatrix},
-\end{equation}
-i.e. the three data vectors stacked next to each other.  We test the
-condition numbers of it by
-<<>>=
-X <- cbind(x1, x2, x3)
-condiNumber(X)
-@
+Now the problem is not multicollinearity but the fact that
+$\vec{x}_{3}$ makes the data linearly separable.  In such cases we may
+want to adjust our model or estimation strategy.
 
 
 \subsection{Fixed parameters and constrained optimization}
@@ -1006,10 +913,7 @@ speed of convergence
 \subsection{TODO}
 
 \begin{itemize}
-\item example with Hessian
-\item analytic gradient example: use OLS with very unequal scale
 \item stress that maximization, not minimization
-\item condinumber: do collinearity, not different scales
 \end{itemize}
 
 % \bibliographystyle{apecon}
