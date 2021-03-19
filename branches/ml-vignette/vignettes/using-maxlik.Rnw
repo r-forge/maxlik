@@ -83,7 +83,7 @@ the same name, \verb|maxLik|.  It is a wrapper around the underlying
 optimization algorithms that ensures that the returned object is
 of the right class, so that one
 can use the correct convenience functions, such as \verb|summary| or
-\verb|logLik|.  It should also be stressed that \maxLik
+\verb|logLik|.  It should also be stressed that \maxlik
 \emph{maximizes}, not \emph{minimizes} the function.
 
 The basic usage of the function is very simple: just pass the
