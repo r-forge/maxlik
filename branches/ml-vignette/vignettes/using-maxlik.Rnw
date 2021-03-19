@@ -80,10 +80,11 @@ testing condition numbers, and constrained optimization.
 
 The main entry point to \maxlik functionality is the function of
 the same name, \verb|maxLik|.  It is a wrapper around the underlying
-optimization algorithms that also ensures that the returned object is
+optimization algorithms that ensures that the returned object is
 of the right class, so that one
 can use the correct convenience functions, such as \verb|summary| or
-\verb|logLik|.
+\verb|logLik|.  It should also be stressed that \maxLik
+\emph{maximizes}, not \emph{minimizes} the function.
 
 The basic usage of the function is very simple: just pass the
 log-likelihood function (argument \verb|logLik|) and the start value
@@ -92,7 +93,7 @@ by estimating the normal distribution parameters.  We create 100 standard normal
 and estimate the best fit mean and standard deviation.
 Instead of explicitly coding the formula for log-likelihood, we rely on the
 \R function \verb|dnorm| instead (see Section~\ref{sec:different-optimizers}
-for a version without \verb|dnorm|):
+for a version that does not use \verb|dnorm|):
 <<>>=
 x <- rnorm(100)  # data.  true mu = 0, sigma = 1
 loglik <- function(theta) {
@@ -220,12 +221,12 @@ Next, we maximize negative of sum of squared errors \emph{SSE}
 as this
 is equivalent to likelihood maximization:
 <<>>=
-nSSE <- function(beta) {
+negSSE <- function(beta) {
    e <- y - X %*% beta
    -crossprod(e)
                            # note '-': we are maximizing
 }
-m <- maxLik(nSSE, start=c(0,0,0))
+m <- maxLik(negSSE, start=c(0,0,0))
                            # give start values a bit off
 summary(m, eigentol=1e-15)
 @
@@ -259,7 +260,7 @@ grad <- function(beta) {
 We can add gradient to \verb|maxLik| as an additional argument
 \verb|grad|:
 <<>>=
-m <- maxLik(nSSE, grad=grad, start=c(0,0,0))
+m <- maxLik(negSSE, grad=grad, start=c(0,0,0))
 summary(m, eigentol=1e-15)
 @
 Now the algorithm converges rapidly, and the estimate is close to the
@@ -281,7 +282,7 @@ hess <- function(beta) {
 Analytic Hessian matrix can be included with the argument \verb|hess|,
 and now the results are
 <<hessianExample>>=
-m <- maxLik(nSSE, grad=grad, hess=hess, start=c(0,0,0))
+m <- maxLik(negSSE, grad=grad, hess=hess, start=c(0,0,0))
 summary(m, eigentol=1e-15)
 @ 
 Analytic Hessian did not change the convergence behavior here.
@@ -303,7 +304,7 @@ computing log-likelihood, and one may want to re-use some of the results.  We
 demonstrate this on the same example, by writing a version of
 log-likelihood function that also computes the gradient and Hessian:
 <<SSEA>>=
-nSSEA <- function(beta) {
+negSSEA <- function(beta) {
    ## negative SSE with attributes
    e <- y - X %*% beta  # we will re-use 'e'
    sse <- -crossprod(e)
@@ -312,11 +313,11 @@ nSSEA <- function(beta) {
    attr(sse, "Hessian") <- -2*crossprod(X)
    sse
 }
-m <- maxLik(nSSEA, start=c(0,0,0))
+m <- maxLik(negSSEA, start=c(0,0,0))
 summary(m, eigentol=1e-15)
 @
 The log-likelihood with ``gradient'' and ``Hessian'' attributes,
-\verb|nSSEA|,
+\verb|negSSEA|,
 computes
 log-likelihood as above, but also computes its gradient, and adds it
 as attribute ``gradient'' to the log-likelihood.  This gives a
@@ -333,7 +334,7 @@ analytic gradient, another provided function,
 gradent, and compares the numeric and analytic gradient.  As an
 example, we compare the log-likelihood and gradient functions we just coded:
 <<>>=
-compareDerivatives(nSSE, grad, t0=c(0,0,0))
+compareDerivatives(negSSE, grad, t0=c(0,0,0))
                            # 't0' is the parameter value
 @
 The function prints the analytic gradient, numeric gradient, their
@@ -494,12 +495,12 @@ observation-wise.
 
 The results are similar to what we got above and the convergence speed
 is in-between that of Newton-Raphson and BFGS:
+\label{code:bhhh-example}
 <<>>=
 m <- maxLik(loglik, gradlikB, start=c(mu=1, sigma=2),
             method="BHHH")
 summary(m)
 @
-
 
 In case we do not have time and energy to code the analytic gradient, we can
 let \maxlik compute the numeric one for BHHH too.
@@ -557,7 +558,7 @@ summary(m)
 @
 The first option, \verb|printLevel=3|, make \verb|maxLik| to print
 out parameters, gradient
-a few other pieces of information at every step.  Larger levels output
+a few other bits of information at every step.  Larger levels output
 more information, printlevel 1 only
 prints the first and last parameter values.
 The output from \maxlik-implemented
@@ -579,28 +580,39 @@ three convergence tolerances:
 \item[reltol] This is somewhat similar to \emph{tol}, but relative to
   the function value.  Stop if successive function evaluations differ by less than
   $\mathit{reltol}\cdot (\loglik(\vec{\theta}) + \mathit{reltol})$
-  (default \verb|sqrt(.Machine[["double.eps"]])|).
+  (default \verb|sqrt(.Machine[["double.eps"]])|, may be approximately
+  \Sexpr{formatC(sqrt(.Machine[["double.eps"]]), digits=1)} on a modern computer).
 \item[gradtol] stop if the (Euclidean) norm of the gradient is smaller
   than this value (default $10^{-6}$).
 \end{description}
 Default tolerance values are typically good enough, but in certain cases one
 may want to adjust these.  For
-instance, in case our function values are very small, we may want to
-rely only on the relative tolerance, and ignore tolerance and gradient
+instance, in case our function values are very large, we may want to
+rely only on tolerance, and ignore relative tolerance and gradient
 tolerance criteria.  A simple way to achieve this is
-to set both \emph{tol} and \emph{gradtol} to negative values.  In that
+to set both \emph{reltol} and \emph{gradtol} to zero.  In that
 case these two conditions are never satisfied and the algorithm stops
-only when the relative convergence criterion is fulfilled.  For
+only when the absolute convergence criterion is fulfilled.  For
 instance, in the previous case we get:
 <<>>=
 m <- maxLik(loglikB, start=c(mu=1, sigma=2),
             method="BHHH",
-            control=list(tol=-1, gradtol=-1))
+            control=list(reltol=0, gradtol=0))
 summary(m)
-@ 
+@
+When comparing the result with that on
+Page~\pageref{code:bhhh-example} we can see that the optimizer now
+needs more iterations and it
+stops with a return code that is related to tolerance, not relative
+tolerance. 
 
-Note that stochastic gradient ascent
-relies on different convergence criteria.  See the dedicated vignette
+Note that BFGS and other optimizers that are based on the
+\verb|stats::optim| does not report the convergence results in a
+similar way as BHHH and NR, the algorithms provided by the \maxlik
+package.  Instead of tolerance limits or gradient close to zero
+message, we hear about ``successful convergence''.
+Stochastic gradient ascent
+relies on completely different convergence criteria.  See the dedicated vignette
 ``Stochastic Gradient Ascent in \maxlik''.
 
 
@@ -627,10 +639,11 @@ loglik <- function(theta, x) {
    sum(dnorm(x, mean=mu, sd=sigma, log=TRUE))
 }
 m <- maxLik(loglik, start=c(mu=1, sigma=2), x=x)
-                           # named argument 'x' will be passed to loglik
+                           # named argument 'x' will be passed
+                           # to loglik
 summary(m)
 @
-This approach only works if the argument names do not coincide with
+This approach only works if the argument names do not overlap with
 \verb|maxLik|'s arguments' names.  If that happens, it
 prints an informative error message.
 
@@ -639,7 +652,8 @@ prints an informative error message.
 \label{sec:maximizing-other-functions}
 
 The \verb|maxLik| function is mostly just a wrapper for a number of
-maximization algorithms, together with likelihood-related goodies like
+maximization algorithms, together with likelihood-related methods,
+such as
 standard errors.  However, from time-to-time we need to optimize other
 functions where inverting the Hessian to compute standard errors is
 not applicable.  In such cases one can call the included optimizers
@@ -672,13 +686,8 @@ summary(m)
 @
 Note that the summary output is slightly different: it reports the
 parameter and gradient value, appropriate for a task that is not
-likelihood optimization.  This is because the \verb|maxXXX|-functions
-return an object of \emph{maxim}-class, not \emph{\maxlik}-class.
-Note also that BFGS, based on the
-\verb|stats::optim| does not report the convergence results in a
-similar way as BHHH and NR, the algorithms provided by the \maxlik
-package.  Instead of tolerance limits or gradient close to zero
-message, we hear about ``successful convergence''.
+likelihood optimization.  Behind the scenes, this is because the \verb|maxXXX|-functions
+return an object of \emph{maxim}-class, not \emph{maxLik}-class.
 
 
 \subsection{Testing condition numbers}
@@ -695,14 +704,15 @@ regression model.  We re-use the regression code from
 Section~\ref{sec:supplying-gradients} but this time we create
 multicollinear data in similar scale.
 <<>>=
-## create 3 variables with very different scale
+## create 3 variables, two independent, third collinear
 x1 <- rnorm(100)
 x2 <- rnorm(100)
 x3 <- x1 + x2 + rnorm(100, sd=1e-6)  # highly correlated w/x1, x2
 X <- cbind(x1, x2, x3)
 y <- X %*% c(1, 1, 1) + rnorm(100)
-m <- maxLik(nSSEA, start=c(x1=0, x2=0, x3=0))
-                           # give start values a bit off
+m <- maxLik(negSSEA, start=c(x1=0, x2=0, x3=0))
+                           # negSSEA: negative sum of squared errors
+                           # with gradient, hessian attribute
 summary(m)
 @
 As one can see, the model converges but the standard errors are
@@ -710,7 +720,7 @@ missing (because Hessian is not negative definite).
 
 In such case we may learn more about the problem by testing the
 condition numbers $\kappa$ of either the design matrix $\mat{X}$ or of the
-Hessian matrix.  It is instructive to test not just the complete matrix,
+Hessian matrix.  It is instructive to test not just the whole matrix,
 but to do it column-by-column, and see where the number suddenly
 jumps.  This hints which variable does not play nicely with the rest
 of data.
@@ -790,11 +800,12 @@ more complex.
 Occasionally we want to treat one of the model parameters as
 constant.  This can be achieved in a very simple manner, just through
 the argument \verb|fixed|.  It must be an index vector,
-either numeric as \verb|c(2,4)|, logical as \verb|c(FALSE, TRUE, FALSE, TRUE)|, or
+either numeric, such as \verb|c(2,4)|, logical as \verb|c(FALSE, TRUE, FALSE, TRUE)|, or
 character as \verb|c("beta2", "beta4")| given \verb|start| is a named
 vector.
 We demonstrate
-this with the original example where the task is to estimate the
+this with the first example of the vignette example where the task was
+to estimate the
 parameters for normal distribution.  However, this time we fix $\sigma
 = 1$:
 <<>>=
@@ -806,7 +817,7 @@ loglik <- function(theta) {
 }
 m <- maxLik(loglik, start=c(mu=1, sigma=1),
             fixed="sigma")
-                           # fix the component names 'sigma'
+                           # fix the component named 'sigma'
 summary(m)
 @
 The result has $\sigma$ exactly equal to $1$, it's standard error $0$,
@@ -820,7 +831,7 @@ two-dimensional function we used in
 Section~\ref{sec:maximizing-other-functions} and add constraints $x +
 y = 1$.  The constraint must be described in matrix form
 $\mat{A}\,\vec{\theta} + \vec{B} = 0$ where $\vec{\theta}$ is the
-parameter vector and $\mat{A}$ and $\vec{B}$ describe the constraints.
+parameter vector and matrix $\mat{A}$ and vector $\vec{B}$ describe the constraints.
 In this case we can write
 \begin{equation}
   \label{eq:equality-constraints}
@@ -866,7 +877,7 @@ violations are prohibitively expensive.  As the example indicates, the
 solution is extremely close to the constraint line.
 
 The usage of inequality
-constraints is fairly similar to the usage of equality constraints.
+constraints is fairly similar.
 We have to code the inequalities as $\mat{A}\,\vec{\theta} + \vec{B} >
 0$ where the matrices $\mat{A}$ and $\vec{B}$ are defined as above.
 Let us optimize the function over the region $x + y > 1$.  In matrix
@@ -900,7 +911,8 @@ summary(m)
 @
 Not surprisingly, the result is exactly the same as in case of
 equality constraints, in this case the optimum is found at the
-boundary, at the same line what we specified using equality constraints.
+boundary line, the same line what we specified when demonstrating the
+equality constraints.
 
 One can supply more than one set of constraints, in that case these all
 must be satisfied at the same time.  For instance, let's add another
@@ -937,11 +949,14 @@ The solution is $(1, 0)$ the closest point to the origin where both
 constraints are satisfied.
 
 
+\bigskip
+
+This example concludes the \maxlik usage introduction.  For more
+information, consult the fairly extensive documentation, and the other
+vignettes. 
+
+
 % \bibliographystyle{apecon}
 % \bibliography{maxlik}
 
 \end{document}
-
-TODO:
-
-* maximization, not minimization
