@@ -19,6 +19,7 @@
 \usepackage{natbib}
 \usepackage{xargs}  % for extended pderiv arguments
 \usepackage{xspace}
+% \SweaveUTF8
 
 \newcommand{\COii}{\ensuremath{\mathit{CO}_{2}}\xspace}
 \DeclareMathOperator*{\E}{\mathbbm{E}}% expectation

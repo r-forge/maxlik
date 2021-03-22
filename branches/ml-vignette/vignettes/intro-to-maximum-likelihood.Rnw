@@ -9,6 +9,7 @@
 \usepackage{natbib}
 \usepackage{siunitx}
 \usepackage{xspace}
+% \SweaveUTF8
 
 \newcommand{\COii}{\ensuremath{\mathit{CO}_{2}}\xspace}
 \newcommand*{\mat}[1]{\mathsf{#1}}
@@ -27,7 +28,6 @@
 options(keep.source = TRUE, width = 60,
         try.outFile=stdout()  # make try to produce error messages
         )
-library(magrittr)
 library(plot3D)
 set.seed(34)
 @
@@ -816,7 +816,7 @@ different combinations of $\mu$, $\sigma$
 
 \begin{figure}[ht]
   \centering
-<<echo=FALSE, fig=TRUE>>=
+<<plotSurface, echo=FALSE, fig=TRUE>>=
 loglik <- function(theta) {
    mu <- theta[1]
    sigma <- theta[2]
@@ -826,15 +826,13 @@ loglik <- function(theta) {
 }
 m <- maxLik(loglik, start=c(mu=30, sigma=10))
 params <- coef(m)
-np <- 33
+np <- 33  # number of points
 mu <- seq(6, 36, length.out=np)
 sigma <- seq(5, 50, length.out=np)
-X <- expand.grid(mu=mu, sigma=sigma) %>%
-   as.matrix()
-ll <- apply(X, 1, loglik) %>%
-   matrix(nrow=33)
+X <- as.matrix(expand.grid(mu=mu, sigma=sigma))
+ll <- matrix(apply(X, 1, loglik), nrow=np)
 levels <- quantile(ll, c(0.05, 0.4, 0.6, 0.8, 0.9, 0.97))
-                           # where to dwar the contours
+                           # where to draw the contours
 colors <- colorRampPalette(c("Blue", "White"))(30)
 par(mar=c(0,0,0,0),
     mgp=2:0)
