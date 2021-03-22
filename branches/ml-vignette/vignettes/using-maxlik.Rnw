@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 \usepackage{amsmath}
 \usepackage{bbm}
 \usepackage[inline]{enumitem}
@@ -64,7 +64,7 @@ accompanied vignette ``Getting started with maximum likelihood and
 
 The next section introduces the basic usage, including the \maxlik
 function, the main entry point for the package; gradients;
-different optimizers; and controlling the optimization behavior.
+different optimizers; and how to control the optimization behavior.
 These are topics that are hard to avoid when working with applied ML
 estimation.  Section~\ref{sec:advanced-usage}
 contains a selection of more niche topics, including
@@ -81,10 +81,10 @@ testing condition numbers, and constrained optimization.
 The main entry point to \maxlik functionality is the function of
 the same name, \verb|maxLik|.  It is a wrapper around the underlying
 optimization algorithms that ensures that the returned object is
-of the right class, so that one
-can use the correct convenience functions, such as \verb|summary| or
-\verb|logLik|.  It should also be stressed that \maxlik
-\emph{maximizes}, not \emph{minimizes} the function.
+of the right class so one
+can use the convenience methods, such as \verb|summary| or
+\verb|logLik|.  It is important to keep in mind that \maxlik
+\emph{maximizes}, not minimizes functions.
 
 The basic usage of the function is very simple: just pass the
 log-likelihood function (argument \verb|logLik|) and the start value
@@ -124,8 +124,8 @@ This example demonstrates a number of key features of \verb|maxLik|:
   components.  (It may also return the components individually, see
   BHHH method
   in Section~\ref{sec:different-optimizers} below.)
-\item Vector of start values must be of correct length.  If the
-  components are named, those names are also displayed for \verb|summary|
+\item Vector of start values must be of correct length.  If its
+  components are named, those names are also displayed in \verb|summary|
   (and for \verb|coef| and \verb|stdEr|, see below).
 \item \verb|summary| method displays a handy summary of the results,
   including the convergence message, the estimated values, and
@@ -146,8 +146,7 @@ functions to simplify handling of estimated models:
 <<>>=
 coef(m)
 @   
-\item \verb|stdEr| returns the standard errors (by inverting the
-  corresponding Hessian):
+\item \verb|stdEr| returns the standard errors (by inverting Hessian):
 <<>>=
 stdEr(m)
 @   
@@ -172,7 +171,7 @@ advised to supply analytic gradient, or even better, both the gradient
 and the Hessian matrix.  More complex problems
 may be intractably slow, converge to a
 sub-optimal solution, or not converge at all
-if numeric gradients are too noisy.  Needless to
+if numeric gradients are noisy.  Needless to
 say, unreliable Hessian also leads to unreliable inference.  Here we
 show how to supply gradient to the \verb|maxLik| function.
 
@@ -181,7 +180,7 @@ Non-linear optimizers perform best in regions where level sets
 (contours) are
 roughly circular.  In the following example we use data in a very different
 scale and create the log-likelihood function with extremely elongated
-elliptical contours.  In this example the Newton-Raphson algorithm
+elliptical contours.  Now Newton-Raphson algorithm
 fails to converge when relying on numeric derivatives, but works well
 with analytic gradient.
 
@@ -203,7 +202,8 @@ and compute $\vec{y}$ as
 \end{equation}
 We create $\vec{x}_{1}$, $\vec{x}_{2}$ and $\vec{x}_{3}$ as random
 normals with standard deviation of 1, 1000 and $10^{7}$ respectively,
-$\vec{\epsilon}$ is standard normal disturbance term:
+and let
+$\vec{\epsilon}$ be standard normal disturbance term:
 <<>>=
 ## create 3 variables with very different scale
 X <- cbind(rnorm(100), rnorm(100, sd=1e3), rnorm(100, sd=1e7))
@@ -290,13 +290,14 @@ Note that
 as the loss function is
 quadratic, Newton-Raphson should provide the correct solution
 in a single
-iteration only, given the gradient and Hessian are correct.  However,
+iteration only.  However,
 this example has numerical issues when inverting
 near-singular Hessian.  One can easily check
 that when creating covariates in a less extreme scale,
 then the convergence is indeed immediate.
 
-While this is perhaps the most straightforward way to compute
+While using separate arguments \texttt{grad} and \texttt{hess}
+is perhaps the most straightforward way to supply
 gradients, \maxlik also supports gradient and Hessian supplied as
 log-likelihood attributes.  This is motivated by the fact that
 computing gradient often involves a number of similar computations as
@@ -362,7 +363,7 @@ gradient-only Broyden-Fletcher-Goldfarb-Shannon, ``BHHH'' for the
 information-equality based Berndt-Hall-Hall-Hausman, and ``NM'' for
 gradient-less Nelder-Mead.  Different optimizers may be based on a
 very different
-approach and certain concepts, such as \emph{iteration}, may mean
+approach, and certain concepts, such as \emph{iteration}, may mean
 quite different things.
 
 For instance, although Newton-Raphson is a simple, fast and intuitive
@@ -418,15 +419,17 @@ gradient:
 Hence we can approximate Hessian by the average outer product of the
 gradient.  Obviously, this is only an approximation, and it is less
 correct when we are far from the true value $\vec{\theta}_{0}$.  Note
-also that information equality relies on the assumption that the
-observations are independent, and may not work with data, such as time
-series, where this is not true.
+also that when approximating expected value with average we rely
+on the assumption that the
+observations are independent.  This may not be true for certain type
+of data, such as time
+series.
 
 However, in order to compute the average outer product, we need to
 compute gradient \emph{by observation}.  Hence it is not enough to
 just return a single gradient vector, we have to compute a matrix
 where rows correspond to individual data points and columns to the
-parameter components.  
+gradient components.  
 
 We demonstrate BHHH method by replicating the normal distribution
 example from above.  Remember,
@@ -587,7 +590,7 @@ three convergence tolerances:
 \end{description}
 Default tolerance values are typically good enough, but in certain cases one
 may want to adjust these.  For
-instance, in case our function values are very large, we may want to
+instance, in case of function values are very large, one may
 rely only on tolerance, and ignore relative tolerance and gradient
 tolerance criteria.  A simple way to achieve this is
 to set both \emph{reltol} and \emph{gradtol} to zero.  In that
@@ -651,8 +654,8 @@ prints an informative error message.
 \subsection{Maximizing other functions}
 \label{sec:maximizing-other-functions}
 
-The \verb|maxLik| function is mostly just a wrapper for a number of
-maximization algorithms, together with likelihood-related methods,
+\verb|maxLik| function is basically a wrapper around a number of
+maximization algorithms, and a set of likelihood-related methods,
 such as
 standard errors.  However, from time-to-time we need to optimize other
 functions where inverting the Hessian to compute standard errors is
@@ -667,7 +670,7 @@ the first argument is the function, and one also has to supply start
 values.
 
 Let us demonstrate this functionality by optimizing
-the 2-dimensional bell curve,
+2-dimensional bell curve,
 \begin{equation}
   \label{eq:2d-bell-curve}
   f(x, y) = \me^{-x^{2} - y^{2}}.
@@ -724,11 +727,12 @@ Hessian matrix.  It is instructive to test not just the whole matrix,
 but to do it column-by-column, and see where the number suddenly
 jumps.  This hints which variable does not play nicely with the rest
 of data.
-\verb|condiNumber| provides such functionality:
+\verb|condiNumber| provides such functionality.  First, we test the
+condition number of the design matrix: 
 <<>>=
 condiNumber(X)
 @ 
-First, we test the condition number of the design matrix.  We can see
+We can see
 that when only including $\vec{x}_{1}$ and $\vec{x}_{2}$ into the
 design, the condition number is 1.35, far from any singularity-related
 problems.  However, adding $\vec{x}_{3}$ to the matrix causes $\kappa$
@@ -765,7 +769,7 @@ x2 <- rnorm(100)
 x3 <- rnorm(100)
 X <- cbind(x1, x2, x3)
 y <- X %*% c(1, 1, 1) > 0
-                           # positive/negative y linearly separated
+                           # y values 1/0 linearly separated
 loglik <- function(beta) {
    link <- X %*% beta
    sum(ifelse(y > 0, plogis(link, log=TRUE),
@@ -803,10 +807,9 @@ the argument \verb|fixed|.  It must be an index vector,
 either numeric, such as \verb|c(2,4)|, logical as \verb|c(FALSE, TRUE, FALSE, TRUE)|, or
 character as \verb|c("beta2", "beta4")| given \verb|start| is a named
 vector.
-We demonstrate
-this with the first example of the vignette example where the task was
-to estimate the
-parameters for normal distribution.  However, this time we fix $\sigma
+We revisit
+the first example of this vignette and
+estimate the normal distribution parameters again.  However, this time we fix $\sigma
 = 1$:
 <<>>=
 x <- rnorm(100)
@@ -852,8 +855,7 @@ i.e. $\mat{A} = (1 \; 1)$ and $\vec{B} = -1$.  These values must be
 supplied to the optimizer argument \verb|constraints|.  This is a list
 with components names \verb|eqA| and \verb|eqB| for $\mat{A}$ and
 $\vec{B}$ accordingly.
-We choose not
-to demonstrate
+We do not demonstrate
 this with a likelihood example as no corrections to the Hessian matrix
 is done and hence the standard errors are incorrect.  But if you are
 not interested in likelihood-based inference, it works well:
@@ -933,9 +935,12 @@ constraint is now
   \begin{pmatrix}
     -1 \\ -1
   \end{pmatrix}
-  > \vec{0}
+  >
+  \begin{pmatrix}
+    0 \\ 0
+  \end{pmatrix}
 \end{equation}
-where ``>'' must be understood as an element-wise operation.
+where ``>'' must be understood as element-wise operation.
 We also have to ensure the initial value satisfies the constraint, so
 we choose $\vec{\theta}_{0} = (2, 0)$.  The code will be accordingly:
 <<>>=
