@@ -202,18 +202,21 @@ f <- function(theta) {
    exp(-x^2 - y^2)
                            # optimum at (0, 0)
 }
+## equality constraints
 A <- matrix(c(1, 1), ncol=2)
 B <- -1
 m <- maxNR(f, start=c(1,1),
            constraints=list(eqA=A, eqB=B))
 summary(m)
 
+## inequality constraints
 A <- matrix(c(1, 1), ncol=2)
 B <- -1
 m <- maxBFGS(f, start=c(1,1),
              constraints=list(ineqA=A, ineqB=B))
 summary(m)
 
+## multiple inequality constraints
 A <- matrix(c(1, 1, 1, -1), ncol=2)
 B <- c(-1, -1)
 m <- maxBFGS(f, start=c(2, 0),
