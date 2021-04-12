@@ -3,7 +3,7 @@
 \alias{glance.maxLik}
 \title{tidy and glance methods for maxLik objects}
 \description{
-  These methods return summary information about the esimate model.
+  These methods return summary information about the estimated model.
   Both require the \pkg{tibble} package to be installed.
 }
 \usage{
