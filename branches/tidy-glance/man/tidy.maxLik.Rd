@@ -39,7 +39,9 @@
 }
 \seealso{
   The functions \code{\link[generics:tidy]{tidy}} and
-  \code{\link[generics:glance]{glance}} in package \pkg{generics}.
+  \code{\link[generics:glance]{glance}} in package \pkg{generics}, and
+    \code{\link[=summary.maxLik]{summary}} to display the
+    \dQuote{standard} summary information.
 }
 \author{David Hugh-Jones}
 \examples{
