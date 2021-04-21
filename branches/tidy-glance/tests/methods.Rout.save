@@ -1,6 +1,6 @@
 
-R version 4.0.2 (2020-06-22) -- "Taking Off Again"
-Copyright (C) 2020 The R Foundation for Statistical Computing
+R version 4.0.5 (2021-03-31) -- "Shake and Throw"
+Copyright (C) 2021 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -189,6 +189,22 @@ storeParameters = FALSE
 > expect_equal(dim(vcov(a)), c(1,1), info="vcov 1D analytic correct")
 > expect_equal(length(stdEr(a)), 1, info="stdEr 1D analytic correct")
 > 
+> ## Various summary methods
+> ## These should work and produce consistent results
+> confint(a)
+     2.5 %   97.5 %
+1 1.688364 2.511528
+> glance(a)
+# A tibble: 1 x 4
+     df logLik   AIC  nobs
+  <int>  <dbl> <dbl> <int>
+1     1  -5.16  12.3    20
+> tidy(a)
+# A tibble: 1 x 5
+  term  estimate std.error statistic  p.value
+  <chr>    <dbl>     <dbl>     <dbl>    <dbl>
+1 1         2.10     0.210      10.0 1.52e-23
+> 
 > proc.time()
    user  system elapsed 
-  0.406   0.043   0.443 
+  1.135   0.044   1.176 

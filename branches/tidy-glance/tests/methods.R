@@ -57,3 +57,9 @@ expect_equal(length(stdEr(a)), 1, info="stdEr 1D numeric correct")
 a <- maxLik(loglik, gradlik, hesslik, start=1)
 expect_equal(dim(vcov(a)), c(1,1), info="vcov 1D analytic correct")
 expect_equal(length(stdEr(a)), 1, info="stdEr 1D analytic correct")
+
+## Various summary methods
+## These should work and produce consistent results
+confint(a)
+glance(a)
+tidy(a)
