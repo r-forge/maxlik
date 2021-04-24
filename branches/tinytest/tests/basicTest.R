@@ -12,7 +12,7 @@
 ### ii) maxBFGS()
 
 library(maxLik)
-library(testthat)
+library(tinytest)
 
 # log-likelihood function(s)
 logLL <- function(x, X)   # per observation for maxLik

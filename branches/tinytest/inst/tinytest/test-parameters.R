@@ -4,7 +4,7 @@
 ### ...
 ### 
 library(maxLik)
-library(testthat)
+library(tinytest)
 options(digits = 4)
                            # just to avoid so many differences when comparing these output files
 ## data to fit a normal distribution

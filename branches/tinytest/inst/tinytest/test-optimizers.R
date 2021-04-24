@@ -4,8 +4,15 @@
 ### * inequality constraints
 ### * equality constraints
 
+## do not run unless 'NOT_CRAN' explicitly defined
+## (Suggested by Sebastian Meyer and others)
+if (!identical(Sys.getenv("NOT_CRAN"), "true")) {
+    message("skipping slow optimizer tests")
+    q("no")
+}
+
 library(maxLik)
-library(testthat)
+library(tinytest)
 options(digits = 4)
                            # just to avoid so many differences when comparing these output files
 ## data to fit a normal distribution

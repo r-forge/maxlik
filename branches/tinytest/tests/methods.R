@@ -5,7 +5,7 @@
 ## * printing summary with max.columns, max.rows
 
 library(maxLik)
-require(testthat)
+require(tinytest)
 require(sandwich)
 set.seed(0)
 
