@@ -3,18 +3,29 @@
 ##
 ## ...
 ## * printing summary with max.columns, max.rows
-
+## 
+if(!requireNamespace("tinytest", quietly = TRUE)) {
+   message("These tests require 'tinytest' package\n")
+   q("no")
+}
+# require(sandwich)
 library(maxLik)
-require(tinytest)
-require(sandwich)
 set.seed(0)
+compareTolerance = 0.001
+                           # tolerance when comparing different optimizers
 
 ## Test standard methods for "lm"
 x <- runif(20)
 y <- x + rnorm(20)
 m <- lm(y ~ x)
-print(nObs(m))
-print(stdEr(m))
+expect_equal(
+   nObs(m), length(y),
+   info = "nObs.lm must be correct"
+)
+expect_equal(
+   stdEr(m),
+   c(`(Intercept)` = 0.357862322670879, x = 0.568707094458801)
+)
 
 ## Test maxControl methods:
 set.seed(9)
@@ -22,15 +33,17 @@ x <- rnorm(20, sd=2)
 ll1 <- function(par) dnorm(x, mean=par, sd=1, log=TRUE)
 ll2 <- function(par) dnorm(x, mean=par[1], sd=par[2], log=TRUE)
 for(method in c("NR", "BFGS", "BFGSR")) {
-   cat("-- method", method, "--\n")
    m <- maxLik(ll2, start=c(0, 2), method=method, control=list(iterlim=1))
    expect_equal(maxValue(m), -41.35, tolerance=0.01)
-   expect_true(is.vector(gradient(m)), info="'gradient' returns a vector")
+   expect_true(is.vector(gradient(m)),
+               info=paste0("'gradient' returns a vector for ", method))
    expect_equal(length(gradient(m)), 2, info="'gradient(m)' is of length 2")
    expect_true(is.matrix(estfun(m)), info="'estfun' returns a matrix")
    expect_equal(dim(estfun(m)), c(20,2), info="'estfun(m)' is 20x2 matrix")
-   cat("MaxControl structure:\n")
-   show(maxControl(m))
+   expect_stdout(
+      show(maxControl(m)),
+      pattern = "Adam_momentum2 = 0\\.999"
+   )
 }
 
 ## Test methods for non-likelihood optimization
@@ -60,6 +73,15 @@ expect_equal(length(stdEr(a)), 1, info="stdEr 1D analytic correct")
 
 ## Various summary methods
 ## These should work and produce consistent results
-confint(a)
-glance(a)
-tidy(a)
+expect_stdout(
+   show(confint(a)),
+   pattern = "2.5 %.*97.5 %\n[ .[:digit:]]+$"
+)
+expect_stdout(
+   show(glance(a)),
+   pattern = "df logLik   AIC  nobs.*1     1  -5.16  12.3    20"
+)
+expect_stdout(
+   show(tidy(a)),
+   pattern = "term.*estimate std.error statistic.*p.value"
+)

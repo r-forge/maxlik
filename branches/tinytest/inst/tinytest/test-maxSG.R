@@ -2,10 +2,16 @@
 ### 
 ### do not run unless 'NOT_CRAN' explicitly defined
 ### (Suggested by Sebastian Meyer and others)
-if (!identical(Sys.getenv("NOT_CRAN"), "true")) {
-    message("skipping slow optimizer tests")
+if(!identical(Sys.getenv("NOT_CRAN"), "true")) {
+    message("We are on CRAN: skipping slow optimizer tests")
     q("no")
 }
+if(!requireNamespace("tinytest", quietly = TRUE)) {
+   message("These tests require 'tinytest' package\n")
+   q("no")
+}
+library(maxLik)
+
 ### Test the following things:
 ###
 ### 1. basic 2-D SGA
@@ -24,8 +30,6 @@ if (!identical(Sys.getenv("NOT_CRAN"), "true")) {
 ### using highly unequally scaled data
 ###    SGA without gradient clipping (fails)
 ###    SGA with gradient clipping (works, although does not converge)
-
-library(maxLik)
 
 ## ---------- OLS 
 ## log-likelihood function(s):
