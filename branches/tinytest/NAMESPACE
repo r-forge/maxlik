@@ -27,16 +27,15 @@ export("storedValues")
 export("sumt")
 export( "tidy" )
 
+importFrom("generics", "glance", "tidy")
 importFrom("methods", "new", "show", "slot", "slot<-", "slotNames",
            "validObject")
 importFrom("miscTools", "nObs", "nParam", "sumKeepAttr")
-importFrom( "sandwich", "bread" )
 importFrom( "miscTools", "stdEr" )
-importFrom( "sandwich", "estfun" )
+importFrom( "sandwich", "bread", "estfun" )
 importFrom("stats", "coef", "logLik", "optim", "pnorm", "printCoefmat",
            "vcov", "AIC", "qnorm")
 importFrom("utils", "head", "str", "tail")
-importFrom("generics", "glance", "tidy")
 
 exportClasses("MaxControl")
 exportMethods("maxControl")

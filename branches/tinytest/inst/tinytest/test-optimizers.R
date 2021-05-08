@@ -236,27 +236,24 @@ expect_equal(
    returnMessage(mlM), returnMessage(ml)
 )
 
-## # with analytical gradients
-## mlg <- maxLik( llf, gf, start = startVal )
-## print( summary( mlg ), digits = 2 )
-## all.equal(coef(ml), coef(mlg), tolerance = 1e-3 )
-## all.equal(hessian(ml), hessian(mlg), tolerance = 1e-3 )
-## mlgInd <- maxLik( llfInd, gfInd, start = startVal )
-## all.equal( mlInd, mlgInd, tolerance = 1e-3 )
-## all.equal( mlg[ ], mlgInd[ -11 ], tolerance = 1e-3 )
-## round( mlgInd[[ 11 ]], 3 )
+## with analytical gradients
+## compare coefficients, Hessian
+mlg <- maxLik( llf, gf, start = startVal )
+expect_equal(coef(ml), coef(mlg), tol=tol)
+expect_equal(hessian(ml), hessian(mlg), tolerance = 1e-3)
+## gradient with individual components
+mlgInd <- maxLik( llfInd, gfInd, start = startVal )
+expect_equal(coef(mlInd), coef(mlgInd), tolerance = 1e-3)
+expect_equal(hessian(mlg), hessian(mlgInd), tolerance = 1e-3)
 
-## # with analytical gradients as attribute
-## mlG <- maxLik( llfGrad, start = startVal )
-## all.equal( mlG, mlg, tolerance = 1e-3 )
-## all.equal( mlG$gradient, gf( coef( mlG ) ), check.attributes = FALSE,
-##    tolerance = 1e-3 )
-## mlGInd <- maxLik( llfGradInd, start = startVal )
-## all.equal( mlGInd, mlgInd, tolerance = 1e-3 )
-## all.equal( mlGInd$gradient, colSums( gfInd( coef( mlGInd ) ) ),
-##    check.attributes = FALSE, tolerance = 1e-3 )
-## all.equal( mlGInd$gradientObs, gfInd( coef( mlGInd ) ),
-##    check.attributes = FALSE, tolerance = 1e-3 )
+## with analytical gradients as attribute
+mlG <- maxLik( llfGrad, start = startVal )
+expect_equal(coef(mlG), coef(mlg), tolerance = tol)
+expect_equivalent(gradient(mlG), gf( coef( mlG ) ), tolerance = tol)
+mlGInd <- maxLik( llfGradInd, start = startVal )
+expect_equal(coef(mlGInd), coef(mlgInd), tolerance = tol)
+expect_equivalent(gradient(mlGInd), colSums( gfInd( coef( mlGInd ) ) ), tolerance = tol)
+all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 
 ## # with analytical gradients as argument and attribute
 ## mlgG <- maxLik( llfGrad, gf, start = startVal )

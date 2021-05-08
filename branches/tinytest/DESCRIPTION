@@ -3,11 +3,11 @@ Version: 1.4-9
 Date: 2021-04-24
 Title: Maximum Likelihood Estimation and Related Tools
 Authors@R: c(person("Ott", "Toomet", role=c("aut", "cre"), email="otoomet@gmail.com"),
-	   person("Arne", "Henningsen", role=c("aut"), email="arne.henningsen@gmail.com"),
-	   person("Spencer", "Graves", role=c("ctb")),
-	   person("Yves", "Croissant", role=c("ctb")),
-	   person("David", "Hugh-Jones", role=c("ctb")),
-	   person("Luca", "Scrucca", role=c("ctb"))
+             person("Arne", "Henningsen", role=c("aut"), email="arne.henningsen@gmail.com"),
+             person("Spencer", "Graves", role=c("ctb")),
+             person("Yves", "Croissant", role=c("ctb")),
+             person("David", "Hugh-Jones", role=c("ctb")),
+             person("Luca", "Scrucca", role=c("ctb"))
 	   )
 Depends: R (>= 2.4.0), miscTools (>= 0.6-8), methods
 Imports: sandwich, generics
