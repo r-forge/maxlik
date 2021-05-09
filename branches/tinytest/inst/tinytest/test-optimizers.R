@@ -253,25 +253,24 @@ expect_equivalent(gradient(mlG), gf( coef( mlG ) ), tolerance = tol)
 mlGInd <- maxLik( llfGradInd, start = startVal )
 expect_equal(coef(mlGInd), coef(mlgInd), tolerance = tol)
 expect_equivalent(gradient(mlGInd), colSums( gfInd( coef( mlGInd ) ) ), tolerance = tol)
-all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
+expect_equivalent(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 
-## # with analytical gradients as argument and attribute
-## mlgG <- maxLik( llfGrad, gf, start = startVal )
-## all.equal( mlgG, mlg, tolerance = 1e-3 )
-## all.equal( mlgG, mlG, tolerance = 1e-3 )
+## with analytical gradients as argument and attribute
+expect_warning(mlgG <- maxLik( llfGrad, gf, start = startVal))
+expect_equal(coef(mlgG), coef(mlg), tolerance = tol)
 
-## # with analytical gradients and Hessians
+# with analytical gradients and Hessians
 ## mlgh <- maxLik( llf, gf, hf, start = startVal )
-## all.equal( mlg, mlgh, tolerance = 1e-3 )
+## expect_equal(coef(mlg), coef(mlgh), tolerance = tol)
 
 ## # with analytical gradients and Hessian as attribute
 ## mlGH <- maxLik( llfGradHess, start = startVal )
-## all.equal( mlGH, mlgh, tolerance = 1e-3 )
+## expect_equal( mlGH, mlgh, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessian as argument and attribute
 ## mlgGhH <- maxLik( llfGradHess, gf, hf, start = startVal )
-## all.equal( mlgGhH, mlgh, tolerance = 1e-3 )
-## all.equal( mlgGhH, mlGH, tolerance = 1e-3 )
+## expect_equal( mlgGhH, mlgh, tolerance = 1e-3 )
+## expect_equal( mlgGhH, mlGH, tolerance = 1e-3 )
 
 
 ## ## BHHH method
@@ -297,7 +296,7 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlBHHH )
 ## round( vcov( mlBHHH ), 3 )
 ## logLik( summary( mlBHHH ) )
-## all.equal( ml[-c(4,5,6,9,10) ], mlBHHH[ -c(4,5,6,9,10,11) ], tolerance = 1e-3 )
+## expect_equal( ml[-c(4,5,6,9,10) ], mlBHHH[ -c(4,5,6,9,10,11) ], tolerance = 1e-3 )
 ## round( mlBHHH[[ 11 ]], 3 )
 ## nObs( mlBHHH )
 ## # final Hessian = usual Hessian
@@ -324,16 +323,16 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## x <- xSaved
 ## mlgBHHH <- maxLik( llfInd, gfInd, start = startVal, method = "BHHH" )
 ## print( summary( mlgBHHH ), digits = 2 )
-## all.equal( mlBHHH, mlgBHHH, tolerance = 1e-3 )
-## all.equal( mlg[-c(4,5,6,9,10)], mlgBHHH[-c(4,5,6,9,10,11)], tolerance = 1e-3 )
+## expect_equal( mlBHHH, mlgBHHH, tolerance = 1e-3 )
+## expect_equal( mlg[-c(4,5,6,9,10)], mlgBHHH[-c(4,5,6,9,10,11)], tolerance = 1e-3 )
 ## round( mlgBHHH[[ 11 ]], 3 )
 ## mlgBHHH2 <- maxLik( llf, gfInd, start = startVal, method = "BHHH" )
-## all.equal( mlgBHHH, mlgBHHH2, tolerance = 1e-3 )
+## expect_equal( mlgBHHH, mlgBHHH2, tolerance = 1e-3 )
 ## # final Hessian = usual Hessian
 ## mlgBhhhH <- maxLik( llf, gfInd, start = startVal, method = "BHHH", 
 ##    finalHessian = TRUE )
-## all.equal( mlgBhhhH, mlBhhhH, tolerance = 1e-3 )
-## all.equal( mlgBhhhH[-4], mlgBHHH[-4], tolerance = 1e-3 )
+## expect_equal( mlgBhhhH, mlBhhhH, tolerance = 1e-3 )
+## expect_equal( mlgBhhhH[-4], mlgBHHH[-4], tolerance = 1e-3 )
 ## round( hessian( mlgBhhhH ), 1 )
 
 ## # with analytical gradients as attribute
@@ -346,38 +345,38 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## try( maxLik( llfGradInd, start = startVal, method = "BHHH" ) )
 ## x <- xSaved
 ## mlGBHHH <- maxLik( llfGradInd, start = startVal, method = "BHHH" )
-## all.equal( mlGBHHH, mlgBHHH, tolerance = 1e-3 )
+## expect_equal( mlGBHHH, mlgBHHH, tolerance = 1e-3 )
 ## # final Hessian = usual Hessian
 ## mlGBhhhH <- maxLik( llfGradInd, start = startVal, method = "BHHH", 
 ##    finalHessian = TRUE )
-## all.equal( mlGBhhhH, mlgBhhhH, tolerance = 1e-3 )
+## expect_equal( mlGBhhhH, mlgBhhhH, tolerance = 1e-3 )
 
 ## # with analytical gradients as argument and attribute
 ## mlgGBHHH <- maxLik( llfGradInd, gfInd, start = startVal, method = "BHHH" )
-## all.equal( mlgGBHHH, mlgBHHH, tolerance = 1e-3 )
-## all.equal( mlgGBHHH, mlGBHHH, tolerance = 1e-3 )
+## expect_equal( mlgGBHHH, mlgBHHH, tolerance = 1e-3 )
+## expect_equal( mlgGBHHH, mlGBHHH, tolerance = 1e-3 )
 
 ## # with unused Hessian
 ## mlghBHHH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH" )
-## all.equal( mlgBHHH, mlghBHHH, tolerance = 1e-3 )
+## expect_equal( mlgBHHH, mlghBHHH, tolerance = 1e-3 )
 ## # final Hessian = usual Hessian
 ## mlghBhhhH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH", 
 ##    finalHessian = TRUE )
-## all.equal( mlghBhhhH[-4], mlghBHHH[-4], tolerance = 1e-3 )
-## all.equal( mlghBhhhH, mlgBhhhH, tolerance = 1e-3 )
+## expect_equal( mlghBhhhH[-4], mlghBHHH[-4], tolerance = 1e-3 )
+## expect_equal( mlghBhhhH, mlgBhhhH, tolerance = 1e-3 )
 
 ## # with unused Hessian as attribute
 ## mlGHBHHH <- maxLik( llfGradHessInd, start = startVal, method = "BHHH" )
-## all.equal( mlGHBHHH, mlghBHHH, tolerance = 1e-3 )
+## expect_equal( mlGHBHHH, mlghBHHH, tolerance = 1e-3 )
 ## # final Hessian = usual Hessian
 ## mlGHBhhhH <- maxLik( llfGradHessInd, start = startVal, method = "BHHH", 
 ##    finalHessian = TRUE )
-## all.equal( mlGHBhhhH, mlghBhhhH, tolerance = 1e-3 )
+## expect_equal( mlGHBhhhH, mlghBhhhH, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessian as argument and attribute
 ## mlgGhHBHHH <- maxLik( llfGradHessInd, gfInd, hf, start = startVal, method = "BHHH" )
-## all.equal( mlgGhHBHHH, mlghBHHH, tolerance = 1e-3 )
-## all.equal( mlgGhHBHHH, mlGHBHHH, tolerance = 1e-3 )
+## expect_equal( mlgGhHBHHH, mlghBHHH, tolerance = 1e-3 )
+## expect_equal( mlgGhHBHHH, mlGHBHHH, tolerance = 1e-3 )
 
 
 
@@ -399,47 +398,47 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlBFGSYC )
 ## round( vcov( mlBFGSYC ), 3 )
 ## logLik( summary( mlBFGSYC ) )
-## all.equal( ml[-c(3,4,5,6,9,10)], mlBFGSYC[-c(3,4,5,6,9,10)], tolerance = 1e-3 )
-## all.equal( ml[-c(5,6,9,10)], mlBFGSYC[-c(5,6,9,10)], tolerance = 1e-2 )
+## expect_equal( ml[-c(3,4,5,6,9,10)], mlBFGSYC[-c(3,4,5,6,9,10)], tolerance = 1e-3 )
+## expect_equal( ml[-c(5,6,9,10)], mlBFGSYC[-c(5,6,9,10)], tolerance = 1e-2 )
 ## mlIndBFGSYC <- maxLik( llfInd, start = startVal, method = "BFGSR" )
 ## print( summary( mlIndBFGSYC ), digits = 2 )
-## all.equal( mlBFGSYC[-c(3,4,9)], mlIndBFGSYC[ -c(3,4,9,11) ], tolerance = 1e-3 )
+## expect_equal( mlBFGSYC[-c(3,4,9)], mlIndBFGSYC[ -c(3,4,9,11) ], tolerance = 1e-3 )
 ## round( mlIndBFGSYC[[ 11 ]], 3 )
 ## nObs( mlIndBFGSYC )
 
 ## # with analytical gradients
 ## mlgBFGSYC <- maxLik( llf, gf, start = startVal, method = "BFGSR" , print.level=1)
 ## print( summary(mlgBFGSYC), digits = 2 )
-## all.equal( mlBFGSYC[-4], mlgBFGSYC[-4], tolerance = 1e-3 )
+## expect_equal( mlBFGSYC[-4], mlgBFGSYC[-4], tolerance = 1e-3 )
 ## mlgIndBFGSYC <- maxLik( llfInd, gfInd, start = startVal,
 ##    method = "BFGSR" )
-## all.equal( mlIndBFGSYC, mlgIndBFGSYC, tolerance = 1e-3 )
-## all.equal( mlgBFGSYC[ -c(3,9) ], mlgIndBFGSYC[ -c(3,9,11) ], tolerance = 1e-3 )
+## expect_equal( mlIndBFGSYC, mlgIndBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlgBFGSYC[ -c(3,9) ], mlgIndBFGSYC[ -c(3,9,11) ], tolerance = 1e-3 )
 ## round( mlgIndBFGSYC[[ 11 ]], 3 )
 
 ## # with analytical gradients as attribute
 ## mlGBFGSYC <- maxLik( llfGrad, start = startVal, method = "BFGSR" , print.level=1)
-## all.equal( mlGBFGSYC, mlgBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlGBFGSYC, mlgBFGSYC, tolerance = 1e-3 )
 ## mlGIndBFGSYC <- maxLik( llfGradInd, start = startVal, method = "BFGSR" )
-## all.equal( mlGIndBFGSYC, mlgIndBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlGIndBFGSYC, mlgIndBFGSYC, tolerance = 1e-3 )
 
 ## # with analytical gradients as argument and attribute
 ## mlgGBFGSYC <- maxLik( llfGrad, gf, start = startVal, method = "BFGSR" )
-## all.equal( mlgGBFGSYC, mlgBFGSYC, tolerance = 1e-3 )
-## all.equal( mlgGBFGSYC, mlGBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlgGBFGSYC, mlgBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlgGBFGSYC, mlGBFGSYC, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessians
 ## mlghBFGSYC <- maxLik( llf, gf, hf, start = startVal, method = "BFGSR" )
-## all.equal( mlgBFGSYC, mlghBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlgBFGSYC, mlghBFGSYC, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessian as attribute
 ## mlGHBFGSYC <- maxLik( llfGradHess, start = startVal, method = "BFGSR" )
-## all.equal( mlGHBFGSYC, mlghBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlGHBFGSYC, mlghBFGSYC, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessian as argument and attribute
 ## mlgGhHBFGSYC <- maxLik( llfGradHess, gf, hf, start = startVal, method = "BFGSR" )
-## all.equal( mlgGhHBFGSYC, mlghBFGSYC, tolerance = 1e-3 )
-## all.equal( mlgGhHBFGSYC, mlGHBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlgGhHBFGSYC, mlghBFGSYC, tolerance = 1e-3 )
+## expect_equal( mlgGhHBFGSYC, mlGHBFGSYC, tolerance = 1e-3 )
 
 
 ## ## BFGS method
@@ -459,46 +458,46 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlBFGS )
 ## round( vcov( mlBFGS ), 3 )
 ## logLik( summary( mlBFGS ) )
-## all.equal( ml[-c(4,5,6,9,10)], mlBFGS[-c(4,5,6,9,10,11)], tolerance = 1e-3 )
+## expect_equal( ml[-c(4,5,6,9,10)], mlBFGS[-c(4,5,6,9,10,11)], tolerance = 1e-3 )
 ## # with individual log likelihood values
 ## mlIndBFGS <- maxLik( llfInd, start = startVal, method = "BFGS" )
 ## print( summary( mlIndBFGS ), digits = 2 )
-## all.equal( mlBFGS[-4], mlIndBFGS[-c(4,12)], tolerance = 1e-3 )
+## expect_equal( mlBFGS[-4], mlIndBFGS[-c(4,12)], tolerance = 1e-3 )
 ## mlIndBFGS[12]
 ## nObs( mlIndBFGS )
 
 ## # with analytical gradients
 ## mlgBFGS <- maxLik( llf, gf, start = startVal, method = "BFGS" )
 ## print( summary( mlgBFGS ), digits = 2 )
-## all.equal( mlBFGS[-4], mlgBFGS[-4], tolerance = 1e-3 )
-## all.equal( mlg[-c(5,6,9,10)], mlgBFGS[-c(5,6,9,10,11)], tolerance = 1e-3 )
+## expect_equal( mlBFGS[-4], mlgBFGS[-4], tolerance = 1e-3 )
+## expect_equal( mlg[-c(5,6,9,10)], mlgBFGS[-c(5,6,9,10,11)], tolerance = 1e-3 )
 ## mlgIndBFGS <- maxLik( llfInd, gfInd, start = startVal, method = "BFGS" )
-## all.equal( mlgBFGS[], mlgIndBFGS[-12], tolerance = 1e-3 )
+## expect_equal( mlgBFGS[], mlgIndBFGS[-12], tolerance = 1e-3 )
 ## mlgIndBFGS[12]
 
 ## # with analytical gradients as attribute
 ## mlGBFGS <- maxLik( llfGrad, start = startVal, method = "BFGS" )
-## all.equal( mlGBFGS, mlgBFGS, tolerance = 1e-3 )
+## expect_equal( mlGBFGS, mlgBFGS, tolerance = 1e-3 )
 ## mlGIndBFGS <- maxLik( llfGradInd, start = startVal, method = "BFGS" )
-## all.equal( mlGIndBFGS, mlgIndBFGS, tolerance = 1e-3 )
+## expect_equal( mlGIndBFGS, mlgIndBFGS, tolerance = 1e-3 )
 
 ## # with analytical gradients as argument and attribute
 ## mlgGBFGS <- maxLik( llfGrad, gf, start = startVal, method = "BFGS" )
-## all.equal( mlgGBFGS, mlgBFGS, tolerance = 1e-3 )
-## all.equal( mlgGBFGS, mlGBFGS, tolerance = 1e-3 )
+## expect_equal( mlgGBFGS, mlgBFGS, tolerance = 1e-3 )
+## expect_equal( mlgGBFGS, mlGBFGS, tolerance = 1e-3 )
 
 ## # with unused Hessian
 ## mlghBFGS <- maxLik( llf, gf, hf, start = startVal, method = "BFGS" )
-## all.equal( mlgBFGS, mlghBFGS, tolerance = 1e-3 )
+## expect_equal( mlgBFGS, mlghBFGS, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessian as attribute
 ## mlGHBFGS <- maxLik( llfGradHess, start = startVal, method = "BFGS" )
-## all.equal( mlGHBFGS, mlghBFGS, tolerance = 1e-3 )
+## expect_equal( mlGHBFGS, mlghBFGS, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessian as argument and attribute
 ## mlgGhHBFGS <- maxLik( llfGradHess, gf, hf, start = startVal, method = "BFGS" )
-## all.equal( mlgGhHBFGS, mlghBFGS, tolerance = 1e-3 )
-## all.equal( mlgGhHBFGS, mlGHBFGS, tolerance = 1e-3 )
+## expect_equal( mlgGhHBFGS, mlghBFGS, tolerance = 1e-3 )
+## expect_equal( mlgGhHBFGS, mlGHBFGS, tolerance = 1e-3 )
 
 
 ## ## NM method
@@ -518,38 +517,38 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlNM )
 ## round( vcov( mlNM ), 3 )
 ## logLik( summary( mlNM ) )
-## all.equal( ml[-c(3,4,5,6,9,10)], mlNM[-c(3,4,5,6,9,10,11)], tolerance = 1e-3 )
+## expect_equal( ml[-c(3,4,5,6,9,10)], mlNM[-c(3,4,5,6,9,10,11)], tolerance = 1e-3 )
 ## # with individual log likelihood values
 ## mlIndNM <- maxLik( llfInd, start = startVal, method = "NM" )
 ## print( summary( mlIndNM ), digits = 2 )
-## all.equal( mlNM[-4], mlIndNM[-c(4,12)], tolerance = 1e-3 )
+## expect_equal( mlNM[-4], mlIndNM[-c(4,12)], tolerance = 1e-3 )
 ## mlIndNM[12]
 ## nObs( mlIndNM )
 
 ## # with unused analytical gradients
 ## mlgNM <- maxLik( llf, gf, start = startVal, method = "NM" )
 ## print( summary( mlgNM ), digits = 2 )
-## all.equal( mlNM[-4], mlgNM[-4], tolerance = 1e-3 )
+## expect_equal( mlNM[-4], mlgNM[-4], tolerance = 1e-3 )
 ## # with individual log likelihood values and gradients
 ## mlgIndNM <- maxLik( llfInd, gfInd, start = startVal, method = "NM" )
 ## print( summary( mlgIndNM ), digits = 2 )
-## all.equal( mlgNM[], mlgIndNM[-12], tolerance = 1e-3 )
+## expect_equal( mlgNM[], mlgIndNM[-12], tolerance = 1e-3 )
 ## mlgIndNM[12]
 
 ## # with (unused) analytical gradients as attribute
 ## mlGNM <- maxLik( llfGrad, start = startVal, method = "NM" )
-## all.equal( mlGNM, mlgNM, tolerance = 1e-3 )
+## expect_equal( mlGNM, mlgNM, tolerance = 1e-3 )
 ## mlGIndNM <- maxLik( llfGradInd, start = startVal, method = "NM" )
-## all.equal( mlGIndNM, mlgIndNM, tolerance = 1e-3 )
+## expect_equal( mlGIndNM, mlgIndNM, tolerance = 1e-3 )
 
 ## # with analytical gradients as argument and attribute
 ## mlgGNM <- maxLik( llfGrad, gf, start = startVal, method = "NM" )
-## all.equal( mlgGNM, mlgNM, tolerance = 1e-3 )
-## all.equal( mlgGNM, mlGNM, tolerance = 1e-3 )
+## expect_equal( mlgGNM, mlgNM, tolerance = 1e-3 )
+## expect_equal( mlgGNM, mlGNM, tolerance = 1e-3 )
 
 ## # with unused analytical gradients and Hessian
 ## mlghNM <- maxLik( llf, gf, hf, start = startVal, method = "NM" )
-## all.equal( mlgNM, mlghNM, tolerance = 1e-3 )
+## expect_equal( mlgNM, mlghNM, tolerance = 1e-3 )
 
 
 ## ## SANN method
@@ -569,35 +568,35 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlSANN )
 ## round( vcov( mlSANN ), 3 )
 ## logLik( summary( mlSANN ) )
-## all.equal( ml[-c(3,4,5,6,9,10)], mlSANN[-c(3,4,5,6,9,10,11)], tolerance = 1e-3 )
+## expect_equal( ml[-c(3,4,5,6,9,10)], mlSANN[-c(3,4,5,6,9,10,11)], tolerance = 1e-3 )
 ## # with individual log likelihood values
 ## mlIndSANN <- maxLik( llfInd, start = startVal, method = "SANN" )
 ## print( summary( mlIndSANN ), digits = 2 )
-## all.equal( mlSANN[-4], mlIndSANN[-c(4,12)], tolerance = 1e-3 )
+## expect_equal( mlSANN[-4], mlIndSANN[-c(4,12)], tolerance = 1e-3 )
 ## mlIndSANN[12]
 ## nObs( mlIndSANN )
 
 ## # with unused analytical gradients
 ## mlgSANN <- maxLik( llf, gf, start = startVal, method = "SANN" )
 ## print( summary( mlgSANN ), digits = 2 )
-## all.equal( mlSANN[-4], mlgSANN[-4], tolerance = 1e-3 )
+## expect_equal( mlSANN[-4], mlgSANN[-4], tolerance = 1e-3 )
 ## # with individual log likelihood values and gradients
 ## mlgIndSANN <- maxLik( llfInd, gfInd, start = startVal, method = "SANN" )
 ## print( summary( mlgIndSANN ), digits = 2 )
-## all.equal( mlgSANN[], mlgIndSANN[-12], tolerance = 1e-3 )
+## expect_equal( mlgSANN[], mlgIndSANN[-12], tolerance = 1e-3 )
 ## mlgIndSANN[12]
 
 ## # with unused analytical gradients and Hessian
 ## mlghSANN <- maxLik( llf, gf, hf, start = startVal, method = "SANN" )
-## all.equal( mlgSANN, mlghSANN, tolerance = 1e-3 )
+## expect_equal( mlgSANN, mlghSANN, tolerance = 1e-3 )
 
 ## # with a user-specified function to generate a new candidate point
 ## mlSANNCand <- maxLik( llf, start = startVal, method = "SANN",
 ##    cand = function(x) c(rnorm(1, x[1]), rnorm(1, x[2])) )
 ## print( summary( mlSANNCand ), digits = 2 )
-## all.equal(coef(mlSANNCand), coef(mlSANN), tolerance = 1e-2 )
-## all.equal(stdEr(mlSANNCand), stdEr(mlSANN), tolerance = 1e-2 )
-## all.equal(hessian(mlSANNCand), hessian(mlSANN), tolerance = 1e-2 )
+## expect_equal(coef(mlSANNCand), coef(mlSANN), tolerance = 1e-2 )
+## expect_equal(stdEr(mlSANNCand), stdEr(mlSANN), tolerance = 1e-2 )
+## expect_equal(hessian(mlSANNCand), hessian(mlSANN), tolerance = 1e-2 )
 
 
 ## ## CG method
@@ -632,13 +631,13 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## ## NR method with fixed parameters
 ## mlFix <- maxLik( llf, start = startValFix, activePar = !isFixed )
 ## mlFix1 <- maxLik( llf, start = startValFix, activePar = 2 )
-## all.equal( mlFix, mlFix1, tolerance = 1e-3 )
+## expect_equal( mlFix, mlFix1, tolerance = 1e-3 )
 ## mlFix2 <- maxLik( llf, start = startValFix, fixed = isFixed )
-## all.equal( mlFix, mlFix2, tolerance = 1e-3 )
+## expect_equal( mlFix, mlFix2, tolerance = 1e-3 )
 ## mlFix3 <- maxLik( llf, start = startValFix, fixed = "mu" )
-## all.equal( mlFix, mlFix3, tolerance = 1e-3 )
+## expect_equal( mlFix, mlFix3, tolerance = 1e-3 )
 ## mlFix4 <- maxLik( llf, start = startValFix, fixed = 1 )
-## all.equal( mlFix, mlFix4, tolerance = 1e-3 )
+## expect_equal( mlFix, mlFix4, tolerance = 1e-3 )
 ## print( mlFix )
 ## print( summary( mlFix ), digits = 2 )
 ## activePar( mlFix )
@@ -656,15 +655,15 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## logLik( summary( mlFix ) )
 ## mlIndFix <- maxLik( llfInd, start = startValFix, activePar = !isFixed )
 ## mlIndFix1 <- maxLik( llfInd, start = startValFix, activePar = 2 )
-## all.equal( mlIndFix, mlIndFix1, tolerance = 1e-3 )
+## expect_equal( mlIndFix, mlIndFix1, tolerance = 1e-3 )
 ## mlIndFix2 <- maxLik( llfInd, start = startValFix, fixed = isFixed )
-## all.equal( mlIndFix, mlIndFix2, tolerance = 1e-3 )
+## expect_equal( mlIndFix, mlIndFix2, tolerance = 1e-3 )
 ## mlIndFix3 <- maxLik( llfInd, start = startValFix, fixed = "mu" )
-## all.equal( mlIndFix, mlIndFix3, tolerance = 1e-3 )
+## expect_equal( mlIndFix, mlIndFix3, tolerance = 1e-3 )
 ## mlIndFix4 <- maxLik( llfInd, start = startValFix, fixed = 1 )
-## all.equal( mlIndFix, mlIndFix4, tolerance = 1e-3 )
+## expect_equal( mlIndFix, mlIndFix4, tolerance = 1e-3 )
 ## print( summary( mlIndFix ), digits = 2 )
-## all.equal( mlFix[ ], mlIndFix[ -11 ], tolerance = 1e-3 )
+## expect_equal( mlFix[ ], mlIndFix[ -11 ], tolerance = 1e-3 )
 ## round( mlFix[[3]], 5 )
 ## round( mlIndFix[[3]], 5 )
 ## round( mlIndFix[[ 11 ]], 3 )
@@ -673,18 +672,18 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## # with analytical gradients
 ## mlgFix <- maxLik( llf, gf, start = startValFix, activePar = !isFixed )
 ## mlgFix1 <- maxLik( llf, gf, start = startValFix, activePar = 2 )
-## all.equal( mlgFix, mlgFix1, tolerance = 1e-3 )
+## expect_equal( mlgFix, mlgFix1, tolerance = 1e-3 )
 ## mlgFix2 <- maxLik( llf, gf, start = startValFix, fixed = isFixed )
-## all.equal( mlgFix, mlgFix2, tolerance = 1e-3 )
+## expect_equal( mlgFix, mlgFix2, tolerance = 1e-3 )
 ## print( summary( mlgFix ), digits = 2 )
 ## mlgIndFix <- maxLik( llfInd, gfInd, start = startValFix, activePar = !isFixed )
-## all.equal( mlIndFix, mlgIndFix, tolerance = 1e-3 )
-## all.equal( mlgFix[ ], mlgIndFix[ -11 ], tolerance = 1e-3 )
+## expect_equal( mlIndFix, mlgIndFix, tolerance = 1e-3 )
+## expect_equal( mlgFix[ ], mlgIndFix[ -11 ], tolerance = 1e-3 )
 ## round( mlgIndFix[[ 11 ]], 3 )
 
 ## # with analytical gradients and Hessians
 ## mlghFix <- maxLik( llf, gf, hf, start = startValFix, activePar = !isFixed )
-## all.equal( mlgFix, mlghFix, tolerance = 1e-3 )
+## expect_equal( mlgFix, mlghFix, tolerance = 1e-3 )
 ## mlgFix[[4]]
 ## mlghFix[[4]]
 
@@ -693,16 +692,16 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ##    method = "BHHH" )
 ## mlFixBHHH1 <- maxLik( llfInd, start = startValFix, activePar = 2,
 ##    method = "BHHH" )
-## all.equal( mlFixBHHH, mlFixBHHH1, tolerance = 1e-3 )
+## expect_equal( mlFixBHHH, mlFixBHHH1, tolerance = 1e-3 )
 ## mlFixBHHH2 <- maxLik( llfInd, start = startValFix, fixed = isFixed,
 ##    method = "BHHH" )
-## all.equal( mlFixBHHH, mlFixBHHH2, tolerance = 1e-3 )
+## expect_equal( mlFixBHHH, mlFixBHHH2, tolerance = 1e-3 )
 ## mlFixBHHH3 <- maxLik( llfInd, start = startValFix, fixed = "mu",
 ##    method = "BHHH" )
-## all.equal( mlFixBHHH, mlFixBHHH3, tolerance = 1e-3 )
+## expect_equal( mlFixBHHH, mlFixBHHH3, tolerance = 1e-3 )
 ## mlFixBHHH4 <- maxLik( llfInd, start = startValFix, fixed = 1,
 ##    method = "BHHH" )
-## all.equal( mlFixBHHH, mlFixBHHH4, tolerance = 1e-3 )
+## expect_equal( mlFixBHHH, mlFixBHHH4, tolerance = 1e-3 )
 ## print( mlFixBHHH )
 ## print( summary( mlFixBHHH ), digits = 2 )
 ## activePar( mlFixBHHH )
@@ -718,7 +717,7 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlFixBHHH )
 ## round( vcov( mlFixBHHH ), 3 )
 ## logLik( summary( mlFixBHHH ) )
-## all.equal( mlFix[ -c( 4, 5, 6, 9, 10 ) ], mlFixBHHH[ -c( 4, 5, 6, 9, 10, 11 ) ],
+## expect_equal( mlFix[ -c( 4, 5, 6, 9, 10 ) ], mlFixBHHH[ -c( 4, 5, 6, 9, 10, 11 ) ],
 ##    tolerance = 1e-3 )
 ## round( mlFixBHHH[[ 11 ]], 3 )
 ## nObs( mlFixBHHH )
@@ -728,36 +727,36 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ##    method = "BHHH" )
 ## mlgFixBHHH1 <- maxLik( llfInd, gfInd, start = startValFix, activePar = 2,
 ##    method = "BHHH" )
-## all.equal( mlgFixBHHH, mlgFixBHHH1, tolerance = 1e-3 )
+## expect_equal( mlgFixBHHH, mlgFixBHHH1, tolerance = 1e-3 )
 ## mlgFixBHHH2 <- maxLik( llfInd, gfInd, start = startValFix, fixed = isFixed,
 ##    method = "BHHH" )
-## all.equal( mlgFixBHHH, mlgFixBHHH2, tolerance = 1e-3 )
+## expect_equal( mlgFixBHHH, mlgFixBHHH2, tolerance = 1e-3 )
 ## mlgFixBHHH3 <- maxLik( llfInd, gfInd, start = startValFix, fixed = "mu",
 ##    method = "BHHH" )
-## all.equal( mlgFixBHHH, mlgFixBHHH3, tolerance = 1e-3 )
+## expect_equal( mlgFixBHHH, mlgFixBHHH3, tolerance = 1e-3 )
 ## mlgFixBHHH4 <- maxLik( llfInd, gfInd, start = startValFix, fixed = 1,
 ##    method = "BHHH" )
-## all.equal( mlgFixBHHH, mlgFixBHHH4, tolerance = 1e-3 )
+## expect_equal( mlgFixBHHH, mlgFixBHHH4, tolerance = 1e-3 )
 ## print( summary( mlgFixBHHH ), digits = 2 )
-## all.equal( mlFixBHHH, mlgFixBHHH, tolerance = 1e-3 )
+## expect_equal( mlFixBHHH, mlgFixBHHH, tolerance = 1e-3 )
 ## mlgFixBHHH2 <- maxLik( llf, gfInd, start = startValFix, activePar = !isFixed,
 ##    method = "BHHH")
-## all.equal( mlgFixBHHH, mlgFixBHHH2, tolerance = 1e-3 )
+## expect_equal( mlgFixBHHH, mlgFixBHHH2, tolerance = 1e-3 )
 
 ## # with unused Hessians
 ## mlghFixBHHH <- maxLik( llfInd, gfInd, hf, start = startValFix, activePar = !isFixed,
 ##    method = "BHHH" )
-## all.equal( mlgFixBHHH, mlghFixBHHH, tolerance = 1e-3 )
+## expect_equal( mlgFixBHHH, mlghFixBHHH, tolerance = 1e-3 )
 
 ## ## BFGS method with fixed parameters
 ## mlFixBfgs <- maxLik( llf, start = startValFix, fixed = isFixed,
 ##    method = "BFGS" )
 ## mlFixBfgs3 <- maxLik( llf, start = startValFix, fixed = "mu",
 ##    method = "BFGS" )
-## all.equal( mlFixBfgs, mlFixBfgs3, tolerance = 1e-3 )
+## expect_equal( mlFixBfgs, mlFixBfgs3, tolerance = 1e-3 )
 ## mlFixBfgs4 <- maxLik( llf, start = startValFix, fixed = 1,
 ##    method = "BFGS" )
-## all.equal( mlFixBfgs, mlFixBfgs4, tolerance = 1e-3 )
+## expect_equal( mlFixBfgs, mlFixBfgs4, tolerance = 1e-3 )
 ## print( mlFixBfgs )
 ## print( summary( mlFixBfgs ), digits = 2 )
 ## activePar( mlFixBfgs )
@@ -773,19 +772,19 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlFixBfgs )
 ## round( vcov( mlFixBfgs ), 3 )
 ## logLik( summary( mlFixBfgs ) )
-## all.equal( mlghFix[ -c( 5, 6, 9, 10 ) ], mlFixBfgs[ -c( 5, 6, 9, 10, 11 ) ],
+## expect_equal( mlghFix[ -c( 5, 6, 9, 10 ) ], mlFixBfgs[ -c( 5, 6, 9, 10, 11 ) ],
 ##    tolerance = 1e-3 )
 ## mlIndFixBfgs <- maxLik( llfInd, start = startValFix, fixed = isFixed,
 ##    method = "BFGS" )
-## all.equal( mlFixBfgs[-c(4,9)], mlIndFixBfgs[ -c(4,9,12) ], tolerance = 1e-3 )
+## expect_equal( mlFixBfgs[-c(4,9)], mlIndFixBfgs[ -c(4,9,12) ], tolerance = 1e-3 )
 ## print(formatC(mlIndFixBfgs$gradientObs, format="f", digits=4, width=7), quote=FALSE)
 ##                            # print fradient, only 4 digits to avoid clutter in R CMD tests
 ## mlIndFixBfgs3 <- maxLik( llfInd, start = startValFix, fixed = "mu",
 ##    method = "BFGS" )
-## all.equal( mlIndFixBfgs, mlIndFixBfgs3, tolerance = 1e-3 )
+## expect_equal( mlIndFixBfgs, mlIndFixBfgs3, tolerance = 1e-3 )
 ## mlIndFixBfgs4 <- maxLik( llfInd, start = startValFix, fixed = 1,
 ##    method = "BFGS" )
-## all.equal( mlIndFixBfgs, mlIndFixBfgs4, tolerance = 1e-3 )
+## expect_equal( mlIndFixBfgs, mlIndFixBfgs4, tolerance = 1e-3 )
 ## nObs( mlIndFixBfgs )
 
 ## # with analytical gradients
@@ -793,43 +792,43 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ##    method = "BFGS" )
 ## mlgFixBfgs3 <- maxLik( llf, gf, start = startValFix, fixed = "mu",
 ##    method = "BFGS" )
-## all.equal( mlgFixBfgs, mlgFixBfgs3, tolerance = 1e-3 )
+## expect_equal( mlgFixBfgs, mlgFixBfgs3, tolerance = 1e-3 )
 ## mlgFixBfgs4 <- maxLik( llf, gf, start = startValFix, fixed = 1,
 ##    method = "BFGS" )
-## all.equal( mlgFixBfgs, mlgFixBfgs4, tolerance = 1e-3 )
+## expect_equal( mlgFixBfgs, mlgFixBfgs4, tolerance = 1e-3 )
 ## print( summary( mlgFixBfgs ), digits = 2 )
-## all.equal( mlFixBfgs[ -9 ], mlgFixBfgs[ -9 ], tolerance = 1e-3 )
+## expect_equal( mlFixBfgs[ -9 ], mlgFixBfgs[ -9 ], tolerance = 1e-3 )
 ## mlgIndFixBfgs <- maxLik( llfInd, gfInd, start = startValFix, fixed = isFixed,
 ##    method = "BFGS")
-## all.equal( mlgFixBfgs[ ], mlgIndFixBfgs[ -12 ], tolerance = 1e-3 )
+## expect_equal( mlgFixBfgs[ ], mlgIndFixBfgs[ -12 ], tolerance = 1e-3 )
 ## round( mlgIndFixBfgs[[ 12 ]], 3 )
 ## mlgIndFixBfgs3 <- maxLik( llfInd, gfInd, start = startValFix, fixed = "mu",
 ##    method = "BFGS" )
-## all.equal( mlgIndFixBfgs, mlgIndFixBfgs3, tolerance = 1e-3 )
+## expect_equal( mlgIndFixBfgs, mlgIndFixBfgs3, tolerance = 1e-3 )
 ## mlgIndFixBfgs4 <- maxLik( llfInd, gfInd, start = startValFix, fixed = 1,
 ##    method = "BFGS" )
-## all.equal( mlgIndFixBfgs, mlgIndFixBfgs4, tolerance = 1e-3 )
+## expect_equal( mlgIndFixBfgs, mlgIndFixBfgs4, tolerance = 1e-3 )
 
 ## # with unused Hessians
 ## mlghFixBfgs <- maxLik( llf, gf, hf, start = startValFix, fixed = isFixed,
 ##    method = "BFGS" )
-## all.equal( mlgFixBfgs, mlghFixBfgs, tolerance = 1e-3 )
+## expect_equal( mlgFixBfgs, mlghFixBfgs, tolerance = 1e-3 )
 ## mlghFixBfgs3 <- maxLik( llf, gf, hf, start = startValFix, fixed = "mu",
 ##    method = "BFGS" )
-## all.equal( mlghFixBfgs, mlghFixBfgs3, tolerance = 1e-3 )
+## expect_equal( mlghFixBfgs, mlghFixBfgs3, tolerance = 1e-3 )
 ## mlghFixBfgs4 <- maxLik( llf, gf, hf, start = startValFix, fixed = 1,
 ##    method = "BFGS" )
-## all.equal( mlghFixBfgs, mlghFixBfgs4, tolerance = 1e-3 )
+## expect_equal( mlghFixBfgs, mlghFixBfgs4, tolerance = 1e-3 )
 
 ## ## NM method with fixed parameters
 ## mlFixNm <- maxLik( llf, start = startValFix, fixed = isFixed,
 ##    method = "NM" )
 ## mlFixNm3 <- maxLik( llf, start = startValFix, fixed = "mu",
 ##    method = "NM" )
-## all.equal( mlFixNm, mlFixNm3, tolerance = 1e-3 )
+## expect_equal( mlFixNm, mlFixNm3, tolerance = 1e-3 )
 ## mlFixNm4 <- maxLik( llf, start = startValFix, fixed = 1,
 ##    method = "NM" )
-## all.equal( mlFixNm, mlFixNm4, tolerance = 1e-3 )
+## expect_equal( mlFixNm, mlFixNm4, tolerance = 1e-3 )
 ## print( mlFixNm )
 ## print( summary( mlFixNm ), digits = 2 )
 ## activePar( mlFixNm )
@@ -845,17 +844,17 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlFixNm )
 ## round( vcov( mlFixNm ), 3 )
 ## logLik( summary( mlFixNm ) )
-## all.equal( mlFixBfgs[ -c(4,9,10) ], mlFixNm[ -c(4,9,10) ], tolerance = 1e-3 )
+## expect_equal( mlFixBfgs[ -c(4,9,10) ], mlFixNm[ -c(4,9,10) ], tolerance = 1e-3 )
 ## mlIndFixNm <- maxLik( llfInd, start = startValFix, fixed = isFixed,
 ##    method = "NM" )
-## all.equal( mlFixNm[-4], mlIndFixNm[-c(4,12)], tolerance = 1e-3 )
+## expect_equal( mlFixNm[-4], mlIndFixNm[-c(4,12)], tolerance = 1e-3 )
 ## round( mlIndFixNm[[ 12 ]], 3 )
 ## mlIndFixNm3 <- maxLik( llfInd, start = startValFix, fixed = "mu",
 ##    method = "NM" )
-## all.equal( mlIndFixNm, mlIndFixNm3, tolerance = 1e-3 )
+## expect_equal( mlIndFixNm, mlIndFixNm3, tolerance = 1e-3 )
 ## mlIndFixNm4 <- maxLik( llfInd, start = startValFix, fixed = 1,
 ##    method = "NM" )
-## all.equal( mlIndFixNm, mlIndFixNm4, tolerance = 1e-3 )
+## expect_equal( mlIndFixNm, mlIndFixNm4, tolerance = 1e-3 )
 ## nObs( mlIndFixNm )
 
 ## # with analytical gradients
@@ -863,37 +862,37 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ##    method = "NM" )
 ## mlgFixNm3 <- maxLik( llf, gf, start = startValFix, fixed = "mu",
 ##    method = "NM" )
-## all.equal( mlgFixNm, mlgFixNm3, tolerance = 1e-3 )
+## expect_equal( mlgFixNm, mlgFixNm3, tolerance = 1e-3 )
 ## mlgFixNm4 <- maxLik( llf, gf, start = startValFix, fixed = 1,
 ##    method = "NM" )
-## all.equal( mlgFixNm, mlgFixNm4, tolerance = 1e-3 )
+## expect_equal( mlgFixNm, mlgFixNm4, tolerance = 1e-3 )
 ## print( summary( mlgFixNm ), digits = 2 )
-## all.equal( mlFixNm, mlgFixNm, tolerance = 1e-3 )
+## expect_equal( mlFixNm, mlgFixNm, tolerance = 1e-3 )
 ## mlgIndFixNm <- maxLik( llfInd, gfInd, start = startValFix, fixed = isFixed,
 ##    method = "NM")
-## all.equal( mlgFixNm[ ], mlgIndFixNm[ -12 ], tolerance = 1e-3 )
+## expect_equal( mlgFixNm[ ], mlgIndFixNm[ -12 ], tolerance = 1e-3 )
 ## round( mlgIndFixNm[[ 12 ]], 3 )
 
 ## # with unused Hessians
 ## mlghFixNm <- maxLik( llf, gf, hf, start = startValFix, fixed = isFixed,
 ##    method = "NM" )
-## all.equal( mlgFixNm, mlghFixNm, tolerance = 1e-3 )
+## expect_equal( mlgFixNm, mlghFixNm, tolerance = 1e-3 )
 ## mlghFixNm3 <- maxLik( llf, gf, hf, start = startValFix, fixed = "mu",
 ##    method = "NM" )
-## all.equal( mlghFixNm, mlghFixNm3, tolerance = 1e-3 )
+## expect_equal( mlghFixNm, mlghFixNm3, tolerance = 1e-3 )
 ## mlghFixNm4 <- maxLik( llf, gf, hf, start = startValFix, fixed = 1,
 ##    method = "NM" )
-## all.equal( mlghFixNm, mlghFixNm4, tolerance = 1e-3 )
+## expect_equal( mlghFixNm, mlghFixNm4, tolerance = 1e-3 )
 
 ## ## SANN method with fixed parameters
 ## mlFixSann <- maxLik( llf, start = startValFix, fixed = isFixed,
 ##    method = "SANN" )
 ## mlFixSann3 <- maxLik( llf, start = startValFix, fixed = "mu",
 ##    method = "SANN" )
-## all.equal( mlFixSann, mlFixSann3, tolerance = 1e-3 )
+## expect_equal( mlFixSann, mlFixSann3, tolerance = 1e-3 )
 ## mlFixSann4 <- maxLik( llf, start = startValFix, fixed = 1,
 ##    method = "SANN" )
-## all.equal( mlFixSann, mlFixSann4, tolerance = 1e-3 )
+## expect_equal( mlFixSann, mlFixSann4, tolerance = 1e-3 )
 ## print( mlFixSann )
 ## print( summary( mlFixSann ), digits = 2 )
 ## activePar( mlFixSann )
@@ -909,11 +908,11 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlFixSann )
 ## round( vcov( mlFixSann ), 3 )
 ## logLik( summary( mlFixSann ) )
-## all.equal( mlFixBfgs[ -c(4,9,10) ], mlFixSann[ -c(4,9,10) ], 
+## expect_equal( mlFixBfgs[ -c(4,9,10) ], mlFixSann[ -c(4,9,10) ], 
 ##    tolerance = 1e-3 )
 ## mlIndFixSann <- maxLik( llfInd, start = startValFix, fixed = isFixed,
 ##    method = "SANN" )
-## all.equal( mlFixSann[ ], mlIndFixSann[ -12 ], tolerance = 1e-2 )
+## expect_equal( mlFixSann[ ], mlIndFixSann[ -12 ], tolerance = 1e-2 )
 ## round( mlIndFixSann[[ 12 ]], 3 )
 ## nObs( mlIndFixSann )
 
@@ -921,16 +920,16 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## mlgFixSann <- maxLik( llf, gf, start = startValFix, fixed = isFixed,
 ##    method = "SANN" )
 ## print( summary( mlgFixSann ), digits = 2 )
-## all.equal( mlFixSann[-4], mlgFixSann[-4], tolerance = 1e-3 )
+## expect_equal( mlFixSann[-4], mlgFixSann[-4], tolerance = 1e-3 )
 ## mlgIndFixSann <- maxLik( llfInd, gfInd, start = startValFix, fixed = isFixed,
 ##    method = "SANN")
-## all.equal( mlgFixSann[ ], mlgIndFixSann[ -12 ], tolerance = 1e-3 )
+## expect_equal( mlgFixSann[ ], mlgIndFixSann[ -12 ], tolerance = 1e-3 )
 ## round( mlgIndFixSann[[ 12 ]], 3 )
 
 ## # with unused Hessians
 ## mlghFixSann <- maxLik( llf, gf, hf, start = startValFix, fixed = isFixed,
 ##    method = "SANN" )
-## all.equal( mlgFixSann, mlghFixSann, tolerance = 1e-3 )
+## expect_equal( mlgFixSann, mlghFixSann, tolerance = 1e-3 )
 
 
 ## ############### inequality constraints ###############
@@ -958,26 +957,26 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## mlBfgsInEqInd <- maxLik( llfInd, start = startVal, constraints = inEq,
 ##    method = "BFGS" )
 ## print( summary( mlBfgsInEqInd ), digits = 2 )
-## all.equal( mlBfgsInEq[ ], mlBfgsInEqInd[ -12 ], tolerance = 1e-3 )
+## expect_equal( mlBfgsInEq[ ], mlBfgsInEqInd[ -12 ], tolerance = 1e-3 )
 ## round( mlBfgsInEqInd[[ 12 ]], 3 )
 ## nObs( mlBfgsInEqInd )
 
 ## # with analytical gradients
 ## mlgBfgsInEq <- maxLik( llf, gf, start = startVal, constraints = inEq,
 ##    method = "BFGS" )
-## all.equal( mlBfgsInEq, mlgBfgsInEq, tolerance = 1e-3 )
+## expect_equal( mlBfgsInEq, mlgBfgsInEq, tolerance = 1e-3 )
 ## mlgBfgsInEqInd <- maxLik( llfInd, gfInd, start = startVal, constraints = inEq,
 ##    method = "BFGS" )
-## all.equal( mlgBfgsInEqInd[ -12 ], mlgBfgsInEq[ ], tolerance = 1e-3 )
+## expect_equal( mlgBfgsInEqInd[ -12 ], mlgBfgsInEq[ ], tolerance = 1e-3 )
 ## round( mlgBfgsInEqInd[[ 12 ]], 3 )
 ## mlgBfgsInEqInd2 <- maxLik( llf, gfInd, start = startVal, constraints = inEq,
 ##    method = "BFGS" )
-## all.equal( mlgBfgsInEqInd, mlgBfgsInEqInd2, tolerance = 1e-3 )
+## expect_equal( mlgBfgsInEqInd, mlgBfgsInEqInd2, tolerance = 1e-3 )
 
 ## # with unused Hessian
 ## mlghBfgsInEq <- maxLik( llf, gf, hf, start = startVal, constraints = inEq,
 ##    method = "BFGS" )
-## all.equal( mlgBfgsInEq, mlghBfgsInEq, tolerance = 1e-3 )
+## expect_equal( mlgBfgsInEq, mlghBfgsInEq, tolerance = 1e-3 )
 
 ## ## NM method with inequality constraints
 ## mlNmInEq <- maxLik( llf, start = startVal, constraints = inEq, method = "NM" )
@@ -996,23 +995,23 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlNmInEq )
 ## round( vcov( mlNmInEq ), 3 )
 ## logLik( summary( mlNmInEq ) )
-## all.equal( mlBfgsInEq[-c(9,10,11)], mlNmInEq[-c(9,10,11)], tolerance = 1e-3 )
+## expect_equal( mlBfgsInEq[-c(9,10,11)], mlNmInEq[-c(9,10,11)], tolerance = 1e-3 )
 ## mlNmInEqInd <- maxLik( llfInd, start = startVal, constraints = inEq,
 ##    method = "NM" )
 ## print( summary( mlNmInEqInd ), digits = 2 )
-## all.equal( mlNmInEq[-4], mlNmInEqInd[-c(4,12)], tolerance = 1e-3 )
+## expect_equal( mlNmInEq[-4], mlNmInEqInd[-c(4,12)], tolerance = 1e-3 )
 ## round( mlNmInEqInd[[ 12 ]], 3 )
 ## nObs( mlNmInEqInd )
 
 ## # with unused analytical gradients
 ## mlgNmInEq <- maxLik( llf, gf, start = startVal, constraints = inEq,
 ##    method = "NM" )
-## all.equal( mlNmInEq, mlgNmInEq, tolerance = 1e-3 )
+## expect_equal( mlNmInEq, mlgNmInEq, tolerance = 1e-3 )
 
 ## # with unused analytical gradients and Hessians
 ## mlghNmInEq <- maxLik( llf, gf, hf, start = startVal, constraints = inEq,
 ##    method = "NM" )
-## all.equal( mlgNmInEq, mlghNmInEq, tolerance = 1e-3 )
+## expect_equal( mlgNmInEq, mlghNmInEq, tolerance = 1e-3 )
 
 ## ## SANN method with inequality constraints
 ## mlSannInEq <- maxLik( llf, start = startVal, constraints = inEq,
@@ -1032,21 +1031,21 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlSannInEq )
 ## round( vcov( mlSannInEq ), 3 )
 ## logLik( summary( mlSannInEq ) )
-## all.equal( mlBfgsInEq[-c(2,3,4,9,10,11)], mlSannInEq[-c(2,3,4,9,10,11)], 
+## expect_equal( mlBfgsInEq[-c(2,3,4,9,10,11)], mlSannInEq[-c(2,3,4,9,10,11)], 
 ##    tolerance = 1e-3 )
-## all.equal( mlBfgsInEq[-c(3,4,9,10,11)], mlSannInEq[-c(3,4,9,10,11)], 
+## expect_equal( mlBfgsInEq[-c(3,4,9,10,11)], mlSannInEq[-c(3,4,9,10,11)], 
 ##    tolerance = 1e-2 )
 ## # with unused analytical gradients
 ## mlgSannInEq <- maxLik( llf, gf, start = startVal, constraints = inEq,
 ##    method = "SANN" )
-## all.equal( mlSannInEq, mlgSannInEq, tolerance = 1e-3 )
+## expect_equal( mlSannInEq, mlgSannInEq, tolerance = 1e-3 )
 
 ## # with a user-specified function to generate a new candidate point
 ## mlSannInEqCand <- maxLik( llf, start = startVal, constraints = inEq,
 ##    method = "SANN", cand = function(x)c(rnorm(1,x[1]),rnorm(1,x[2])) )
 ## print( summary( mlSannInEqCand ), digits = 2 )
-## all.equal( mlSannInEqCand[-c(2,3,4)], mlSannInEq[-c(2,3,4)], tolerance = 1e-3 )
-## all.equal( mlSannInEqCand, mlSannInEq, tolerance = 1e-1 )
+## expect_equal( mlSannInEqCand[-c(2,3,4)], mlSannInEq[-c(2,3,4)], tolerance = 1e-3 )
+## expect_equal( mlSannInEqCand, mlSannInEq, tolerance = 1e-1 )
 
 ## ############### equality constraints ###############
 ## eqCon <- list( eqA = A, eqB = 2.5 )
@@ -1056,14 +1055,14 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 
 ## # with analytical gradients and Hessians
 ## mlghCon <- maxLik( llf, gf, hf, start = startVal, constraints = eqCon )
-## all.equal( mlGCon, mlghCon, tolerance = 1e-3 )
+## expect_equal( mlGCon, mlghCon, tolerance = 1e-3 )
 
 ## # with analytical gradients and Hessians as attributes
 ## mlGHCon <- maxLik( llfGradHess, start = startVal, constraints = eqCon )
-## all.equal( mlGHCon, mlghCon, tolerance = 1e-3 )
-## all.equal( mlGHCon[-c(2,3,4,5,6,7,9,11)], mlGCon[-c(2,3,4,5,6,7,9,11)], 
+## expect_equal( mlGHCon, mlghCon, tolerance = 1e-3 )
+## expect_equal( mlGHCon[-c(2,3,4,5,6,7,9,11)], mlGCon[-c(2,3,4,5,6,7,9,11)], 
 ##    tolerance = 1e-3 )
-## all.equal( mlGHCon[-c(5,6,7,9,11)], mlGCon[-c(5,6,7,9,11)], 
+## expect_equal( mlGHCon[-c(5,6,7,9,11)], mlGCon[-c(5,6,7,9,11)], 
 ##    tolerance = 1e-1 )
 
 
@@ -1085,7 +1084,7 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlBhhhCon )
 ## round( vcov( mlBhhhCon ), 3 )
 ## logLik( summary( mlBhhhCon ) )
-## all.equal( mlGCon[ -c( 5, 6, 7, 9, 10 ) ], mlBhhhCon[ -c( 5, 6, 7, 9, 10, 11 ) ],
+## expect_equal( mlGCon[ -c( 5, 6, 7, 9, 10 ) ], mlBhhhCon[ -c( 5, 6, 7, 9, 10, 11 ) ],
 ##    tolerance = 5e-3 )
 ## mlBhhhCon[11]
 ## nObs( mlBhhhCon )
@@ -1094,34 +1093,34 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## mlgBhhhCon <- maxLik( llf, gfInd, start = startVal, constraints = eqCon,
 ##    method = "BHHH" )
 ## print( summary( mlgBhhhCon ), digits = 2 )
-## all.equal( mlBhhhCon[-c(2,3,4,5,6,7,9,11,12)], mlgBhhhCon[-c(2,3,4,5,6,7,9,11,12)],
+## expect_equal( mlBhhhCon[-c(2,3,4,5,6,7,9,11,12)], mlgBhhhCon[-c(2,3,4,5,6,7,9,11,12)],
 ##    tolerance = 1e-3 )
-## all.equal( mlBhhhCon[-c(5,6,7,9,12)], mlgBhhhCon[-c(5,6,7,9,12)],
+## expect_equal( mlBhhhCon[-c(5,6,7,9,12)], mlgBhhhCon[-c(5,6,7,9,12)],
 ##    tolerance = 1e-1 )
 ## mlgBhhhConInd <- maxLik( llfInd, gfInd, start = startVal, constraints = eqCon,
 ##    method = "BHHH" )
-## all.equal( mlgBhhhCon, mlgBhhhConInd, tolerance = 1e-3 )
+## expect_equal( mlgBhhhCon, mlgBhhhConInd, tolerance = 1e-3 )
 
 ## # with analytical gradients as attribute
 ## mlGBhhhCon <- maxLik( llfGradInd, start = startVal, constraints = eqCon,
 ##    method = "BHHH" )
 ## print( summary( mlGBhhhCon ), digits = 2 )
-## all.equal( mlGBhhhCon, mlgBhhhCon, tolerance = 1e-3 )
-## all.equal( mlGBhhhCon[-c(2,3,4,5,6,7,9,11,12)], mlBhhhCon[-c(2,3,4,5,6,7,9,11,12)],
+## expect_equal( mlGBhhhCon, mlgBhhhCon, tolerance = 1e-3 )
+## expect_equal( mlGBhhhCon[-c(2,3,4,5,6,7,9,11,12)], mlBhhhCon[-c(2,3,4,5,6,7,9,11,12)],
 ##    tolerance = 1e-3 )
-## all.equal( mlGBhhhCon[-c(5,6,7,9,12)], mlBhhhCon[-c(5,6,7,9,12)],
+## expect_equal( mlGBhhhCon[-c(5,6,7,9,12)], mlBhhhCon[-c(5,6,7,9,12)],
 ##    tolerance = 1e-1 )
 
 ## # with analytical gradients and unused Hessians
 ## mlghBhhhCon <- maxLik( llf, gfInd, hf, start = startVal, constraints = eqCon,
 ##    method = "BHHH" )
-## all.equal( mlgBhhhCon, mlghBhhhCon, tolerance = 1e-3 )
+## expect_equal( mlgBhhhCon, mlghBhhhCon, tolerance = 1e-3 )
 
 ## # with analytical gradients and unused Hessians as attributes
 ## mlGHBhhhCon <- maxLik( llfGradHessInd, start = startVal, constraints = eqCon,
 ##    method = "BHHH" )
-## all.equal( mlGHBhhhCon, mlghBhhhCon, tolerance = 1e-3 )
-## all.equal( mlGHBhhhCon, mlGBhhhCon, tolerance = 1e-3 )
+## expect_equal( mlGHBhhhCon, mlghBhhhCon, tolerance = 1e-3 )
+## expect_equal( mlGHBhhhCon, mlGBhhhCon, tolerance = 1e-3 )
 
 
 ## ## BFGS method with equality constraints
@@ -1145,7 +1144,7 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## mlBfgsConInd <- maxLik( llfInd, start = startVal, constraints = eqCon,
 ##    method = "BFGS" )
 ## print( summary( mlBfgsConInd ), digits = 2 )
-## all.equal( mlBfgsCon[-c(4,9)], mlBfgsConInd[-c(4,9,12)], tolerance = 1e-3 )
+## expect_equal( mlBfgsCon[-c(4,9)], mlBfgsConInd[-c(4,9,12)], tolerance = 1e-3 )
 ## mlBfgsConInd[12]
 ## nObs( mlBfgsConInd )
 
@@ -1153,16 +1152,16 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## mlgBfgsCon <- maxLik( llf, gf, start = startVal, constraints = eqCon,
 ##    method = "BFGS" )
 ## print( summary( mlgBfgsCon ), digits = 2 )
-## all.equal( mlBfgsCon[-c(3,4,9,11)], mlgBfgsCon[-c(3,4,9,11)], tolerance = 1e-2 )
+## expect_equal( mlBfgsCon[-c(3,4,9,11)], mlgBfgsCon[-c(3,4,9,11)], tolerance = 1e-2 )
 ## mlgBfgsConInd <- maxLik( llfInd, gfInd, start = startVal, constraints = eqCon,
 ##    method = "BFGS" )
-## all.equal( mlgBfgsCon[], mlgBfgsConInd[-12], tolerance = 1e-3 )
+## expect_equal( mlgBfgsCon[], mlgBfgsConInd[-12], tolerance = 1e-3 )
 ## mlgBfgsConInd[12]
 
 ## # with analytical gradients and unused Hessians
 ## mlghBfgsCon <- maxLik( llf, gf, hf, start = startVal, constraints = eqCon,
 ##    method = "BFGS" )
-## all.equal( mlgBfgsCon, mlghBfgsCon, tolerance = 1e-3 )
+## expect_equal( mlgBfgsCon, mlghBfgsCon, tolerance = 1e-3 )
 
 ## ## NM method with equality constraints
 ## mlNmCon <- maxLik( llf, start = startVal, constraints = eqCon, method = "NM", SUMTTol=0)
@@ -1184,23 +1183,23 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## mlNmConInd <- maxLik( llfInd, start = startVal, constraints = eqCon,
 ##    method = "NM", SUMTTol=0)
 ## print( summary( mlNmConInd ), digits = 2 )
-## all.equal( mlNmCon[], mlNmConInd[-12], tolerance = 1e-3 )
+## expect_equal( mlNmCon[], mlNmConInd[-12], tolerance = 1e-3 )
 ## mlNmConInd[12]
 ## nObs( mlNmConInd )
 
 ## # with unused analytical gradients
 ## mlgNmCon <- maxLik( llf, gf, start = startVal, constraints = eqCon,
 ##    method = "NM", SUMTTol=0)
-## all.equal( mlNmCon, mlgNmCon, tolerance = 1e-3 )
+## expect_equal( mlNmCon, mlgNmCon, tolerance = 1e-3 )
 ## mlgNmConInd <- maxLik( llfInd, gfInd, start = startVal, constraints = eqCon,
 ##    method = "NM", SUMTTol=0)
-## all.equal( mlgNmCon[], mlgNmConInd[-12], tolerance = 1e-3 )
+## expect_equal( mlgNmCon[], mlgNmConInd[-12], tolerance = 1e-3 )
 ## mlgNmConInd[12]
 
 ## # with unused analytical gradients and Hessians
 ## mlghNmCon <- maxLik( llf, gf, hf, start = startVal, constraints = eqCon,
 ##    method = "NM", SUMTTol=0)
-## all.equal( mlgNmCon, mlghNmCon, tolerance = 1e-3 )
+## expect_equal( mlgNmCon, mlghNmCon, tolerance = 1e-3 )
 
 ## ## SANN method with equality constraints
 ## mlSannCon <- maxLik( llf, start = startVal, constraints = eqCon,
@@ -1220,23 +1219,23 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## returnMessage( mlSannCon )
 ## round( vcov( mlSannCon ), 3 )
 ## logLik( summary( mlSannCon ) )
-## all.equal( mlSannCon[ -c(2,3,4,5,6,9,10,11) ], mlBfgsCon[ -c(2,3,4,5,6,9,10,11) ],
+## expect_equal( mlSannCon[ -c(2,3,4,5,6,9,10,11) ], mlBfgsCon[ -c(2,3,4,5,6,9,10,11) ],
 ##    tolerance = 1e-3 )
-## all.equal( mlSannCon[ -c(3,4,5,6,9,10,11) ], mlBfgsCon[ -c(3,4,5,6,9,10,11) ],
+## expect_equal( mlSannCon[ -c(3,4,5,6,9,10,11) ], mlBfgsCon[ -c(3,4,5,6,9,10,11) ],
 ##    tolerance = 1e-2 )
 
 ## # with unused analytical gradients
 ## mlgSannCon <- maxLik( llf, gf, start = startVal, constraints = eqCon,
 ##    method = "SANN", SUMTTol=0)
-## all.equal( mlSannCon, mlgSannCon, tolerance = 1e-3 )
+## expect_equal( mlSannCon, mlgSannCon, tolerance = 1e-3 )
 
 ## # with a user-specified function to generate a new candidate point
 ## mlSannConCand <- maxLik( llf, start = startVal, constraints = eqCon,
 ##    method = "SANN", cand = function(x)c(rnorm(1,x[1]),rnorm(1,x[2])) )
 ## print( summary( mlSannConCand ), digits = 2 )
-## all.equal( mlSannConCand[-c(1,2,3,4,11)], mlSannCon[-c(1,2,3,4,11)], 
+## expect_equal( mlSannConCand[-c(1,2,3,4,11)], mlSannCon[-c(1,2,3,4,11)], 
 ##    tolerance = 1e-3 )
-## all.equal( mlSannConCand[-c(2,3,4,11)], mlSannCon[-c(2,3,4,11)], 
+## expect_equal( mlSannConCand[-c(2,3,4,11)], mlSannCon[-c(2,3,4,11)], 
 ##    tolerance = 1e-1 )
 
 
@@ -1311,7 +1310,7 @@ all.equal(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 ## try( sandwich( ml ) )
 ## printSandwich <- function( x ) {
 ##    print( round( sandwich( x ), 2 ) )
-##    tmp <- all.equal( sandwich( x ), vcov( x ) )
+##    tmp <- expect_equal( sandwich( x ), vcov( x ) )
 ##    if( isTRUE( tmp ) ) {
 ##       print( tmp )
 ##    }
