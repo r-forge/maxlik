@@ -259,18 +259,17 @@ expect_equivalent(estfun(mlGInd), gfInd( coef( mlGInd ) ), tolerance=tol)
 expect_warning(mlgG <- maxLik( llfGrad, gf, start = startVal))
 expect_equal(coef(mlgG), coef(mlg), tolerance = tol)
 
-# with analytical gradients and Hessians
-## mlgh <- maxLik( llf, gf, hf, start = startVal )
-## expect_equal(coef(mlg), coef(mlgh), tolerance = tol)
+## with analytical gradients and Hessians
+mlgh <- maxLik( llf, gf, hf, start = startVal )
+expect_equal(coef(mlg), coef(mlgh), tolerance = tol)
 
-## # with analytical gradients and Hessian as attribute
-## mlGH <- maxLik( llfGradHess, start = startVal )
-## expect_equal( mlGH, mlgh, tolerance = 1e-3 )
+## with analytical gradients and Hessian as attribute
+mlGH <- maxLik( llfGradHess, start = startVal )
+expect_equal(coef(mlGH), coef(mlgh), tolerance = tol)
 
-## # with analytical gradients and Hessian as argument and attribute
-## mlgGhH <- maxLik( llfGradHess, gf, hf, start = startVal )
-## expect_equal( mlgGhH, mlgh, tolerance = 1e-3 )
-## expect_equal( mlgGhH, mlGH, tolerance = 1e-3 )
+## with analytical gradients and Hessian as argument and attribute
+expect_warning(mlgGhH <- maxLik( llfGradHess, gf, hf, start = startVal ))
+expect_equal(coef(mlgGhH), coef(mlgh), tolerance = tol)
 
 
 ## ## BHHH method
