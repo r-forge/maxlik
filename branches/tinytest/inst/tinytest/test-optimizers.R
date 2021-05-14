@@ -272,47 +272,60 @@ expect_warning(mlgGhH <- maxLik( llfGradHess, gf, hf, start = startVal ))
 expect_equal(coef(mlgGhH), coef(mlgh), tolerance = tol)
 
 
-## ## BHHH method
-## mlBHHH <- try( maxLik( llf, start = startVal, method = "BHHH" ) )
-## x <- xSaved[1]
-## try( maxLik( llfInd, start = startVal, method = "BHHH" ) )
-## x <- xSaved[1:2]
-## try( maxLik( llfInd, start = startVal, method = "BHHH" ) )
-## x <- xSaved
-## mlBHHH <- maxLik( llfInd, start = startVal, method = "BHHH" )
-## print( mlBHHH )
-## print( summary( mlBHHH ), digits = 2 )
-## activePar( mlBHHH )
-## AIC( mlBHHH )
-## coef( mlBHHH )
-## condiNumber( mlBHHH, digits = 3 )
-## round( hessian( mlBHHH ), 1 )
-## logLik( mlBHHH )
-## maximType( mlBHHH )
-## nIter( mlBHHH )
-## nParam( mlBHHH )
-## returnCode( mlBHHH )
-## returnMessage( mlBHHH )
-## round( vcov( mlBHHH ), 3 )
-## logLik( summary( mlBHHH ) )
-## expect_equal( ml[-c(4,5,6,9,10) ], mlBHHH[ -c(4,5,6,9,10,11) ], tolerance = 1e-3 )
-## round( mlBHHH[[ 11 ]], 3 )
-## nObs( mlBHHH )
-## # final Hessian = usual Hessian
-## mlBhhhH <- maxLik( llfInd, start = startVal, method = "BHHH", 
-##                   finalHessian = TRUE )
-##                            # do not test Hessian equality--BHHH may be imprecise, at least
-##                            # for diagonal elements
-## round( hessian( mlBhhhH ), 1 )
-## print( summary( mlBhhhH ) , digits = 2 )
-## ## Marquardt (1963) correction
-## mlBHHHM <- maxLik( llfInd, start = startVal, method = "BHHH", qac="marquardt")
-## print(coef(mlBHHHM))
-## print(returnMessage(mlBHHHM))
+## ---------- BHHH method ----------
+## cannot do BHHH if llf not provided by individual
+x <- xSaved[1]
+expect_error( maxLik( llfInd, start = startVal, method = "BHHH" ) )
+## 2 observations: can do BHHH
+x <- xSaved[1:2]
+expect_silent( maxLik( llfInd, start = startVal, method = "BHHH" ) )
+##
+x <- xSaved
+mlBHHH <- maxLik( llfInd, start = startVal, method = "BHHH" )
+expect_stdout(print( mlBHHH ),
+              pattern = "Estimate\\(s\\): 1\\.18.* 1\\.81")
+expect_stdout(print(summary( mlBHHH)), pattern = "mu *1.18")
+expect_equivalent(activePar( mlBHHH ), c(TRUE, TRUE))
+expect_equivalent(AIC( mlBHHH ), 407.168, tolerance=0.01)
+expect_equal(coef( mlBHHH ), setNames(c(1.180808, 1.816485), c("mu", "sigma")), tolerance=tol)
+expect_equal(condiNumber( mlBHHH, printLevel=0),
+             setNames(c(1, 1.72), c("mu", "sigma")), tol=0.01)
+expect_equivalent(hessian( mlBHHH ),
+                  matrix(c(-30.306411, -1.833632, -1.833632, -55.731646), 2, 2),
+                  tolerance=0.01)
+expect_equivalent(logLik( mlBHHH ), -201.583946192983, tolerance=tol)
+expect_equal(maximType( mlBHHH ), "BHHH maximisation")
+expect_equal(nIter(mlBHHH) > 3, TRUE)
+                           # here 12 iterations
+expect_equal(nParam( mlBHHH ), 2)
+expect_equal(returnCode( mlBHHH ), 8)
+expect_equal(returnMessage( mlBHHH ),
+             "successive function values within relative tolerance limit (reltol)")
+expect_equivalent(vcov( mlBHHH ),
+                  matrix(c(0.03306213, -0.00108778, -0.00108778, 0.01797892), 2, 2),
+                  tol=0.001)
+expect_equivalent(logLik(summary(mlBHHH)), -201.583946192983, tolerance=tol)
+expect_equal(coef(ml), coef(mlBHHH), tol=tol)
+expect_equal(stdEr(ml), stdEr(mlBHHH), tol=0.1)
+expect_equal(nObs( mlBHHH ), length(x))
+# final Hessian = usual Hessian
+expect_silent(mlBhhhH <- maxLik( llfInd, start = startVal, method = "BHHH", 
+                                finalHessian = TRUE )
+              )
+                           # do not test Hessian equality--BHHH may be imprecise, at least
+                           # for diagonal elements
+expect_stdout(print(hessian( mlBhhhH )),
+              pattern="mu.*\nsigma.+")
+## Marquardt (1963) correction
+expect_silent(mlBHHHM <- maxLik( llfInd, start = startVal, method = "BHHH", qac="marquardt"))
+expect_equal(coef(mlBHHHM), coef(mlBHHH), tolerance=tol)
+expect_equal(returnMessage(mlBHHHM), "successive function values within relative tolerance limit (reltol)")
 
-## # with analytical gradients
-## mlgBHHH <- try( maxLik( llf, gf, start = startVal, method = "BHHH" ) )
-## mlgBHHH <- try( maxLik( llfInd, gf, start = startVal, method = "BHHH" ) )
+## BHHH with analytical gradients
+expect_error( maxLik( llf, gf, start = startVal, method = "BHHH" ) )
+                           # need individual log-likelihood
+expect_error( maxLik( llfInd, gf, start = startVal, method = "BHHH" ) )
+                           # need individual gradient
 ## x <- xSaved[1]
 ## try( maxLik( llf, gfInd, start = startVal, method = "BHHH" ) )
 ## try( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
