@@ -326,70 +326,84 @@ expect_error( maxLik( llf, gf, start = startVal, method = "BHHH" ) )
                            # need individual log-likelihood
 expect_error( maxLik( llfInd, gf, start = startVal, method = "BHHH" ) )
                            # need individual gradient
-## x <- xSaved[1]
-## try( maxLik( llf, gfInd, start = startVal, method = "BHHH" ) )
-## try( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
-## x <- xSaved[1:2]
-## try( maxLik( llf, gfInd, start = startVal, method = "BHHH" ) )
-## try( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
-## x <- xSaved
-## mlgBHHH <- maxLik( llfInd, gfInd, start = startVal, method = "BHHH" )
-## print( summary( mlgBHHH ), digits = 2 )
-## expect_equal( mlBHHH, mlgBHHH, tolerance = 1e-3 )
-## expect_equal( mlg[-c(4,5,6,9,10)], mlgBHHH[-c(4,5,6,9,10,11)], tolerance = 1e-3 )
-## round( mlgBHHH[[ 11 ]], 3 )
-## mlgBHHH2 <- maxLik( llf, gfInd, start = startVal, method = "BHHH" )
-## expect_equal( mlgBHHH, mlgBHHH2, tolerance = 1e-3 )
-## # final Hessian = usual Hessian
-## mlgBhhhH <- maxLik( llf, gfInd, start = startVal, method = "BHHH", 
-##    finalHessian = TRUE )
-## expect_equal( mlgBhhhH, mlBhhhH, tolerance = 1e-3 )
-## expect_equal( mlgBhhhH[-4], mlgBHHH[-4], tolerance = 1e-3 )
-## round( hessian( mlgBhhhH ), 1 )
+x <- xSaved[1]  # test with a single observation
+expect_error(maxLik( llf, gfInd, start = startVal, method = "BHHH" ))
+                           # gradient must have >= 2 rows
+expect_error( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
+                           # ditto even if individual likelihood components
+x <- xSaved[1:2]  # test with 2 observations
+expect_silent(maxLik( llf, gfInd, start = startVal, method = "BHHH",
+                     iterlim=1))
+                           # should work with 2 obs
+expect_silent( maxLik( llfInd, gfInd, start = startVal, method = "BHHH",
+                      iterlim=1) )
+                           # should work with 2 obs
+x <- xSaved
+expect_silent(mlgBHHH <- maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ))
+                           # individual log-likelihood, gradient
+expect_equal(coef(mlBHHH), coef(mlgBHHH), tolerance = tol)
+expect_equal(coef(mlg), coef(mlgBHHH), tolerance = tol)
+expect_silent(mlgBHHH2 <- maxLik( llf, gfInd, start = startVal, method = "BHHH" ))
+                           # aggregated log-likelihood, individual gradient
+expect_equal(coef(mlgBHHH), coef(mlgBHHH2), tolerance=tol)
+                           # final Hessian = usual Hessian
+expect_silent(
+   mlgBhhhH <- maxLik( llf, gfInd, start = startVal, method = "BHHH", 
+                      finalHessian = TRUE )
+)
+expect_equal(hessian(mlgBhhhH), hessian(mlBhhhH), tolerance = 1e-2)
 
-## # with analytical gradients as attribute
-## try( maxLik( llfGrad, start = startVal, method = "BHHH" ) )
-## x <- xSaved[1]
-## try( maxLik( llfGrad, start = startVal, method = "BHHH" ) )
-## try( maxLik( llfGradInd, start = startVal, method = "BHHH" ) )
-## x <- xSaved[1:2]
-## try( maxLik( llfGrad, start = startVal, method = "BHHH" ) )
-## try( maxLik( llfGradInd, start = startVal, method = "BHHH" ) )
-## x <- xSaved
-## mlGBHHH <- maxLik( llfGradInd, start = startVal, method = "BHHH" )
-## expect_equal( mlGBHHH, mlgBHHH, tolerance = 1e-3 )
-## # final Hessian = usual Hessian
-## mlGBhhhH <- maxLik( llfGradInd, start = startVal, method = "BHHH", 
-##    finalHessian = TRUE )
-## expect_equal( mlGBhhhH, mlgBhhhH, tolerance = 1e-3 )
+## with analytical gradients as attribute
+expect_error( maxLik( llfGrad, start = startVal, method = "BHHH" ) )
+                           # no individual gradients provided
+x <- xSaved[1]
+expect_error( maxLik( llfGrad, start = startVal, method = "BHHH" ),
+             pattern = "gradient is not a matrix")
+                           # get an error about need a matrix
+expect_error( maxLik( llfGradInd, start = startVal, method = "BHHH" ),
+             pattern = "at least as many rows")
+                           # need at least two obs
+x <- xSaved[1:2]
+expect_error( maxLik( llfGrad, start = startVal, method = "BHHH" ),
+             pattern = "gradient is not a matrix")
+                           # enough obs but no individual grad
+x <- xSaved
+expect_silent(mlGBHHH <- maxLik( llfGradInd, start = startVal, method = "BHHH" ))
+expect_equal(coef(mlGBHHH), coef(mlgBHHH), tolerance = tol)
+                           # final Hessian = usual Hessian
+expect_silent(mlGBhhhH <- maxLik( llfGradInd, start = startVal, method = "BHHH", 
+                                 finalHessian = TRUE ))
+expect_equal(hessian(mlGBhhhH), hessian(mlgBhhhH), tolerance = tol)
 
-## # with analytical gradients as argument and attribute
-## mlgGBHHH <- maxLik( llfGradInd, gfInd, start = startVal, method = "BHHH" )
-## expect_equal( mlgGBHHH, mlgBHHH, tolerance = 1e-3 )
-## expect_equal( mlgGBHHH, mlGBHHH, tolerance = 1e-3 )
-
-## # with unused Hessian
-## mlghBHHH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH" )
-## expect_equal( mlgBHHH, mlghBHHH, tolerance = 1e-3 )
-## # final Hessian = usual Hessian
-## mlghBhhhH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH", 
-##    finalHessian = TRUE )
-## expect_equal( mlghBhhhH[-4], mlghBHHH[-4], tolerance = 1e-3 )
-## expect_equal( mlghBhhhH, mlgBhhhH, tolerance = 1e-3 )
-
-## # with unused Hessian as attribute
-## mlGHBHHH <- maxLik( llfGradHessInd, start = startVal, method = "BHHH" )
-## expect_equal( mlGHBHHH, mlghBHHH, tolerance = 1e-3 )
-## # final Hessian = usual Hessian
-## mlGHBhhhH <- maxLik( llfGradHessInd, start = startVal, method = "BHHH", 
-##    finalHessian = TRUE )
-## expect_equal( mlGHBhhhH, mlghBhhhH, tolerance = 1e-3 )
-
-## # with analytical gradients and Hessian as argument and attribute
-## mlgGhHBHHH <- maxLik( llfGradHessInd, gfInd, hf, start = startVal, method = "BHHH" )
-## expect_equal( mlgGhHBHHH, mlghBHHH, tolerance = 1e-3 )
-## expect_equal( mlgGhHBHHH, mlGHBHHH, tolerance = 1e-3 )
-
+## with analytical gradients as argument and attribute
+expect_warning(mlgGBHHH <- maxLik( llfGradInd, gfInd, start = startVal, method = "BHHH" ),
+               pattern = "both as attribute 'gradient' and as argument 'grad'")
+                           # warn about double gradient
+expect_equal(coef(mlgGBHHH), coef(mlgBHHH), tolerance = tol)
+## with unused Hessian
+expect_silent(mlghBHHH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH" ))
+expect_equal(coef(mlgBHHH), coef(mlghBHHH), tolerance = tol)
+## final Hessian = usual Hessian
+expect_silent(
+   mlghBhhhH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH", 
+                       finalHessian = TRUE )
+)
+expect_equivalent(hessian(mlghBhhhH), hessian(mlghBHHH), tolerance = 0.2)
+                           # BHHH and ordinary hessian differ quite a bit
+## with unused Hessian as attribute
+expect_silent(mlGHBHHH <- maxLik( llfGradHessInd, start = startVal, method = "BHHH" ))
+expect_equal(coef(mlGHBHHH), coef(mlghBHHH), tolerance = tol)
+## final Hessian = usual Hessian
+expect_silent(mlGHBhhhH <- maxLik( llfGradHessInd, start = startVal, method = "BHHH", 
+                                  finalHessian = TRUE ))
+expect_equal(hessian(mlGHBhhhH), hessian(mlghBhhhH), tolerance = tol)
+## with analytical gradients and Hessian as argument and attribute
+expect_warning(
+   mlgGhHBHHH <- maxLik( llfGradHessInd, gfInd, hf, start = startVal, method = "BHHH" ),
+   pattern = "both as attribute 'gradient' and as argument 'grad': ignoring"
+)
+expect_equal(coef(mlgGhHBHHH), coef(mlghBHHH), tolerance = tol)
+expect_equal(hessian(mlgGhHBHHH), hessian(mlGHBHHH), tolerance = tol)
 
 
 ## ### BFGSR method
