@@ -406,32 +406,47 @@ expect_equal(coef(mlgGhHBHHH), coef(mlghBHHH), tolerance = tol)
 expect_equal(hessian(mlgGhHBHHH), hessian(mlGHBHHH), tolerance = tol)
 
 ## ---------- Test BFGS methods ----------
-for(optimizer in c("bfgsr", "bfgs")) {
+optimizerNames <- c(bfgsr = "BFGSR", bfgs = "BFGS", nm = "Nelder-Mead",
+                    sann = "SANN", cg = "CG")
+successCodes <- list(bfgsr = 1:4, bfgs = 0, nm = 0, sann = 0, cg = 0)
+successMsgs <- list(bfgsr = c("successive function values within tolerance limit (tol)"),
+                    bfgs = c("successful convergence "),
+                           # includes space at end...
+                    nm = c("successful convergence "),
+                    sann = c("successful convergence "),
+                    cg = c("successful convergence ")
+                    )
+for(optimizer in c("bfgsr", "bfgs", "nm", "sann", "cg")) {
    expect_silent(mlResult <- maxLik( llf, start = startVal, method = optimizer ))
    expect_stdout(print( mlResult ),
-                 patter = "BFGSR maximization")
+                 pattern = paste0(optimizerNames[optimizer], " maximization")
+                 )
    expect_stdout(print( summary( mlResult )),
-                 pattern = "BFGSR maximization,.*Estimates:")
-   expect_equal(coef(ml), coef(mlResult), tolerance=tol)
-   expect_equal(stdEr(ml), stdEr(mlResult), tolerance=tol)
+                 pattern = paste0(optimizerNames[optimizer], " maximization,.*Estimates:")
+                 )
+   expect_equal(coef(ml), coef(mlResult), tolerance=0.001)
+   expect_equal(stdEr(ml), stdEr(mlResult), tolerance=0.01)
    expect_equal(activePar( mlResult ), c(mu=TRUE, sigma=TRUE))
    expect_equivalent(AIC( mlResult ), 407.167893392749, tolerance=tol)
    expect_equivalent( hessian( mlResult ),
                      matrix(c(-30.32596, 0.00000, 0.00000, -60.59508), 2, 2),
-                     tolerance = tol)
+                     tolerance = 0.01)
    expect_equivalent(logLik( mlResult ), -201.5839, tolerance = 0.01)
-   expect_equal(maximType( mlResult ), "BFGSR maximization")
+   expect_equal(maximType( mlResult ),
+                paste0(optimizerNames[optimizer], " maximization")
+                )
    expect_true(nIter( mlResult ) > 1 & is.integer(nIter(mlResult)))
    expect_error( nObs( mlResult ),
                 pattern = "cannot return the number of observations")
    expect_equal(nParam( mlResult ), 2)
-   expect_equal(returnCode( mlResult ), 2)
-   expect_equal(returnMessage( mlResult), "successive function values within tolerance limit (tol)")
+   expect_true(returnCode( mlResult ) %in% successCodes[[optimizer]])
+   expect_equal(returnMessage( mlResult), successMsgs[[optimizer]])
    expect_equal(logLik( summary( mlResult ) ), logLik(mlResult))
    ## individual observations
    expect_silent(mlIndResult <- maxLik( llfInd, start = startVal, method = optimizer))
    expect_stdout(print( summary( mlIndResult )),
-                 pattern = "BFGSR maximization,.*Estimates:")
+                 pattern = paste0(optimizerNames[optimizer], " maximization,.*Estimates:")
+                 )
    expect_equal(coef(mlResult), coef(mlIndResult), tolerance = tol)
    expect_equal(stdEr(mlResult), stdEr(mlIndResult), tolerance = 0.01)
    expect_equal(nObs( mlIndResult ), length(x))
@@ -468,187 +483,6 @@ for(optimizer in c("bfgsr", "bfgs")) {
    expect_equal(coef(mlgGhHResult), coef(mlResult), tolerance = tol)
    expect_equal(stdEr(mlgGhHResult), stdEr(mlResult), tolerance = 0.01)
 }
-
-stop()
-
-## ---------- BFGS method ----------
-expect_silent(mlBFGS <- maxLik( llf, start = startVal, method = "BFGS" ))
-print( mlBFGS )
-print( summary( mlBFGS ), digits = 2 )
-activePar( mlBFGS )
-AIC( mlBFGS )
-coef( mlBFGS )
-condiNumber( mlBFGS, digits = 3 )
-round( hessian( mlBFGS ), 1 )
-logLik( mlBFGS )
-maximType( mlBFGS )
-nIter( mlBFGS )
-nParam( mlBFGS )
-returnCode( mlBFGS )
-returnMessage( mlBFGS )
-round( vcov( mlBFGS ), 3 )
-logLik( summary( mlBFGS ) )
-expect_equal( ml[-c(4,5,6,9,10)], mlBFGS[-c(4,5,6,9,10,11)], tolerance = 1e-3 )
-# with individual log likelihood values
-mlIndBFGS <- maxLik( llfInd, start = startVal, method = "BFGS" )
-print( summary( mlIndBFGS ), digits = 2 )
-expect_equal( mlBFGS[-4], mlIndBFGS[-c(4,12)], tolerance = 1e-3 )
-mlIndBFGS[12]
-nObs( mlIndBFGS )
-
-# with analytical gradients
-mlgBFGS <- maxLik( llf, gf, start = startVal, method = "BFGS" )
-print( summary( mlgBFGS ), digits = 2 )
-expect_equal( mlBFGS[-4], mlgBFGS[-4], tolerance = 1e-3 )
-expect_equal( mlg[-c(5,6,9,10)], mlgBFGS[-c(5,6,9,10,11)], tolerance = 1e-3 )
-mlgIndBFGS <- maxLik( llfInd, gfInd, start = startVal, method = "BFGS" )
-expect_equal( mlgBFGS[], mlgIndBFGS[-12], tolerance = 1e-3 )
-mlgIndBFGS[12]
-
-# with analytical gradients as attribute
-mlGBFGS <- maxLik( llfGrad, start = startVal, method = "BFGS" )
-expect_equal( mlGBFGS, mlgBFGS, tolerance = 1e-3 )
-mlGIndBFGS <- maxLik( llfGradInd, start = startVal, method = "BFGS" )
-expect_equal( mlGIndBFGS, mlgIndBFGS, tolerance = 1e-3 )
-
-# with analytical gradients as argument and attribute
-mlgGBFGS <- maxLik( llfGrad, gf, start = startVal, method = "BFGS" )
-expect_equal( mlgGBFGS, mlgBFGS, tolerance = 1e-3 )
-expect_equal( mlgGBFGS, mlGBFGS, tolerance = 1e-3 )
-
-# with unused Hessian
-mlghBFGS <- maxLik( llf, gf, hf, start = startVal, method = "BFGS" )
-expect_equal( mlgBFGS, mlghBFGS, tolerance = 1e-3 )
-
-# with analytical gradients and Hessian as attribute
-mlGHBFGS <- maxLik( llfGradHess, start = startVal, method = "BFGS" )
-expect_equal( mlGHBFGS, mlghBFGS, tolerance = 1e-3 )
-
-# with analytical gradients and Hessian as argument and attribute
-mlgGhHBFGS <- maxLik( llfGradHess, gf, hf, start = startVal, method = "BFGS" )
-expect_equal( mlgGhHBFGS, mlghBFGS, tolerance = 1e-3 )
-expect_equal( mlgGhHBFGS, mlGHBFGS, tolerance = 1e-3 )
-
-
-## ## NM method
-## mlNM <- maxLik( llf, start = startVal, method = "NM" )
-## print( mlNM )
-## print( summary( mlNM ), digits = 2 )
-## activePar( mlNM )
-## AIC( mlNM )
-## coef( mlNM )
-## condiNumber( mlNM, digits = 3 )
-## round( hessian( mlNM ), 1 )
-## logLik( mlNM )
-## maximType( mlNM )
-## nIter( mlNM )
-## nParam( mlNM )
-## returnCode( mlNM )
-## returnMessage( mlNM )
-## round( vcov( mlNM ), 3 )
-## logLik( summary( mlNM ) )
-## expect_equal( ml[-c(3,4,5,6,9,10)], mlNM[-c(3,4,5,6,9,10,11)], tolerance = 1e-3 )
-## # with individual log likelihood values
-## mlIndNM <- maxLik( llfInd, start = startVal, method = "NM" )
-## print( summary( mlIndNM ), digits = 2 )
-## expect_equal( mlNM[-4], mlIndNM[-c(4,12)], tolerance = 1e-3 )
-## mlIndNM[12]
-## nObs( mlIndNM )
-
-## # with unused analytical gradients
-## mlgNM <- maxLik( llf, gf, start = startVal, method = "NM" )
-## print( summary( mlgNM ), digits = 2 )
-## expect_equal( mlNM[-4], mlgNM[-4], tolerance = 1e-3 )
-## # with individual log likelihood values and gradients
-## mlgIndNM <- maxLik( llfInd, gfInd, start = startVal, method = "NM" )
-## print( summary( mlgIndNM ), digits = 2 )
-## expect_equal( mlgNM[], mlgIndNM[-12], tolerance = 1e-3 )
-## mlgIndNM[12]
-
-## # with (unused) analytical gradients as attribute
-## mlGNM <- maxLik( llfGrad, start = startVal, method = "NM" )
-## expect_equal( mlGNM, mlgNM, tolerance = 1e-3 )
-## mlGIndNM <- maxLik( llfGradInd, start = startVal, method = "NM" )
-## expect_equal( mlGIndNM, mlgIndNM, tolerance = 1e-3 )
-
-## # with analytical gradients as argument and attribute
-## mlgGNM <- maxLik( llfGrad, gf, start = startVal, method = "NM" )
-## expect_equal( mlgGNM, mlgNM, tolerance = 1e-3 )
-## expect_equal( mlgGNM, mlGNM, tolerance = 1e-3 )
-
-## # with unused analytical gradients and Hessian
-## mlghNM <- maxLik( llf, gf, hf, start = startVal, method = "NM" )
-## expect_equal( mlgNM, mlghNM, tolerance = 1e-3 )
-
-
-## ## SANN method
-## mlSANN <- maxLik( llf, start = startVal, method = "SANN" )
-## print( mlSANN )
-## print( summary( mlSANN ), digits = 2 )
-## activePar( mlSANN )
-## AIC( mlSANN )
-## coef( mlSANN )
-## condiNumber( mlSANN, digits = 3 )
-## round( hessian( mlSANN ), 1 )
-## logLik( mlSANN )
-## maximType( mlSANN )
-## nIter( mlSANN )
-## nParam( mlSANN )
-## returnCode( mlSANN )
-## returnMessage( mlSANN )
-## round( vcov( mlSANN ), 3 )
-## logLik( summary( mlSANN ) )
-## expect_equal( ml[-c(3,4,5,6,9,10)], mlSANN[-c(3,4,5,6,9,10,11)], tolerance = 1e-3 )
-## # with individual log likelihood values
-## mlIndSANN <- maxLik( llfInd, start = startVal, method = "SANN" )
-## print( summary( mlIndSANN ), digits = 2 )
-## expect_equal( mlSANN[-4], mlIndSANN[-c(4,12)], tolerance = 1e-3 )
-## mlIndSANN[12]
-## nObs( mlIndSANN )
-
-## # with unused analytical gradients
-## mlgSANN <- maxLik( llf, gf, start = startVal, method = "SANN" )
-## print( summary( mlgSANN ), digits = 2 )
-## expect_equal( mlSANN[-4], mlgSANN[-4], tolerance = 1e-3 )
-## # with individual log likelihood values and gradients
-## mlgIndSANN <- maxLik( llfInd, gfInd, start = startVal, method = "SANN" )
-## print( summary( mlgIndSANN ), digits = 2 )
-## expect_equal( mlgSANN[], mlgIndSANN[-12], tolerance = 1e-3 )
-## mlgIndSANN[12]
-
-## # with unused analytical gradients and Hessian
-## mlghSANN <- maxLik( llf, gf, hf, start = startVal, method = "SANN" )
-## expect_equal( mlgSANN, mlghSANN, tolerance = 1e-3 )
-
-## # with a user-specified function to generate a new candidate point
-## mlSANNCand <- maxLik( llf, start = startVal, method = "SANN",
-##    cand = function(x) c(rnorm(1, x[1]), rnorm(1, x[2])) )
-## print( summary( mlSANNCand ), digits = 2 )
-## expect_equal(coef(mlSANNCand), coef(mlSANN), tolerance = 1e-2 )
-## expect_equal(stdEr(mlSANNCand), stdEr(mlSANN), tolerance = 1e-2 )
-## expect_equal(hessian(mlSANNCand), hessian(mlSANN), tolerance = 1e-2 )
-
-
-## ## CG method
-## # Estimate with only function values (aggregated)
-## mlCg <- maxLik( llf, start = startVal, method = "CG" )
-## print(summary( mlCg))
-## # Estimate with analytic gradient (aggregated)
-## mlgCg <- maxLik( llf, gf, start = startVal, method = "CG" )
-## print(summary( mlgCg))
-## # Estimate with analytic gradient (aggregated) and Hessian (not used for estimation)
-## mlghCg <- maxLik( llf, gf, hf, start = startVal, method = "CG" )
-## print(summary( mlghCg))
-## ## 
-## # Estimate with only function values (individual)
-## mlCg <- maxLik( llf, start = startVal, method = "CG" )
-## print(summary( mlCg))
-## # Estimate with analytic gradient (individual)
-## mlgCg <- maxLik( llf, gf, start = startVal, method = "CG" )
-## print(summary( mlgCg))
-## # Estimate with analytic gradient (individual) and Hessian (not used for estimation)
-## mlghCg <- maxLik( llfInd, gfInd, hf, start = startVal, method = "CG" )
-## print(summary( mlghCg))
 
 
 ## ### ---------- with fixed parameters ----------
