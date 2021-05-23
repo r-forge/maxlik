@@ -413,7 +413,7 @@ maxNRCompute <- function(fn,
    ## calculate (final) Hessian
    if(tolower(finalHessian) == "bhhh") {
       if(!is.null(gradientObs)) {
-         hessian <- - crossprod( gradientObs )
+         hessian <- -crossprod( gradientObs )
          attr(hessian, "type") <- "BHHH"
       } else {
          hessian <- NULL

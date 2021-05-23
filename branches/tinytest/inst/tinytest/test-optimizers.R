@@ -485,75 +485,52 @@ for(optimizer in c("bfgsr", "bfgs", "nm", "sann", "cg")) {
 }
 
 
-## ### ---------- with fixed parameters ----------
-## # start values
-## startValFix <- c( mu = 1, sigma = 1 )
+### ---------- with fixed parameters ----------
+## start values
+startValFix <- c( mu = 1, sigma = 1 )
+## fix mu (the mean ) at its start value
+isFixed <- c( TRUE, FALSE )
+successMsgs <- list(bfgsr = c("successive function values within tolerance limit (tol)"),
+                    bfgs = c("successful convergence "),
+                           # includes space at end...
+                    nm = c("successful convergence "),
+                    sann = c("successful convergence "),
+                    cg = c("successful convergence ")
+                    )
+## NR method with fixed parameters
+for(optimizer in c("nr", "bfgsr", "bfgs", "nm", "sann", "cg")) {
+   expect_silent(
+      mlFix <- maxLik( llf, start = startValFix, fixed = isFixed, method=optimizer)
+   )
+   expect_equivalent(coef(mlFix)[1], 1)
+   expect_equivalent(stdEr(mlFix)[1], 0)
+   cat(optimizer, "\n")
+   print(hessian(mlFix))
+   expect_equivalent(hessian( mlFix),
+                     matrix(c(NA, NA, NA, -59.99823), 2, 2),
+                     tolerance=0.01)
+   mlFix3 <- maxLik(llf, start = startValFix, fixed = "mu", method=optimizer)
+   expect_equal(coef(mlFix), coef(mlFix3))
+   mlFix4 <- maxLik( llf, start = startValFix, fixed = which(isFixed),
+                    method=optimizer)
+   expect_equal(coef(mlFix), coef(mlFix4))
+   expect_equivalent(activePar( mlFix ), !isFixed)
+   expect_equal(nParam( mlFix ), 2)
+   ## with analytical gradients
+   mlgFix <- maxLik( llf, gf, start = startValFix, fixed = isFixed,
+                    method=optimizer)
+   expect_equal(coef(mlgFix), coef(mlFix), tolerance=tol)
+   ## with analytical gradients and Hessians
+   mlghFix <- maxLik( llf, gf, hf, start = startValFix, fixed = isFixed,
+                     method=optimizer)
+   expect_equal(coef(mlghFix), coef(mlFix), tolerance=tol)
+}
 
-## # fix mu (the mean ) at its start value
-## isFixed <- c( TRUE, FALSE )
-
-## ## NR method with fixed parameters
-## mlFix <- maxLik( llf, start = startValFix, activePar = !isFixed )
-## mlFix1 <- maxLik( llf, start = startValFix, activePar = 2 )
-## expect_equal( mlFix, mlFix1, tolerance = 1e-3 )
-## mlFix2 <- maxLik( llf, start = startValFix, fixed = isFixed )
-## expect_equal( mlFix, mlFix2, tolerance = 1e-3 )
-## mlFix3 <- maxLik( llf, start = startValFix, fixed = "mu" )
-## expect_equal( mlFix, mlFix3, tolerance = 1e-3 )
-## mlFix4 <- maxLik( llf, start = startValFix, fixed = 1 )
-## expect_equal( mlFix, mlFix4, tolerance = 1e-3 )
-## print( mlFix )
-## print( summary( mlFix ), digits = 2 )
-## activePar( mlFix )
-## AIC( mlFix )
-## coef( mlFix )
-## condiNumber( mlFix, digits = 3 )
-## round( hessian( mlFix ), 1 )
-## logLik( mlFix )
-## maximType( mlFix )
-## nIter( mlFix )
-## nParam( mlFix )
-## returnCode( mlFix )
-## returnMessage( mlFix )
-## round( vcov( mlFix ), 3 )
-## logLik( summary( mlFix ) )
-## mlIndFix <- maxLik( llfInd, start = startValFix, activePar = !isFixed )
-## mlIndFix1 <- maxLik( llfInd, start = startValFix, activePar = 2 )
-## expect_equal( mlIndFix, mlIndFix1, tolerance = 1e-3 )
-## mlIndFix2 <- maxLik( llfInd, start = startValFix, fixed = isFixed )
-## expect_equal( mlIndFix, mlIndFix2, tolerance = 1e-3 )
-## mlIndFix3 <- maxLik( llfInd, start = startValFix, fixed = "mu" )
-## expect_equal( mlIndFix, mlIndFix3, tolerance = 1e-3 )
-## mlIndFix4 <- maxLik( llfInd, start = startValFix, fixed = 1 )
-## expect_equal( mlIndFix, mlIndFix4, tolerance = 1e-3 )
-## print( summary( mlIndFix ), digits = 2 )
-## expect_equal( mlFix[ ], mlIndFix[ -11 ], tolerance = 1e-3 )
-## round( mlFix[[3]], 5 )
-## round( mlIndFix[[3]], 5 )
-## round( mlIndFix[[ 11 ]], 3 )
-## nObs( mlIndFix )
-
-## # with analytical gradients
-## mlgFix <- maxLik( llf, gf, start = startValFix, activePar = !isFixed )
-## mlgFix1 <- maxLik( llf, gf, start = startValFix, activePar = 2 )
-## expect_equal( mlgFix, mlgFix1, tolerance = 1e-3 )
-## mlgFix2 <- maxLik( llf, gf, start = startValFix, fixed = isFixed )
-## expect_equal( mlgFix, mlgFix2, tolerance = 1e-3 )
-## print( summary( mlgFix ), digits = 2 )
-## mlgIndFix <- maxLik( llfInd, gfInd, start = startValFix, activePar = !isFixed )
-## expect_equal( mlIndFix, mlgIndFix, tolerance = 1e-3 )
-## expect_equal( mlgFix[ ], mlgIndFix[ -11 ], tolerance = 1e-3 )
-## round( mlgIndFix[[ 11 ]], 3 )
-
-## # with analytical gradients and Hessians
-## mlghFix <- maxLik( llf, gf, hf, start = startValFix, activePar = !isFixed )
-## expect_equal( mlgFix, mlghFix, tolerance = 1e-3 )
-## mlgFix[[4]]
-## mlghFix[[4]]
-
-## ## BHHH method with fixed parameters
-## mlFixBHHH <- maxLik( llfInd, start = startValFix, activePar = !isFixed,
-##    method = "BHHH" )
+## BHHH method with fixed parameters--need individual obs
+mlFixBHHH <- maxLik( llfInd, start = startValFix, fixed = isFixed,
+                    method = "BHHH" )
+expect_equal(coef(mlFixBHHH), coef(mlFix))
+ar
 ## mlFixBHHH1 <- maxLik( llfInd, start = startValFix, activePar = 2,
 ##    method = "BHHH" )
 ## expect_equal( mlFixBHHH, mlFixBHHH1, tolerance = 1e-3 )
