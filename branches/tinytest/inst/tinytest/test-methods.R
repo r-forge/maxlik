@@ -85,3 +85,44 @@ expect_stdout(
    show(tidy(a)),
    pattern = "term.*estimate std.error statistic.*p.value"
 )
+
+### ---------- estfun, bread, sandwich ----------
+NOBS <- 100
+x <- rnorm(NOBS, 2, 1)
+## log likelihood function
+llf <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   if(!(sigma > 0))
+       return(NA)
+                           # to avoid warnings in the output
+   sum(dnorm(x, mu, sigma, log=TRUE))
+}
+## log likelihood function (individual observations)
+llfInd <- function( param ) {
+   mu <- param[ 1 ]
+   sigma <- param[ 2 ]
+   if(!(sigma > 0))
+       return(NA)
+                           # to avoid warnings in the output
+   llValues <- -0.5 * log( 2 * pi ) - log( sigma ) -
+      0.5 * ( x - mu )^2 / sigma^2
+   return( llValues )
+}
+startVal <- c(mu=2, sigma=1)
+ml <- maxLik( llf, start = startVal)
+mlInd <- maxLik( llfInd, start = startVal)
+
+expect_error( estfun( ml ) )
+expect_equal(dim(estfun( mlInd )), c(NOBS, 2))
+expect_equal(colnames(estfun( mlInd )), names(startVal))
+
+expect_error(bread( ml ) )
+expect_equal(dim(bread( mlInd )), c(2, 2))
+expect_equal(colnames(bread( mlInd )), names(startVal))
+expect_equal(rownames(bread( mlInd )), names(startVal))
+
+expect_error(sandwich( ml ) )
+expect_equal(dim(sandwich( mlInd )), c(2, 2))
+expect_equal(colnames(sandwich( mlInd )), names(startVal))
+expect_equal(rownames(sandwich( mlInd )), names(startVal))

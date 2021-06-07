@@ -3,7 +3,7 @@ importFrom("methods", "new", "show", "slot", "slot<-", "slotNames",
            "validObject")
 importFrom("miscTools", "nObs", "nParam", "sumKeepAttr")
 importFrom( "miscTools", "stdEr" )
-importFrom("sandwich", "bread", "estfun")
+importFrom("sandwich", "bread", "estfun", "sandwich")
 importFrom("stats", "coef", "logLik", "optim", "pnorm", "printCoefmat",
            "vcov", "AIC", "qnorm")
 importFrom("utils", "head", "str", "tail")
