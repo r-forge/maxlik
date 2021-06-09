@@ -5,9 +5,8 @@
 ### 
 library(maxLik)
 library(tinytest)
-options(digits = 4)
-                           # just to avoid so many differences when comparing these output files
-## data to fit a normal distribution
+
+tol <- .Machine$double.eps^(0.25)
 set.seed( 123 )
 # generate a variable from normally distributed random numbers
 N <- 50
@@ -30,52 +29,67 @@ llf <- function( param ) {
 startVal <- c( mu = 0, sigma = 1 )
 
 # 
-ml <- maxLik( llf, start = startVal )
-print(summary(ml))
+expect_silent(ml <- maxLik( llf, start = startVal ))
+expect_equivalent(coef(ml), c(1.069, 1.833), tolerance=tol)
 ## tol
-mlTol <- maxLik( llf, start = startVal, tol=1)
-print(summary(mlTol))
-mlTolC <- maxLik(llf, start=startVal, control=list(tol=1))
-print(all.equal(mlTol, mlTolC))
-try(ml <- maxLik( llf, start = startVal, tol=-1))
-try(ml <- maxLik( llf, start = startVal, tol=c(1,2)))
-try(ml <- maxLik( llf, start = startVal, tol=TRUE))
-try(ml <- maxLik( llf, start = startVal, control=list(tol=-1)))
-try(ml <- maxLik( llf, start = startVal, control=list(tol=c(1,2))))
-try(ml <- maxLik( llf, start = startVal, control=list(tol=TRUE)))
+expect_silent(mlTol <- maxLik( llf, start = startVal, tol=1))
+expect_equal(returnCode(mlTol), 2)
+                           # tolerance limit
+expect_silent(mlTolC <- maxLik(llf, start=startVal, control=list(tol=1)))
+expect_equal(coef(mlTol), coef(mlTolC))
+expect_equal(hessian(mlTol), hessian(mlTolC))
+expect_equal(returnCode(mlTol), returnCode(mlTolC))
+expect_silent(ml <- maxLik( llf, start = startVal, tol=-1))
+                           # negative tol switches tol off
+expect_silent(ml <- maxLik( llf, start = startVal, control=list(tol=-1)))
+expect_false(returnCode(ml) == 2)
+                           # should not be w/in tolerance limit
+expect_error(ml <- maxLik( llf, start = startVal, tol=c(1,2)),
+             pattern="'tol' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, control=list(tol=c(1,2))),
+             pattern="'tol' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, tol=TRUE),
+             pattern="object of class \"logical\" is not valid for slot 'tol'")
+expect_error(ml <- maxLik( llf, start = startVal, control=list(tol=TRUE)),
+             pattern="object of class \"logical\" is not valid for slot 'tol'")
 
 ## ----- reltol: play w/reltol, leave other tolerances at default value -----
-mlRelTol <- maxLik( llf, start = startVal, reltol=1)
-print(summary(mlRelTol))
+expect_silent(mlRelTol <- maxLik( llf, start = startVal, reltol=1))
+expect_equal(returnCode(mlRelTol), 8)
 mlRelTolC <- maxLik(llf, start=startVal, control=list(reltol=1))
-print(all.equal(mlRelTol, mlRelTolC))
-try(ml0 <- maxLik( llf, start = startVal, reltol=0))
-test_that("Switching off reltol makes more iterations",
-          expect_gt(nIter(ml0), nIter(mlRelTol))
-          )          
-try(ml1 <- maxLik( llf, start = startVal, reltol=-1))
-test_that("reltol < 0 equivalent to reltol = 0",
-          expect_equal(nIter(ml0), nIter(ml1))
-          )
-try(ml <- maxLik( llf, start = startVal, reltol=c(1,2)))
-try(ml <- maxLik( llf, start = startVal, reltol=TRUE))
-try(ml <- maxLik( llf, start = startVal, control=list(reltol=-1)))
-try(ml <- maxLik( llf, start = startVal, control=list(reltol=c(1,2))))
-try(ml <- maxLik( llf, start = startVal, control=list(reltol=TRUE)))
+expect_equal(coef(mlRelTol), coef(mlRelTolC))
+expect_silent(ml0 <- maxLik( llf, start = startVal, reltol=0))
+expect_true(nIter(ml0) > nIter(mlRelTol))
+                           # switching off reltol makes more iterations
+expect_silent(ml1 <- maxLik( llf, start = startVal, reltol=-1))
+expect_equal(nIter(ml0), nIter(ml1))
+expect_error(ml <- maxLik( llf, start = startVal, reltol=c(1,2)),
+             pattern="invalid class \"MaxControl\" object: 'reltol' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, control=list(reltol=c(1,2))),
+             pattern="invalid class \"MaxControl\" object: 'reltol' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, reltol=TRUE),
+             pattern="assignment of an object of class \"logical\" is not valid for slot 'reltol'")
+expect_error(ml <- maxLik( llf, start = startVal, control=list(reltol=TRUE)),
+             pattern="assignment of an object of class \"logical\" is not valid for slot 'reltol'")
 ## gradtol
-mlGradtol <- maxLik( llf, start = startVal, gradtol=1e-2)
-print(summary(mlGradtol))
-mlGradtolC <- maxLik(llf, start=startVal, control=list(gradtol=1e-2))
-print(all.equal(mlGradtol, mlGradtolC))
-try(ml <- maxLik( llf, start = startVal, gradtol=-1))
-try(ml <- maxLik( llf, start = startVal, gradtol=c(1,2)))
-try(ml <- maxLik( llf, start = startVal, gradtol=TRUE))
-try(ml <- maxLik( llf, start = startVal, control=list(gradtol=-1)))
-try(ml <- maxLik( llf, start = startVal, control=list(gradtol=c(1,2))))
-try(ml <- maxLik( llf, start = startVal, control=list(gradtol=TRUE)))
+expect_silent(mlGradtol <- maxLik( llf, start = startVal, gradtol=0.1))
+expect_equal(returnCode(mlGradtol), 1)
+mlGradtolC <- maxLik(llf, start=startVal, control=list(gradtol=0.1))
+expect_equal(coef(mlGradtol), coef(mlGradtolC))
+expect_silent(ml <- maxLik( llf, start = startVal, gradtol=-1))
+expect_true(nIter(ml) > nIter(mlGradtol))
+                           # switching off gradtol makes more iterations
+expect_error(ml <- maxLik( llf, start = startVal, gradtol=c(1,2)),
+             pattern="object: 'gradtol' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, control=list(gradtol=c(1,2))),
+             pattern="object: 'gradtol' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, gradtol=TRUE),
+             pattern="assignment of an object of class \"logical\" is not valid for slot 'gradtol' ")
+expect_error(ml <- maxLik( llf, start = startVal, control=list(gradtol=TRUE)),
+             pattern="assignment of an object of class \"logical\" is not valid for slot 'gradtol' ")
 ## examples with steptol, lambdatol
 ## qac
-mlMarq <- maxLik( llf, start = startVal, qac="marquardt")
+expect_silent(mlMarq <- maxLik( llf, start = startVal, qac="marquardt"))
 print(summary(mlMarq))
 mlMarqC <- maxLik(llf, start=startVal, control=list(qac="marquardt"))
 print(all.equal(mlMarq, mlMarqC))

@@ -8,7 +8,7 @@ if(!requireNamespace("tinytest", quietly = TRUE)) {
    message("These tests require 'tinytest' package\n")
    q("no")
 }
-# require(sandwich)
+require(sandwich)
 library(maxLik)
 set.seed(0)
 compareTolerance = 0.001
