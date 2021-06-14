@@ -90,34 +90,33 @@ expect_error(ml <- maxLik( llf, start = startVal, control=list(gradtol=TRUE)),
 ## examples with steptol, lambdatol
 ## qac
 expect_silent(mlMarq <- maxLik( llf, start = startVal, qac="marquardt"))
-print(summary(mlMarq))
-mlMarqC <- maxLik(llf, start=startVal, control=list(qac="marquardt"))
-print(all.equal(mlMarq, mlMarqC))
-try(ml <- maxLik( llf, start = startVal, qac=-1))
+expect_equal(maximType(mlMarq),
+             "Newton-Raphson maximisation with Marquardt (1963) Hessian correction")
+expect_silent(mlMarqC <- maxLik(llf, start=startVal, control=list(qac="marquardt")))
+expect_equal(coef(mlMarq), coef(mlMarqC))
+expect_error(ml <- maxLik( llf, start = startVal, qac=-1),
+             pattern = "assignment of an object of class \"numeric\" is not valid for slot 'qac'")
                            # qac should be "stephalving" or "marquardt"
-try(ml <- maxLik( llf, start = startVal, qac=c("a", "b")))
-try(ml <- maxLik( llf, start = startVal, qac=TRUE))
-try(ml <- maxLik( llf, start = startVal, control=list(qac=-1)))
-try(ml <- maxLik( llf, start = startVal, control=list(qac=c("a", "b"))))
-try(ml <- maxLik( llf, start = startVal, control=list(qac=TRUE)))
-mlMarqCl <- a <- maxLik(llf, start = startVal,
+expect_error(ml <- maxLik( llf, start = startVal, qac=c("a", "b")),
+             pattern = "invalid class \"MaxControl\" object: 'qac' must be of length 1, not 2")
+expect_error(ml <- maxLik( llf, start = startVal, qac=TRUE),
+             pattern = "assignment of an object of class \"logical\" is not valid for slot 'qac'")
+mlMarqCl <- maxLik(llf, start = startVal,
                         control=list(qac="marquardt", lambda0=1000, lambdaStep=4))
-print(all.equal(coef(mlMarqCl), coef(mlMarq)))
+expect_equal(coef(mlMarqCl), coef(mlMarq))
 ## NM: alpha, beta, gamma
-mlNM <- maxLik( llf, start = startVal, method="nm")
-print(summary(mlNM))
-mlNMAlpha <- maxLik(llf, start=startVal, method="nm", beta=0.8)
-mlNMAlphaC <- maxLik(llf, start=startVal, method="nm", control=list(beta=0.8))
-print(all.equal(mlNMAlpha, mlNMAlphaC))
+expect_silent(mlNMAlpha <- maxLik(llf, start=startVal, method="nm", beta=0.8))
+expect_silent(mlNMAlphaC <- maxLik(llf, start=startVal, method="nm", control=list(beta=0.8)))
+expect_equal(coef(mlNMAlpha), coef(mlNMAlphaC))
 
 ## likelihood function with additional parameter
 llf1 <- function( param, sigma ) {
    mu <- param
    N <- length( x )
-   llValue <- -0.5 * N * log( 2 * pi ) - N * log( sigma ) -
-       0.5 * sum( ( x - mu )^2 / sigma^2 )
-   return( llValue )
-       }
+   ll <- -0.5*N*log( 2 * pi ) - N*log( sigma ) -
+      0.5*sum( ( x - mu )^2/sigma^2 )
+   ll
+}
 
 ## log-lik mixture
 logLikMix <- function(param) {
@@ -139,30 +138,31 @@ logLikMixA <- function(param, rho) {
 }
 
 ## Test the following with all the main optimizers:
+pl2Patterns <- c(NR = "----- Initial parameters: -----\n.*-----Iteration 1 -----",
+                 BFGS = "initial  value.*final  value",
+                 BFGSR = "-------- Initial parameters: -------\n.*Iteration  1")
 for(method in c("NR", "BFGS", "BFGSR")) {
-   ## two parameters at the same time
-   ## iterlim, printLevel
-   cat("-- method", method, "--\n")
+   ## create data in loop, we need to mess with 'x' for constraints
    N <- 100
    x <- rnorm(N, 1, 2 )
    startVal <- c(1,2)
-   ml2 <- maxLik( llf, start=startVal, method=method, iterlim=1, printLevel=2)
-   print(summary(ml2))
-   ml2C <- maxLik(llf, start=startVal, method=method,
-                  control=list(iterlim=1, printLevel=2))
-   print(all.equal(ml2, ml2C))
+   ## two parameters at the same time
+   ## iterlim, printLevel
+   expect_stdout(ml2 <- maxLik(llf, start=startVal, method=method,
+                               iterlim=1, printLevel=2),
+                 pattern = pl2Patterns[method])
+   expect_stdout(ml2C <- maxLik(llf, start=startVal, method=method,
+                                control=list(iterlim=1, printLevel=2)),
+                 pattern = pl2Patterns[method])
+   expect_equal(coef(ml2), coef(ml2C))
    ## what about additional parameters for the loglik function?
-   mls <- maxLik(llf1, start=0, method=method, sigma=1)
-   print(coef(mls))
-   mlsM <- maxLik(llf1, start=0, method=method, tol=1, sigma=1)
-   mlsCM <- maxLik(llf1, start=0, method=method, control=list(tol=1), sigma=1)
-   cat("Additional parameters to loglik: open == control()?\n")
-   print(all.equal(mlsM, mlsCM))
+   expect_silent(mlsM <- maxLik(llf1, start=0, method=method, tol=1, sigma=1))
+   expect_silent(mlsCM <- maxLik(llf1, start=0, method=method, control=list(tol=1), sigma=1))
+   expect_equal(coef(mlsM), coef(mlsCM))
    ## And what about unused parameters?
-   cat("What about unused parameters?\n")
-   try(maxLik(llf1, start=0, method=method, control=list(tol=1),
-              sigma=1, unusedPar=2))
-                           # error
+   expect_error(maxLik(llf1, start=0, method=method, control=list(tol=1),
+                       sigma=1, unusedPar=2),
+                pattern = "unused argument")
    N <- 100
    ## Does this work with constraints?
    x <- c(rnorm(N, mean=-1), rnorm(N, mean=1))
@@ -174,70 +174,66 @@ for(method in c("NR", "BFGS", "BFGSR")) {
    B <- rep(0.5, 3)
    start <- c(0.4, 0, 0.9)
    ## analytic gradient
-   cat("Inequality constraints, analytic gradient & Hessian\n")
-   mix <- try(maxLik(logLikMix, 
-                     start=start, method=method,
-                     constraints=list(ineqA=A, ineqB=B)))
-   if(!inherits(mix, "try-error")) {
-      print(summary(mix))
-   }
-   mixGT <- try(maxLik(logLikMix, 
-                       start=start, method=method,
-                       constraints=list(ineqA=A, ineqB=B),
-                       tol=1))
-   if(!inherits(mixGT, "try-error")) {
-      print(summary(mixGT))
-   }
-   mixGTC <- try(maxLik(logLikMix, 
-                    start=start, method=method,
-                    constraints=list(ineqA=A, ineqB=B),
-                    control=list(tol=1)))
-   if(!inherits(mixGTC, "try-error")) {
-      print(all.equal(mixGT, mixGTC))
-   }
-   ## 2d inequality constraints: x + y < 0.5
-   A2 <- matrix(c(-1, -1), 1, 2, byrow=TRUE)
-   B2 <- 0.5
-   start2 <- c(-0.5, 0.5)
-   cat("Inequality constraints, additional parameters\n")
-   mixA <- try(maxLik(logLikMixA, 
-                      start=start2, method=method,
-                      constraints=list(ineqA=A2, ineqB=B2),
-                      tol=1,
-                      rho=0.5))
-   mixAC <- try(maxLik(logLikMixA, 
-                       start=start2, method=method,
-                       constraints=list(ineqA=A2, ineqB=B2),
-                       control=list(tol=1),
-                       rho=0.5))
-   if(!inherits(mixA, "try-error") & !inherits(mixAC, "try-error")) {
-      cat("Coefficients equal?\n")
-      print(all.equal(coef(mixA), coef(mixAC)))
-      cat("Hessians equal?\n")
-      print(all.equal(hessian(mixA), hessian(mixAC)))
+   if(!(method %in% c("NR", "BFGSR"))) {
+      expect_silent(mix <- maxLik(logLikMix, 
+                                  start=start, method=method,
+                                  constraints=list(ineqA=A, ineqB=B)))
+      expect_silent(mixGT <- try(maxLik(logLikMix, 
+                                        start=start, method=method,
+                                        constraints=list(ineqA=A, ineqB=B),
+                                        tol=1)))
+      expect_silent(
+         mixGTC <- try(maxLik(logLikMix, 
+                              start=start, method=method,
+                              constraints=list(ineqA=A, ineqB=B),
+                              control=list(tol=1)))
+      )
+      ## 2d inequality constraints: x + y < 0.5
+      A2 <- matrix(c(-1, -1), 1, 2, byrow=TRUE)
+      B2 <- 0.5
+      start2 <- c(-0.5, 0.5)
+      expect_silent(
+         mixA <- maxLik(logLikMixA, 
+                        start=start2, method=method,
+                        constraints=list(ineqA=A2, ineqB=B2),
+                        tol=1,
+                        rho=0.5)
+      )
+      expect_silent(
+         mixAC <- maxLik(logLikMixA, 
+                         start=start2, method=method,
+                         constraints=list(ineqA=A2, ineqB=B2),
+                         control=list(tol=1),
+                         rho=0.5)
+      )
+      expect_equal(coef(mixA), coef(mixAC))
+      expect_equal(hessian(mixA), hessian(mixAC))
    }
 }
 
 ### Test adding both default and user-specified parameters through control list
 estimate <- function(control=NULL, ...) {
-   return(maxLik(llf, start=c(1,1),
-                 control=c(list(iterlim=100), control),
-                 ...))
+   maxLik(llf, start=c(1,1),
+          control=c(list(iterlim=100), control),
+          ...)
 }
-m <- estimate(control=list(iterlim=1), fixed=2)
-show(maxControl(m))
+expect_silent(m <- estimate(control=list(iterlim=1), fixed=2))
+expect_stdout(show(maxControl(m)),
+              pattern = "iterlim = 1")
                            # iterlim should be 1
-print(coef(m))
+expect_equal(coef(m)[2], 1)
                            # sigma should be 1.000
 ## Does print.level overwrite 'printLevel'?
-m <- estimate(control=list(printLevel=2, print.level=1))
-show(maxControl(m))
+expect_silent(m <- estimate(control=list(printLevel=2, print.level=1)))
+expect_stdout(show(maxControl(m)),
+              pattern = "printLevel = 1")
 
 ## Does open parameters override everything?
-m <- estimate(control=list(printLevel=2, print.level=1), print.level=0)
-show(maxControl(m))
+expect_silent(m <- estimate(control=list(printLevel=2, print.level=1), print.level=0))
+expect_stdout(show(maxControl(m)),
+              pattern = "printLevel = 0")
 
 ### does both printLevel, print.level work for condiNumber?
-condiNumber(hessian(m), print.level=0) # no output
-condiNumber(hessian(m), printLevel=0)  # no output
-condiNumber(hessian(m), printLevel=0, print.level=1) # no output
+expect_silent(condiNumber(hessian(m), print.level=0))
+expect_silent(condiNumber(hessian(m), printLevel=0))
+expect_silent(condiNumber(hessian(m), printLevel=0, print.level=1))

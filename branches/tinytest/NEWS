@@ -1,8 +1,8 @@
 THIS IS THE CHANGELOG OF THE "maxLik" PACKAGE
 
-Please note that only the most significant changes are reported here.
-A full ChangeLog is available in the log messages of the SVN repository
-on R-Forge.
+Please note that only the most significant user visible changes are
+reported here.  A full ChangeLog is available in the log messages of
+the SVN repository on R-Forge.
 
 * maxLik methods for 'tidy' and 'glance' generics (by David Hugh-Jones)
 
