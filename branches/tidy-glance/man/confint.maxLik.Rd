@@ -1,5 +1,6 @@
 \name{confint.maxLik}
 \alias{confint.maxLik}
+\alias{confint}
 \title{confint method for maxLik objects}
 \description{
   Wald confidence intervals for Maximum Likelihood Estimates
@@ -26,6 +27,8 @@
   quantiles. 
 }
 \seealso{
+  \code{\link[stats]{confint}} for the generic \code{confint}
+  function, 
   \code{\link[=stdEr.maxLik]{stdEr}} for computing standard errors and
   \code{\link[=summary.maxLik]{summary}} for summary output that includes statistical
   significance information.

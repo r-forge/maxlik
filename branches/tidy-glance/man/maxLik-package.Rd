@@ -6,7 +6,7 @@ Maximum Likelihood Estimation
 }
 \description{
   This package contains a set of functions and tools for Maximum Likelihood (ML)
-  estimation.  The focus of the package is on the non-linear
+  estimation.  The focus of the package is on non-linear
   optimization from the ML viewpoint, and it provides several convenience wrappers
   and tools, like BHHH algorithm, variance-covariance
   matrix and standard errors.
@@ -30,7 +30,7 @@ A good starting point to learn about the usage of \pkg{maxLik} are the
 included vignettes \dQuote{Introduction: what is maximum likelihood},
 \dQuote{Maximum likelihood estimation with maxLik} and
 \dQuote{Stochastic Gradient Ascent in maxLik}.  Another good
-sources is
+source is
 Henningsen & Toomet (2011), an introductory paper to the package.
 Use
 \code{vignette(package="maxLik")} to see the available vignettes, and

@@ -71,22 +71,7 @@ a <- maxLik(loglik, gradlik, hesslik, start=1)
 expect_equal(dim(vcov(a)), c(1,1), info="vcov 1D analytic correct")
 expect_equal(length(stdEr(a)), 1, info="stdEr 1D analytic correct")
 
-## Various summary methods
-## These should work and produce consistent results
-expect_stdout(
-   show(confint(a)),
-   pattern = "2.5 %.*97.5 %\n[ .[:digit:]]+$"
-)
-expect_stdout(
-   show(glance(a)),
-   pattern = "df logLik   AIC  nobs.*1     1  -5.16  12.3    20"
-)
-expect_stdout(
-   show(tidy(a)),
-   pattern = "term.*estimate std.error statistic.*p.value"
-)
-
-### ---------- estfun, bread, sandwich ----------
+## ---------- both individual and aggregated likelihood ----------
 NOBS <- 100
 x <- rnorm(NOBS, 2, 1)
 ## log likelihood function
@@ -113,6 +98,27 @@ startVal <- c(mu=2, sigma=1)
 ml <- maxLik( llf, start = startVal)
 mlInd <- maxLik( llfInd, start = startVal)
 
+## ---------- Various summary methods ----------
+## These should work and produce consistent results
+expect_stdout(
+   show(confint(ml)),
+   pattern = "2.5 % +97.5 %\nmu +[[:digit:] .]+\n"
+)
+expect_stdout(
+   show(glance(ml)),
+   pattern = "df logLik   AIC +nobs.*1     2  -140.  284. NA"
+)
+expect_stdout(
+   show(glance(mlInd)),
+   pattern = "df logLik   AIC  nobs.*1     2  -140.  284.   100"
+)
+expect_stdout(
+   show(tidy(ml)),
+   pattern = "term.*estimate std.error statistic.*p.value"
+)
+
+
+### ---------- estfun, bread, sandwich ----------
 expect_error( estfun( ml ) )
 expect_equal(dim(estfun( mlInd )), c(NOBS, 2))
 expect_equal(colnames(estfun( mlInd )), names(startVal))
