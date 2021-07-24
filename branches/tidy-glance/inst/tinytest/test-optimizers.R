@@ -236,11 +236,11 @@ expect_equal(
    returnMessage(mlM), returnMessage(ml)
 )
 
-## with analytical gradients
+## test plain results with analytical gradients
 ## compare coefficients, Hessian
-mlg <- maxLik( llf, gf, start = startVal )
+mlg <- maxLik(llf, gf, start = startVal )
 expect_equal(coef(ml), coef(mlg), tol=tol)
-expect_equal(hessian(ml), hessian(mlg), tolerance = 1e-3)
+expect_equal(hessian(ml), hessian(mlg), tolerance = 1e-2)
 ## gradient with individual components
 mlgInd <- maxLik( llfInd, gfInd, start = startVal )
 expect_equal(coef(mlInd), coef(mlgInd), tolerance = 1e-3)
