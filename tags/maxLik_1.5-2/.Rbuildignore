@@ -1,0 +1,6 @@
+^\.Rproj\.user$
+^.*\.Rproj$
+^TODO\.txt$
+^vignettes/Rplots.pdf$
+^vignettes/Makefile
+.*\.prv
